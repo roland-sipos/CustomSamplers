@@ -82,7 +82,7 @@ public class CassandraSampler extends AbstractSampler implements TestBean {
         		if (result == null)
         			throw new NotFoundInDBException("Row with the key not found in the database");
         		
-        		if (Boolean.getBoolean(getChechRead())) {
+        		if (Boolean.getBoolean(getCheckRead())) {
         			// Check the value equivalence between read data and file content!
         		}
 				
@@ -164,7 +164,7 @@ public class CassandraSampler extends AbstractSampler implements TestBean {
 	public void setUseRandomAccess(String useRandomAccess) {
 		setProperty(USERANDOMACCESS, useRandomAccess);
 	}
-	public String getChechRead() {
+	public String getCheckRead() {
 		return getPropertyAsString(CHECKREAD);
 	}
 	public void setCheckRead(String checkRead) {

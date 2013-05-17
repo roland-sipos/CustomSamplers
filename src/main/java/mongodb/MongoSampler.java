@@ -50,21 +50,54 @@ public class MongoSampler extends AbstractSampler implements TestBean {
 			log.error("Failed to create a MongoQueryHandler instance for the " + threadName + " sampler. Details:" + e.toString());
 		}
 		
-		int threadID =  CustomSamplerUtils.getThreadID(Thread.currentThread().getName());
-		trace("sample() ThreadID: " + threadID);
+		int mainThreadID =  CustomSamplerUtils.getThreadID(Thread.currentThread().getName());
+		trace("sample() ThreadID: " + mainThreadID);
 		SampleResult res = CustomSamplerUtils.getInitialSampleResult(getTitle());
         res.sampleStart();
 		
-        if (Boolean.parseBoolean(getDoRead())) {
-        	
-        } else if (Boolean.parseBoolean(getDoWrite())) {
+        if (Boolean.parseBoolean(getDoRead())) { // DO THE READ
+        	HashMap<String, String> hashes = binaryInfo.getRandomHashesAndIDs();
+    		String originalID = hashes.get("originalID");
+    		String chunkID = hashes.get("chunkID");
+    		String filePath = binaryInfo.getBinaryFilePathList().get(originalID).get(chunkID);
+    		byte[] fileContent = binaryInfo.read(filePath);
+    		try {
+    			byte[] result = 
+    				queryHandler.readBinaryFromMongo(originalID, chunkID,
+    									hashes.get("original") + "__" + hashes.get("chunk"));
+    			if (result == null) {
+    				log.error("MongoSampler random read failed!");
+    				res.setResponseCode("500");
+        			res.setSuccessful(false);
+        			res.setResponseMessage("YAY THE VALUE IS EMPTY!!!!!!!!!!");
+        			res.setResponseData("YAY THE VALUE IS EMPTY!!!!!!".getBytes());
+    			}
+    			if (result != fileContent) { 
+    				log.error("MongoSampler random read failed!");
+    				res.setResponseCode("500");
+        			res.setSuccessful(false);
+        			res.setResponseMessage("YAY THE VALUE IS DIFFFEEEEEEEERRRRRRRRSSSS!!!!!!!!!!");
+        			res.setResponseData("YAY THE VALUE IS DIFFFEEEEEEEEEEEEERSSSSSS!!!!!!".getBytes());
+    			}
+    			res.latencyEnd();			
+    			String responseStr = "Value read for:" + " B:" + originalID + " C:" + chunkID + " Success!";
+    			res.setResponseData(responseStr.getBytes());
+			} catch (CustomSamplersException ex) {
+				log.error("MongoSampler write attempt failed: " + ex.toString());
+				res.setResponseCode("500");
+    			res.setSuccessful(false);
+    			res.setResponseMessage(ex.toString());
+    			res.setResponseData(ex.getMessage().getBytes());
+			} finally {
+				res.sampleEnd();
+			}
+        } else if (Boolean.parseBoolean(getDoWrite())) { // DO THE WRITE
         	if (Boolean.parseBoolean(getAssignedWrite())) {
+        		int threadID =  CustomSamplerUtils.getThreadID(Thread.currentThread().getName());
         		String chunkID = "chunk-" + threadID + ".bin";
         		String pathToChunk = binaryInfo.getBinaryFilePathList().get("BIGrbinary-0.bin.chunks").get(chunkID);
-        		System.out.println(" PATH to chunk:" + pathToChunk);
         		byte[] chunkContent = binaryInfo.read(pathToChunk);
         		HashMap<String, String> hashes = binaryInfo.getHashesForIDs("BIGrbinary-0.bin.chunks", chunkID);
-        		System.out.println(hashes.toString());
         		try {
 					queryHandler.writeBinaryToMongo("BIGrbinary-0.bin.chunks", chunkID, 
 													hashes.get("original") + "__" + hashes.get("chunk"),
@@ -88,7 +121,7 @@ public class MongoSampler extends AbstractSampler implements TestBean {
         		String filePath = binaryInfo.getBinaryFilePathList().get(originalID).get(chunkID);
         		byte[] fileContent = binaryInfo.read(filePath);
         		try {
-					queryHandler.writeBinaryToMongo(hashes.get("binaryID"), hashes.get("chunkID"), 
+					queryHandler.writeBinaryToMongo(originalID, chunkID, 
 													hashes.get("original") + "__" + hashes.get("chunk"),
 													fileContent);
 					res.latencyEnd();			

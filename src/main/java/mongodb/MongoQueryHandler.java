@@ -3,9 +3,16 @@ package mongodb;
 import java.io.File;
 import java.io.IOException;
 
+import org.bson.BSONObject;
+import org.bson.BasicBSONDecoder;
+import org.bson.BasicBSONObject;
+import org.bson.types.Binary;
+
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
 import com.mongodb.WriteConcern;
 import com.mongodb.gridfs.GridFS;
 import com.mongodb.gridfs.GridFSInputFile;
@@ -28,6 +35,28 @@ public class MongoQueryHandler {
 			throw new NotFoundInDBException("Collection not found in the " + mongo.getName() + " database!");
 	}
 	
+	public byte[] readBinaryFromMongo(String binaryID, String chunkID, String hash)
+			throws CustomSamplersException {
+		try {
+			BasicDBObject query = new BasicDBObject();
+			query.put("chunkID", chunkID);
+			query.put("originalID", binaryID);
+			query.put("hash", hash);
+			DBCursor cursor = collection.find(query);
+			if (cursor.count() > 1) {
+				throw new CustomSamplersException("More than one result found. This should never happen!");
+			}
+			DBObject object = cursor.next();
+			System.out.println("Cursor result: " + cursor.toString());
+			Binary resultBin = (Binary) object.get("data");
+			byte[] result = resultBin.getData();
+			System.out.println(" DATA:" + resultBin.toString());
+			return result;
+		} catch (Exception e) {
+			throw new CustomSamplersException("Exception occured during BSON reading: " + e);
+		}
+	}
+	
 	public void writeBinaryToMongo(String binaryID, String chunkID, String hash, byte[] value)  
 			throws CustomSamplersException {
 		try {
@@ -35,7 +64,8 @@ public class MongoQueryHandler {
 			chunkObj.put("chunkID", chunkID);
 			chunkObj.put("originalID", binaryID);
 			chunkObj.put("hash", hash);
-			chunkObj.put("data", value);
+			Binary binValue = new Binary(value);
+			chunkObj.put("data", binValue);
 			collection.insert(chunkObj);
 			//collection.save(chunkObj);
 		} catch (Exception e) {
