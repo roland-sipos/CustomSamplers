@@ -1,20 +1,16 @@
 package mongodb;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.ByteArrayOutputStream;
 
-import org.bson.BSONObject;
-import org.bson.BasicBSONDecoder;
-import org.bson.BasicBSONObject;
-import org.bson.types.Binary;
+import org.apache.commons.codec.binary.Base64;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
-import com.mongodb.WriteConcern;
 import com.mongodb.gridfs.GridFS;
+import com.mongodb.gridfs.GridFSDBFile;
 import com.mongodb.gridfs.GridFSInputFile;
 
 import utils.CustomSamplersException;
@@ -47,10 +43,8 @@ public class MongoQueryHandler {
 				throw new CustomSamplersException("More than one result found. This should never happen!");
 			}
 			DBObject object = cursor.next();
-			System.out.println("Cursor result: " + cursor.toString());
-			Binary resultBin = (Binary) object.get("data");
-			byte[] result = resultBin.getData();
-			System.out.println(" DATA:" + resultBin.toString());
+			String dataBase64 = object.get("data").toString();
+			byte[] result = new Base64().decode(dataBase64); //object.get("data").toString().getBytes();
 			return result;
 		} catch (Exception e) {
 			throw new CustomSamplersException("Exception occured during BSON reading: " + e);
@@ -64,33 +58,51 @@ public class MongoQueryHandler {
 			chunkObj.put("chunkID", chunkID);
 			chunkObj.put("originalID", binaryID);
 			chunkObj.put("hash", hash);
-			Binary binValue = new Binary(value);
-			chunkObj.put("data", binValue);
+			String valueBase64 = new Base64().encodeToString(value);
+			chunkObj.put("data", valueBase64);
 			collection.insert(chunkObj);
-			//collection.save(chunkObj);
 		} catch (Exception e) {
 			throw new CustomSamplersException("Exception occured during BSON creation or insertion: " + e.toString());
 		}
 	}
 	
-	public void writeFileToMongo(File file, BasicDBObject metaInfo) 
+	public void writeFileToMongo(String binaryID, String chunkID, String hash, byte[] fileContent) 
 			throws CustomSamplersException {
-		String fullColl = collection.getName().concat("-fs");
-		GridFS gridFs = new GridFS(mongo, fullColl);
+		String fullColl = collection.getName().concat("GFS");
 		try {
+			GridFS gridFs = new GridFS(mongo, fullColl);
 			// Create GridFS File
-			GridFSInputFile gFsFile = gridFs.createFile(file);
-			gFsFile.setFilename(file.getName());
+			GridFSInputFile gFsFile = gridFs.createFile(fileContent);
+			gFsFile.setFilename(chunkID + ".bin");
 			gFsFile.save();
-		} catch (IOException e) {
-			throw new CustomSamplersException("IOException occured during GridFS create file:" + e.toString());
+		} catch (Exception e) {
+			throw new CustomSamplersException("Exception occured during GridFS create file:" + e.toString());
 		}
 		// Store the meta, wherever it'll go.
+		/*BasicDBObject metaObj = new BasicDBObject();
+		metaObj.put("chunkID", chunkID);
+		metaObj.put("originalID", binaryID);
+		metaObj.put("hash", hash);
+		metaObj.put("fileName", chunkID + ".bin");
 		try {
-			collection.insert(metaInfo, WriteConcern.SAFE);
+			collection.insert(metaObj, WriteConcern.SAFE);
 		} catch (Exception e) {
 			throw new CustomSamplersException("Exception occured during BSON insertion to GridFS: " + e.toString());
+		}*/
+	}
+	
+	public byte[] readFileFromMongo(String fileName) 
+			throws CustomSamplersException {
+		String fullColl = collection.getName().concat("GFS");
+		ByteArrayOutputStream resultOs = new ByteArrayOutputStream();
+		try {
+			GridFS gridFs = new GridFS(mongo, fullColl);
+			GridFSDBFile binaryFile = gridFs.findOne(fileName);
+			binaryFile.writeTo(resultOs);
+		} catch (Exception e) {
+			throw new CustomSamplersException("Exception occured during GridFS file reading: " + e.toString());
 		}
+		return resultOs.toByteArray();
 	}
 	
 }
