@@ -3,10 +3,8 @@
  */
 package cassandra;
 
+import java.util.Arrays;
 import java.util.HashMap;
-
-import me.prettyprint.cassandra.serializers.StringSerializer;
-import me.prettyprint.hector.api.beans.Composite;
 
 import org.apache.jmeter.samplers.AbstractSampler;
 import org.apache.jmeter.samplers.Entry;
@@ -48,89 +46,87 @@ public class CassandraSampler extends AbstractSampler implements TestBean {
 	
 	@Override
 	public SampleResult sample(Entry arg0) {
-		// Get the static instance of the BinaryFileInfo 
-		binaryInfo = BinaryFileInfo.getInstance(getInputLocation());
 		String threadName = Thread.currentThread().getName();
+		int threadID =  Integer.parseInt(threadName.substring(threadName.length()-1));
+		trace("sample() ThreadID: " + threadID);
 
+		// Get the static instance of the BinaryFileInfo 
+		binaryInfo = BinaryFileInfo.getInstance(getInputLocation());		
+		
+		// Get a QueryHandler instance.
 		CassandraQueryHandler queryHandler = null;
 		try {
 			queryHandler = new CassandraQueryHandler(getDatabase(), getKeyspace());
 		} catch (Exception e) {
 			log.error("Failed to create a CassandraQueryHandler instance for the " + threadName + " sampler.");
 		}				
-		
-		int threadID =  Integer.parseInt(threadName.substring(threadName.length()-1));
-		trace("sample() ThreadID: " + threadID);
-		
+
+		// Initialize the sampler and start it.
 		SampleResult res = CustomSamplerUtils.getInitialSampleResult(getTitle());
         res.sampleStart();
         
-        if (Boolean.parseBoolean(getDoRead())) { // DO THE READS IF THAT WAS REQUESTED.
-        	HashMap<String, String> hashes = null;
-        	if (Boolean.parseBoolean(getUseRandomAccess())) {
-        		hashes = binaryInfo.getRandomHashesAndIDs();
-        	} else {
-        		// Adding code element, where the IDs are not random generated, but defined by thread!
-        	}
-			
-        	Composite key = new Composite();
-        	key.addComponent(hashes.get("original"), StringSerializer.get());
-        	key.addComponent(hashes.get("chunk"), StringSerializer.get());
-        	try {
-        		byte[] result = queryHandler.readBinaryFromCassandra("TestCF", "data", key);
-				
-        		if (result == null)
-        			throw new NotFoundInDBException("Row with the key not found in the database");
-        		
-        		if (Boolean.getBoolean(getCheckRead())) {
-        			// Check the value equivalence between read data and file content!
-        		}
-				
-        		res.latencyEnd();			
-        		String responseStr = "Value found for:" 
-        					+ " B:" + hashes.get("originalID")
-        					+ " C:" + hashes.get("chunkID") + " Success!"; 
-        		res.setResponseData(responseStr.getBytes());
-				
-        	} catch (Exception ex) {
-        		log.warn("", ex);
-        		res.setResponseCode("500");
-        		res.setSuccessful(false);
-        		res.setResponseMessage(ex.toString());
-        		res.setResponseData(ex.getMessage().getBytes());
-        	} finally {
-        		res.sampleEnd();
-        	}
-        
-        } else if (Boolean.parseBoolean(getDoWrite())) { // DO THE WRITES IF IT WAS REQUESTED.
-        	HashMap<String, String> hashes = binaryInfo.getRandomHashesAndIDs();
-        	String originalID = hashes.get("originalID");
-        	String chunkID = hashes.get("chunkID");
-        	String filePath = binaryInfo.getBinaryFilePathList().get(originalID).get(chunkID);
-        	byte[] fileContent = binaryInfo.read(filePath);
-        	
-        	Composite key = new Composite();
-        	key.addComponent(hashes.get("original"), StringSerializer.get());
-        	key.addComponent(hashes.get("chunk"), StringSerializer.get());
-        	try {
-				queryHandler.writeBinaryToCassandra("TestCF", "data", key, fileContent);
-				res.latencyEnd();			
-				String responseStr = "Value found for:" + " B:" + originalID + " C:" + chunkID + " Success!";
-	    		res.setResponseData(responseStr.getBytes());
-			} catch (CustomSamplersException ex) {
-				log.warn("", ex);
-        		res.setResponseCode("500");
-        		res.setSuccessful(false);
-        		res.setResponseMessage(ex.toString());
-        		res.setResponseData(ex.getMessage().getBytes());
-			} finally {
-				res.sampleEnd();
-			}
-        }
+        if (Boolean.parseBoolean(getDoRead())) // DO THE READS IF THAT WAS REQUESTED.
+        	readFromCassandra(queryHandler, res);
+        else if (Boolean.parseBoolean(getDoWrite())) // DO THE WRITES IF IT WAS REQUESTED.
+        	writeToCassandra(queryHandler, res);
         
         return res;
 	}
-
+	
+	
+	private void readFromCassandra(CassandraQueryHandler queryHandler, SampleResult res) {
+		HashMap<String, String> hashes = null;
+    	if (Boolean.parseBoolean(getUseRandomAccess()))
+    		hashes = binaryInfo.getRandomHashesAndIDs();
+    	else {
+    		// Adding code element, where the IDs are not random generated, but defined by thread!
+    	}
+    	try {
+    		byte[] result = 
+    				queryHandler.readBinaryFromCassandra("TestCF", "data", hashes.get("original"), hashes.get("chunk"));
+    		if (result == null)
+    			throw new NotFoundInDBException("Row with the key not found in the database");
+    		
+    		if (Boolean.getBoolean(getCheckRead())) {
+    			if (Boolean.parseBoolean(getCheckRead())) {
+    				String filePath = 
+    						binaryInfo.getBinaryFilePathList().get(hashes.get("originalID")).get(hashes.get("chunkID"));
+    				byte[] fileContent = binaryInfo.read(filePath);
+    				if (!Arrays.equals(result, fileContent))
+    					CustomSamplerUtils.finalizeResponse(res, false, "500", "Read value is not correct!");
+    			}
+    		}
+			
+    		CustomSamplerUtils.finalizeResponse(res, true, "200",
+					"Value read for:" + " B:" + hashes.get("originalID") + " C:" + hashes.get("chunkID") + " Success!");
+			
+    	} catch (Exception ex) {
+    		log.error("Cassandra read attempt failed: ", ex);
+    		CustomSamplerUtils.finalizeResponse(res, false, "500", ex.toString());
+    	} finally {
+    		res.sampleEnd();
+    	}
+	}
+	
+	private void writeToCassandra(CassandraQueryHandler queryHandler, SampleResult res) {
+		HashMap<String, String> hashes = binaryInfo.getRandomHashesAndIDs();
+    	String originalID = hashes.get("originalID");
+    	String chunkID = hashes.get("chunkID");
+    	String filePath = binaryInfo.getBinaryFilePathList().get(originalID).get(chunkID);
+    	byte[] fileContent = binaryInfo.read(filePath);
+    	
+    	try {
+			queryHandler.writeBinaryToCassandra("TestCF", "data", hashes.get("original"), hashes.get("chunk"), fileContent);		
+			CustomSamplerUtils.finalizeResponse(res, true, "200",
+					"Value write for:" + " B:" + originalID + " C:" + chunkID + " Success!");
+		} catch (CustomSamplersException ex) {
+			log.error("Cassandra write attempt failed: ", ex);
+			CustomSamplerUtils.finalizeResponse(res, false, "500", ex.toString());
+		} finally {
+			res.sampleEnd();
+		}
+	}
+	
 	private void trace(String s) {
 		if(log.isDebugEnabled()) {
 			log.debug(Thread.currentThread().getName() + " (" + getTitle() + " " + s + " " + this.toString());

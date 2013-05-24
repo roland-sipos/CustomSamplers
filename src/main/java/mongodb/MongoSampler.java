@@ -39,120 +39,115 @@ public class MongoSampler extends AbstractSampler implements TestBean {
 	
 	@Override
 	public SampleResult sample(Entry arg0) {
-		binaryInfo = BinaryFileInfo.getInstance(getInputLocation());
-		String threadName = Thread.currentThread().getName();
+		int threadID = CustomSamplerUtils.getThreadID(Thread.currentThread().getName());
+		trace("sample() ThreadID: " + threadID);
 		
+		// Get BinaryInfo and QueryHandler instances.
+		binaryInfo = BinaryFileInfo.getInstance(getInputLocation());
 		MongoQueryHandler queryHandler = null;
 		try {
 			queryHandler = new MongoQueryHandler(getDatabase(), getCollection());
 		} catch (Exception e) {
-			log.error("Failed to create a MongoQueryHandler instance for the " + threadName + " sampler. Details:" + e.toString());
+			log.error("Failed to create a MongoQueryHandler instance for the " + 
+					  Thread.currentThread().getName() + " sampler. Details:" + e.toString());
 		}
-		
-		Boolean doRead = Boolean.parseBoolean(getDoRead());
-		Boolean doWrite = Boolean.parseBoolean(getDoWrite());
-		Boolean useGridFS = Boolean.parseBoolean(getGridFsMethod());
-		Boolean isAssignedW = Boolean.parseBoolean(getAssignedWrite());
-		int threadID = CustomSamplerUtils.getThreadID(Thread.currentThread().getName());
-		trace("sample() ThreadID: " + threadID);
-		
+
+		// Get an initial SampleResult and start it.
 		SampleResult res = CustomSamplerUtils.getInitialSampleResult(getTitle());
-        res.sampleStart();
+		res.sampleStart();
 		
-        if (doRead) { // DO THE READ
-        	HashMap<String, String> hashes = binaryInfo.getRandomHashesAndIDs();
-    		String originalID = hashes.get("originalID");
-    		String chunkID = hashes.get("chunkID");
-    		//String filePath = binaryInfo.getBinaryFilePathList().get(originalID).get(chunkID);
-    		//byte[] fileContent = binaryInfo.read(filePath);
-    		try {
-    			byte[] result = null;
-    			if (useGridFS) {
-    				result = queryHandler.readFileFromMongo(chunkID + ".bin");
-    			} else {
-    				result = queryHandler.readBinaryFromMongo(
-    						originalID, chunkID, hashes.get("original") + "__" + hashes.get("chunk"));
-    			}
-    			if (result == null) {
-    				log.error("MongoSampler random read failed!");
-    				res.setResponseCode("500");
-        			res.setSuccessful(false);
-        			res.setResponseMessage("YAY THE VALUE IS EMPTY!!!!!!!!!!");
-        			res.setResponseData("YAY THE VALUE IS EMPTY!!!!!!".getBytes());
-    			}
-    			/*if (!Arrays.equals(result, fileContent)) {
-    				log.error("MongoSampler random read failed!");
-    				res.setResponseCode("500");
-        			res.setSuccessful(false);
-        			res.setResponseMessage("YAY THE VALUE IS DIFFFEEEEEEEERRRRRRRRSSSS!!!!!!!!!!");
-        			res.setResponseData("YAY THE VALUE IS DIFFFEEEEEEEEEEEEERSSSSSS!!!!!!".getBytes());
-    			}*/
-    			res.latencyEnd();			
-    			String responseStr = "Value read for:" + " B:" + originalID + " C:" + chunkID + " Success!";
-    			res.setResponseData(responseStr.getBytes());
-			} catch (CustomSamplersException ex) {
-				log.error("MongoSampler read attempt failed: " + ex.toString());
-				res.setResponseCode("500");
-    			res.setSuccessful(false);
-    			res.setResponseMessage(ex.toString());
-    			res.setResponseData(ex.getMessage().getBytes());
-			} finally {
-				res.sampleEnd();
-			}
-        } else if (doWrite) { // DO THE WRITE
-        	if (isAssignedW) {
-        		String chunkID = "chunk-" + threadID + ".bin";
-        		String pathToChunk = binaryInfo.getBinaryFilePathList().get("BIGrbinary-0.bin.chunks").get(chunkID);
-        		byte[] chunkContent = binaryInfo.read(pathToChunk);
-        		HashMap<String, String> hashes = binaryInfo.getHashesForIDs("BIGrbinary-0.bin.chunks", chunkID);
-        		try {
-        			if (useGridFS) {
-        				queryHandler.writeFileToMongo("BIGrbinary-0.bin.chunks", chunkID, 
-        						hashes.get("original") + "__" + hashes.get("chunk"), chunkContent);
-        			} else {
-        				queryHandler.writeBinaryToMongo("BIGrbinary-0.bin.chunks", chunkID, 
-        						hashes.get("original") + "__" + hashes.get("chunk"), chunkContent);
-        			}
-					res.latencyEnd();			
-					String responseStr = "Value written for:" + " B: BIGrbinary-0.bin.chunks" + " C:" + chunkID + " With GFS?:" + useGridFS + " Success!";
-	    			res.setResponseData(responseStr.getBytes());
-				} catch (CustomSamplersException ex) {
-					log.error("MongoSampler write attempt failed: " + ex.toString());
-					res.setResponseCode("500");
-        			res.setSuccessful(false);
-        			res.setResponseMessage(ex.toString());
-        			res.setResponseData(ex.getMessage().getBytes());
-				} finally {
-					res.sampleEnd();
-				}
-        	} else {
-        		HashMap<String, String> hashes = binaryInfo.getRandomHashesAndIDs();
-        		String originalID = hashes.get("originalID");
-        		String chunkID = hashes.get("chunkID");
-        		String filePath = binaryInfo.getBinaryFilePathList().get(originalID).get(chunkID);
-        		byte[] fileContent = binaryInfo.read(filePath);
-        		try {
-					queryHandler.writeBinaryToMongo(originalID, chunkID, 
-													hashes.get("original") + "__" + hashes.get("chunk"),
-													fileContent);
-					res.latencyEnd();			
-					String responseStr = "Value written for:" + " B:" + originalID + " C:" + chunkID + " With GFS?:" + useGridFS + " Success!";
-	    			res.setResponseData(responseStr.getBytes());
-				} catch (CustomSamplersException ex) {
-					log.error("MongoSampler write attempt failed: " + ex.toString());
-					res.setResponseCode("500");
-        			res.setSuccessful(false);
-        			res.setResponseMessage(ex.toString());
-        			res.setResponseData(ex.getMessage().getBytes());
-				} finally {
-					res.sampleEnd();
-				}
-        	}
+        if (Boolean.parseBoolean(getDoRead())) { // DO THE READ
+        	readFromMongo(queryHandler, res);
+        } else if (Boolean.parseBoolean(getDoWrite())) { // DO THE WRITE
+        	writeToMongo(queryHandler, res);
         }
         
         return res;
 	}
 
+	
+	private void readFromMongo(MongoQueryHandler queryHandler, SampleResult res) {
+		HashMap<String, String> hashes = binaryInfo.getRandomHashesAndIDs();
+		String originalID = hashes.get("originalID");
+		String chunkID = hashes.get("chunkID");
+		
+		try {
+			byte[] result = null;
+			if (Boolean.parseBoolean(getGridFsMethod()))
+				result = queryHandler.readFileFromMongo(chunkID + ".bin");
+			else
+				result = queryHandler.readBinaryFromMongo(
+						originalID, chunkID, hashes.get("original") + "__" + hashes.get("chunk"));
+
+			if (result == null)
+				CustomSamplerUtils.finalizeResponse(res, false, "500", "The result is empty!");
+			
+			if (Boolean.parseBoolean(getCheckRead())) {
+				String filePath = binaryInfo.getBinaryFilePathList().get(originalID).get(chunkID);
+				byte[] fileContent = binaryInfo.read(filePath);
+				if (!Arrays.equals(result, fileContent))
+					CustomSamplerUtils.finalizeResponse(res, false, "500", "Read value is not correct!");
+			}
+			
+			CustomSamplerUtils.finalizeResponse(res, true, "200",
+					"Value read for:" + " B:" + originalID + " C:" + chunkID + " Success!");
+			
+		} catch (CustomSamplersException ex) {
+			log.error("MongoSampler read attempt failed: " + ex.toString());
+			CustomSamplerUtils.finalizeResponse(res, false, "500", ex.toString());
+		} finally {
+			res.sampleEnd();
+		}
+	}
+	
+	
+	private void writeToMongo(MongoQueryHandler queryHandler, SampleResult res) {
+		if (Boolean.parseBoolean(getAssignedWrite())) {
+    		String chunkID = "chunk-" + CustomSamplerUtils.getThreadID(Thread.currentThread().getName()) + ".bin";
+    		String pathToChunk = binaryInfo.getBinaryFilePathList().get("BIGrbinary-0.bin.chunks").get(chunkID);
+    		byte[] chunkContent = binaryInfo.read(pathToChunk);
+    		HashMap<String, String> hashes = binaryInfo.getHashesForIDs("BIGrbinary-0.bin.chunks", chunkID);
+    		try {
+    			if (Boolean.parseBoolean(getGridFsMethod()))
+    				queryHandler.writeFileToMongo("BIGrbinary-0.bin.chunks", chunkID, 
+    						hashes.get("original") + "__" + hashes.get("chunk"), chunkContent);
+    			else
+    				queryHandler.writeBinaryToMongo("BIGrbinary-0.bin.chunks", chunkID, 
+    						hashes.get("original") + "__" + hashes.get("chunk"), chunkContent);
+    			
+    			CustomSamplerUtils.finalizeResponse(res, true, "200",
+    					"Value read for:" + " B: BIGrbinary-0.bin.chunks" + " C:" + chunkID + " Success!");
+    			
+			} catch (CustomSamplersException ex) {
+				log.error("MongoSampler write attempt failed: " + ex.toString());
+				CustomSamplerUtils.finalizeResponse(res, false, "500", ex.toString());
+			} finally {
+				res.sampleEnd();
+			}
+    		
+    	} /*else {
+    		HashMap<String, String> hashes = binaryInfo.getRandomHashesAndIDs();
+    		String originalID = hashes.get("originalID");
+    		String chunkID = hashes.get("chunkID");
+    		String filePath = binaryInfo.getBinaryFilePathList().get(originalID).get(chunkID);
+    		byte[] fileContent = binaryInfo.read(filePath);
+    		try {
+				queryHandler.writeBinaryToMongo(originalID, chunkID, 
+												hashes.get("original") + "__" + hashes.get("chunk"),
+												fileContent);
+				
+				CustomSamplerUtils.finalizeResponse(res, true, "200", 
+						"Value written for:" + " B:" + originalID + " C:" + chunkID + " With GFS?:" + useGridFS + " Success!");
+
+			} catch (CustomSamplersException ex) {
+				log.error("MongoSampler write attempt failed: " + ex.toString());
+				CustomSamplerUtils.finalizeResponse(res, false, "500", ex.toString());
+			} finally {
+				res.sampleEnd();
+			}
+    	}*/
+	}
+	
 	private void trace(String s) {
 		if(log.isDebugEnabled()) {
 			log.debug(Thread.currentThread().getName() + " (" + getTitle() + " " + s + " " + this.toString());
@@ -192,7 +187,7 @@ public class MongoSampler extends AbstractSampler implements TestBean {
 	public void setUseRandomAccess(String useRandomAccess) {
 		setProperty(USERANDOMACCESS, useRandomAccess);
 	}
-	public String getChechRead() {
+	public String getCheckRead() {
 		return getPropertyAsString(CHECKREAD);
 	}
 	public void setCheckRead(String checkRead) {

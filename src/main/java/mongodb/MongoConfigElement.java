@@ -1,7 +1,5 @@
 package mongodb;
 
-import me.prettyprint.hector.api.Cluster;
-
 import org.apache.jmeter.config.ConfigElement;
 import org.apache.jmeter.testbeans.TestBean;
 import org.apache.jmeter.testelement.AbstractTestElement;
@@ -42,6 +40,8 @@ public class MongoConfigElement
     public final static String SOCKET_KEEP_ALIVE = "MongoDBConfigElement.socketKeepAlive";
     public final static String THREADS_ALLOWED_TO_BLOCK_MULTIPLIER = "MongoDBConfigElement.threadsAllowedToBlockMultiplier";
 
+    
+    
 	@Override
 	public void testEnded() {
 		// TODO Auto-generated method stub
@@ -128,7 +128,7 @@ public class MongoConfigElement
 	@Override
 	public void testStarted(String arg0) {
 		// TODO Auto-generated method stub
-		
+		testStarted();
 	}
 
 	@Override

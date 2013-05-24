@@ -34,8 +34,12 @@ public class CassandraQueryHandler {
 			throw new NotFoundInDBException("Keyspace not found based on the definition: " + ksDef.getName());
 	}
 	
-	public byte[] readBinaryFromCassandra(String columnFamilyName, String columnName, Composite key)
+	public byte[] readBinaryFromCassandra(String columnFamilyName, String columnName, 
+										  String originalHash, String chunkHash)
 			throws NotFoundInDBException, CustomSamplersException {
+		Composite key = new Composite();
+    	key.addComponent(originalHash, StringSerializer.get());
+    	key.addComponent(chunkHash, StringSerializer.get());
 		byte[] value = null;
 		try {
 			ColumnQuery<Composite, String, byte[]> columnQuery = 
@@ -57,9 +61,12 @@ public class CassandraQueryHandler {
 	}
 	
 	public void writeBinaryToCassandra(String columnFamilyName, String columnName,
-									   Composite key, byte[] value) 
+									   String originalHash, String chunkHash, byte[] value) 
 			throws CustomSamplersException {
 		try {
+			Composite key = new Composite();
+        	key.addComponent(originalHash, StringSerializer.get());
+        	key.addComponent(chunkHash, StringSerializer.get());
 			Mutator<Composite> compMutator = HFactory.createMutator(keyspace, CompositeSerializer.get());
 			compMutator.addInsertion(key, columnFamilyName, HFactory.createColumn(columnName, value));
 			compMutator.execute();

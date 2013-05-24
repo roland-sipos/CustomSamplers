@@ -16,10 +16,23 @@ public class App
 {
 	private static String inputLocation = "/home/cb/INPUT";
     
-    private static BinaryFileInfo binaryInfo;
+    private static BinaryFileInfo binaryInfo; 
+    
+    public static void dump(Dog what) {
+    	System.out.println("Inside: " + what.toString() + " value:" + what.getName());
+    	what.setName("WOOF WOOF!");
+    	System.out.println("Inside2: " + what.toString() + " value:" + what.getName());
+    }
     
     public static void main( String[] args )
-    {     
+    {   
+    	Dog fooDog = new Dog();
+    	fooDog.setName("WOOT");
+    	
+    	System.out.println("Before: " + fooDog.toString() + " value:" + fooDog.getName());
+    	dump(fooDog);
+    	System.out.println("After: " + fooDog.toString() + " value:" + fooDog.getName());
+    	
     	/*Random rand = new Random();
     	int min = 0;
     	int max = 5;
@@ -45,9 +58,9 @@ public class App
         System.out.println(binaryInfo.getOriginalFilePathList());
         */
         
-        String threadName = "Thread Group 1-11";
+        /*String threadName = "Thread Group 1-11";
     	int threadId = CustomSamplerUtils.getThreadID(threadName);
-    	System.out.println("THE ID IS: " + threadId);
+    	System.out.println("THE ID IS: " + threadId);*/
     }
 
 }

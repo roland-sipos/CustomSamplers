@@ -22,5 +22,13 @@ public class CustomSamplerUtils {
     	String[] groupAndThreadIDs = gAndTIDStr.split("-");
     	return Integer.parseInt(groupAndThreadIDs[groupAndThreadIDs.length - 1]);
 	}
+
+	public static void finalizeResponse(SampleResult res, Boolean success, String code, String responseStr) {
+		res.latencyEnd();
+		res.setSuccessful(success);
+		res.setResponseCode(code);
+		res.setResponseMessage(responseStr);
+		res.setResponseData(responseStr.getBytes());
+	}
 	
 }

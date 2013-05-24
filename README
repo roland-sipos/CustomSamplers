@@ -1,0 +1,12 @@
+CustomSamplers
+
+The CustomSamplers project is an extension to JMeter that contains
+custom configurations and samplers for different databases in order
+to measure performance attributes of binary data handling.
+
+Currently the following databases are supported by config and sampler:
+NoSQL:
+ - Cassandra
+ - MongoDB
+ 
+Relational:
