@@ -2,6 +2,8 @@ package rsipos.customsamplers;
 
 import java.sql.DriverManager;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class JDBCTest {
@@ -29,10 +31,28 @@ public class JDBCTest {
 		Connection connection = null;
  
 		try {
- 
 			connection = DriverManager.getConnection(
 					"jdbc:postgresql://137.138.229.253:5432/testdb", "postgres", "testPass");
  
+			connection.setAutoCommit(false);
+			
+			PreparedStatement create = connection.prepareStatement(
+					"CREATE TABLE binaries(" +
+							"chunkrow_id SERIAL NOT NULL PRIMARY KEY," +
+							"hash varchar(225) NOT NULL UNIQUE," +
+			          		"data bytea)");
+			
+			//ResultSet res = create.executeQuery();
+			Boolean success = create.execute();
+			System.out.println(success.toString());
+			
+			connection.commit();
+			
+			/*PreparedStatement drop = connection.prepareStatement("DROP TABLE binaries");
+			Boolean ok = drop.execute();
+			System.out.println(ok.toString());
+			connection.commit();*/
+			
 		} catch (SQLException e) {
  
 			System.out.println("Connection Failed! Check output console");

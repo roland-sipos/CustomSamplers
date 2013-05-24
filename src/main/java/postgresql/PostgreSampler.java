@@ -43,7 +43,7 @@ public class PostgreSampler extends AbstractSampler implements TestBean {
 		try {
 			queryHandler = new PostgreQueryHandler(getDatabase());
 		} catch (Exception e) {
-			log.error("Failed to create a MongoQueryHandler instance for the " + 
+			log.error("Failed to create a PostgreQueryHandler instance for the " + 
 					  Thread.currentThread().getName() + " sampler. Details:" + e.toString());
 		}
 

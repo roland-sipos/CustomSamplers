@@ -90,7 +90,6 @@ public class CustomJDBCConfigElement
 				log.debug(this.getName() + " Connection established for: " + connectionStr);
 			}
  			getThreadContext().getVariables().putObject(getDatabase(), connection);
- 			System.out.println("WOOT!!! " + connection.toString() + " is there!!!");
 		}
 	}
 	
