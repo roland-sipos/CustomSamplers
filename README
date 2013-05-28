@@ -10,3 +10,5 @@ NoSQL:
  - MongoDB
  
 Relational:
+ - PostgreSQL
+ - MySQL
