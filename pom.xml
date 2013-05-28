@@ -64,10 +64,15 @@
     </dependency>
     
     <dependency> <!--  PostgreSQL Java API -->
-	<groupId>postgresql</groupId>
-	<artifactId>postgresql</artifactId>
-	<version>9.1-901.jdbc4</version>
-</dependency>
+	  <groupId>postgresql</groupId>
+	  <artifactId>postgresql</artifactId>
+	  <version>9.1-901.jdbc4</version>
+	</dependency>
+	<dependency> <!--  MySQL Java API -->
+	  <groupId>mysql</groupId>
+	  <artifactId>mysql-connector-java</artifactId>
+	  <version>5.1.25</version>
+    </dependency>
     
   </dependencies>
   
