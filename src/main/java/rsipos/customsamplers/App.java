@@ -33,6 +33,12 @@ public class App
     	dump(fooDog);
     	System.out.println("After: " + fooDog.toString() + " value:" + fooDog.getName());
     	
+    	int counter = 0;
+    	System.out.println(counter);
+    	counter++;
+    	System.out.println(counter);
+    	
+    	
     	/*Random rand = new Random();
     	int min = 0;
     	int max = 5;
