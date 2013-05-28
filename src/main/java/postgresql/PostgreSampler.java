@@ -10,12 +10,14 @@ import org.apache.log.Logger;
 import utils.BinaryFileInfo;
 import utils.CustomSamplerUtils;
 
+
 public class PostgreSampler extends AbstractSampler implements TestBean {
 
 	private static final long serialVersionUID = 5294863538969681929L;
 	private static final Logger log = LoggingManager.getLoggerForClass();
 	
 	public final static String DATABASE = "PostgreSampler.database";
+	public final static String TABLE = "PostgreSampler.table";
 	public final static String INPUTLOCATION = "PostgreSampler.inputlocation";
 	public final static String LARGEOBJECTMETHOD = "PostgreSampler.largeObjectMethod";
 	public final static String DOREAD = "PostgreSampler.doRead";
@@ -24,10 +26,9 @@ public class PostgreSampler extends AbstractSampler implements TestBean {
 	public final static String DOWRITE = "PostgreSampler.doWrite";
 	public final static String ASSIGNED_WRITE = "PostgreSampler.assignedWrite";
 
-	private static BinaryFileInfo binaryInfo;
+	public static BinaryFileInfo binaryInfo;
 	
 	public PostgreSampler() {
-		// fields = null;
 		binaryInfo = null;
 		trace("PostgreSampler()" + this.toString());
 	}
@@ -41,33 +42,46 @@ public class PostgreSampler extends AbstractSampler implements TestBean {
 		binaryInfo = BinaryFileInfo.getInstance(getInputLocation());
 		PostgreQueryHandler queryHandler = null;
 		try {
-			queryHandler = new PostgreQueryHandler(getDatabase());
+			queryHandler = new PostgreQueryHandler(getDatabase(), getTable());
 		} catch (Exception e) {
 			log.error("Failed to create a PostgreQueryHandler instance for the " + 
 					  Thread.currentThread().getName() + " sampler. Details:" + e.toString());
 		}
-
+		
 		// Get an initial SampleResult and start it.
 		SampleResult res = CustomSamplerUtils.getInitialSampleResult(getTitle());
-		res.sampleStart();
-		CustomSamplerUtils.finalizeResponse(res, true, "200", "DUN..");
+	
+		if(Boolean.parseBoolean(getDoRead())) // DO THE READ
+			CustomSamplerUtils.doReadWith(queryHandler, binaryInfo, res, 
+					Boolean.parseBoolean(getCheckRead()), Boolean.parseBoolean(getLargeObjectMethod()));
+		else if (Boolean.parseBoolean(getDoWrite())) // DO THE WRITE
+			CustomSamplerUtils.doWriteWith(queryHandler, binaryInfo, res, 
+					Boolean.parseBoolean(getAssignedWrite()), Boolean.parseBoolean(getLargeObjectMethod()));
+		
 		return res;
 	}
+
 	
 	private void trace(String s) {
 		if(log.isDebugEnabled()) {
 			log.debug(Thread.currentThread().getName() + " (" + getTitle() + " " + s + " " + this.toString());
 	    }
 	}
-
 	public String getTitle() {
 		return this.getName();
 	}
+	
 	public String getDatabase() {
 		return getPropertyAsString(DATABASE);
 	}
 	public void setDatabase(String database) {
 		setProperty(DATABASE, database);
+	}
+	public String getTable() {
+		return getPropertyAsString(TABLE);
+	}
+	public void setTable(String table) {
+		setProperty(TABLE, table);
 	}
 	public String getInputLocation() {
 		return getPropertyAsString(INPUTLOCATION);

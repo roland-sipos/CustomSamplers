@@ -40,6 +40,13 @@ public class CustomJDBCConfigElementBeanInfo extends BeanInfoSupport {
         p.setValue(NOT_UNDEFINED, Boolean.TRUE);
         p.setValue(DEFAULT, "testPass");
         
+        if(log.isDebugEnabled()) {
+            for (PropertyDescriptor pd : getPropertyDescriptors()) {
+                log.debug(pd.getName());
+                log.debug(pd.getDisplayName());
+            }
+        }
+        
 	}
 
 }

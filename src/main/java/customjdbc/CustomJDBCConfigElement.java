@@ -89,6 +89,12 @@ public class CustomJDBCConfigElement
 			if (connection != null) {
 				log.debug(this.getName() + " Connection established for: " + connectionStr);
 			}
+			
+			/*try {
+				connection.setAutoCommit(false);
+			} catch (SQLException e) {
+				log.error("Failed to change autoCommit to false: " + e.toString());
+			}*/
  			getThreadContext().getVariables().putObject(getDatabase(), connection);
 		}
 	}

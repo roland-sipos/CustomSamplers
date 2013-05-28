@@ -13,7 +13,7 @@ public class PostgreSamplerBeanInfo extends BeanInfoSupport {
 	public PostgreSamplerBeanInfo() {
 		super(PostgreSampler.class);
 		
-		createPropertyGroup("postgre", new String[] {"database"});
+		createPropertyGroup("postgre", new String[] {"database", "table"});
 		createPropertyGroup("sampler", new String[] {"inputLocation", "largeObjectMethod"});
 		createPropertyGroup("reading", new String[] {"doRead", "useRandomAccess", "checkRead"});
 		createPropertyGroup("writing", new String[] {"doWrite", "assignedWrite"});
@@ -21,6 +21,9 @@ public class PostgreSamplerBeanInfo extends BeanInfoSupport {
 		PropertyDescriptor p = property("database");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "testdb");
+		p = property("table");
+		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
+		p.setValue(DEFAULT, "binaries");
 		p = property("inputLocation");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "/home/cb/INPUT");
