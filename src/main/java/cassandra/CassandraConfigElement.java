@@ -13,7 +13,8 @@ import org.apache.jmeter.threads.JMeterContextService;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
-import utils.CustomSamplersException;
+import exceptions.CustomSamplersException;
+
 
 public class CassandraConfigElement
 	extends AbstractTestElement
@@ -64,6 +65,7 @@ public class CassandraConfigElement
 		conf.setRetryDownedHostsQueueSize(Integer.parseInt(getRetryDownedHostQueueSize()));
 		conf.setMaxWaitTimeWhenExhausted(Integer.parseInt(getMaxWaitTimeIfExhausted()));
 		conf.setRetryDownedHosts(Boolean.parseBoolean(getRetryDownedHosts()));
+		
 		conf.setLoadBalancingPolicy(new LeastActiveBalancingPolicy());
 		conf.setAutoDiscoverHosts(Boolean.parseBoolean(getSetAutoDiscoverHosts()));
 		conf.setHostTimeoutCounter(Integer.parseInt(getSetHostTimeoutCounter()));

@@ -1,5 +1,7 @@
 package cassandra;
 
+import exceptions.CustomSamplersException;
+import exceptions.NotFoundInDBException;
 import me.prettyprint.cassandra.serializers.BytesArraySerializer;
 import me.prettyprint.cassandra.serializers.CompositeSerializer;
 import me.prettyprint.cassandra.serializers.StringSerializer;
@@ -13,8 +15,6 @@ import me.prettyprint.hector.api.factory.HFactory;
 import me.prettyprint.hector.api.mutation.Mutator;
 import me.prettyprint.hector.api.query.ColumnQuery;
 import me.prettyprint.hector.api.query.QueryResult;
-import utils.CustomSamplersException;
-import utils.NotFoundInDBException;
 
 public class CassandraQueryHandler {
 
