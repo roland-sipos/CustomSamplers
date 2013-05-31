@@ -13,8 +13,9 @@ import com.mongodb.gridfs.GridFS;
 import com.mongodb.gridfs.GridFSDBFile;
 import com.mongodb.gridfs.GridFSInputFile;
 
-import utils.CustomSamplersException;
-import utils.NotFoundInDBException;
+import exceptions.CustomSamplersException;
+import exceptions.NotFoundInDBException;
+
 
 public class MongoQueryHandler {
 

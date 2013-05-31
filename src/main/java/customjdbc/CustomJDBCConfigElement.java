@@ -12,7 +12,8 @@ import org.apache.jmeter.threads.JMeterContextService;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
-import utils.CustomSamplersException;
+import exceptions.CustomSamplersException;
+
 
 public class CustomJDBCConfigElement 
 	extends AbstractTestElement

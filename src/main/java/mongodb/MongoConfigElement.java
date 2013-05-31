@@ -8,13 +8,14 @@ import org.apache.jmeter.threads.JMeterContextService;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
-import utils.CustomSamplersException;
 
 import com.mongodb.DB;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoClientOptions.Builder;
 import com.mongodb.ServerAddress;
+
+import exceptions.CustomSamplersException;
 
 public class MongoConfigElement 
 	extends AbstractTestElement
@@ -44,14 +45,15 @@ public class MongoConfigElement
     
 	@Override
 	public void testEnded() {
-		// TODO Auto-generated method stub
-		
+		if (log.isDebugEnabled()) {
+			log.debug(getTitle() + " test ended.");
+		}
+		getThreadContext().getVariables().putObject(getDatabase(), null);
 	}
 
 	@Override
 	public void testEnded(String arg0) {
-		// TODO Auto-generated method stub
-		
+		testEnded();
 	}
 
 	public static DB getMongoDB(String database) throws CustomSamplersException {
@@ -143,6 +145,9 @@ public class MongoConfigElement
 		return false;
 	}
 	
+	public String getTitle() {
+		return this.getName();
+	}
 	
 	public String getHost() {
 		return getPropertyAsString(HOST);

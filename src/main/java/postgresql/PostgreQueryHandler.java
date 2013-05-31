@@ -11,9 +11,9 @@ import org.postgresql.largeobject.LargeObject;
 import org.postgresql.largeobject.LargeObjectManager;
 
 import customjdbc.CustomJDBCConfigElement;
+import exceptions.CustomSamplersException;
+import exceptions.NotFoundInDBException;
 
-import utils.CustomSamplersException;
-import utils.NotFoundInDBException;
 import utils.QueryHandler;
 
 public class PostgreQueryHandler implements QueryHandler {
@@ -53,9 +53,11 @@ public class PostgreQueryHandler implements QueryHandler {
 				if (counter > 1)
 					throw new CustomSamplersException(
 							"More than one row found with hash=" + hash + " in " + table + " !");
-			} else {
+				rs.close();
+			} else
 				throw new CustomSamplersException("The row with hash=" + hash + " not found in the database!");
-			}
+			
+			ps.close();
 		} catch (SQLException e) {
 			throw new CustomSamplersException("SQLException occured during read attempt: " + e.toString());
 		}
