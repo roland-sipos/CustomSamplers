@@ -1,12 +1,8 @@
 package rsipos.customsamplers;
 
-
-import java.io.File;
 import java.util.Random;
-import java.util.TreeMap;
 
 import utils.BinaryFileInfo;
-import utils.CustomSamplerUtils;
 
 /**
  * Hello world!
@@ -37,9 +33,8 @@ public class App
     	System.out.println(counter);
     	counter++;
     	System.out.println(counter);
-    	
-    	
-    	/*Random rand = new Random();
+   
+    	Random rand = new Random();
     	int min = 0;
     	int max = 5;
     	
@@ -62,7 +57,9 @@ public class App
         System.out.println(binaryInfo.getBinaryFilePathList());
         System.out.println(" -> OriginalFileList:");
         System.out.println(binaryInfo.getOriginalFilePathList());
-        */
+        
+        //System.out.println(binaryInfo.getMe)
+        
         
         /*String threadName = "Thread Group 1-11";
     	int threadId = CustomSamplerUtils.getThreadID(threadName);

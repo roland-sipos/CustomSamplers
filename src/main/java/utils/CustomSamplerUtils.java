@@ -5,6 +5,8 @@ import java.util.HashMap;
 
 import org.apache.jmeter.samplers.SampleResult;
 
+import exceptions.CustomSamplersException;
+
 public class CustomSamplerUtils {
 	
 	public static SampleResult getInitialSampleResult(String className) {
@@ -51,12 +53,14 @@ public class CustomSamplerUtils {
 				finalizeResponse(res, false, "500", "The result is empty!");
 			
 			if (isCheckRead) {
+				System.out.println("Checking equality!");
 				String filePath = binaryInfo.getBinaryFilePathList().get(originalID).get(chunkID);
 				byte[] fileContent = binaryInfo.read(filePath);
 				if (!Arrays.equals(result, fileContent))
 					finalizeResponse(res, false, "500", "Read value is not correct!");
+				System.out.println(" -> WOOF! They are the same!");
 			}
-			
+			result = null;
 			finalizeResponse(res, true, "200",
 					"Value read for:" + " B:" + originalID + " C:" + chunkID + " Success!");
 			
@@ -91,6 +95,13 @@ public class CustomSamplerUtils {
 			}
 		} else {
 			// TODO
+			// A not assigned write is a file based one. (ThreadID -> What to write.
 		}
 	}
+	
+	public static void doDeleteWith(QueryHandler queryHandler, BinaryFileInfo binaryInfo,
+			                        SampleResult res, boolean isAssigned, boolean isSpecial) {
+		
+	}
+	
 }

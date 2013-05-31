@@ -4,11 +4,25 @@ The CustomSamplers project is an extension to JMeter that contains
 custom configurations and samplers for different databases in order
 to measure performance attributes of binary data handling.
 
-Currently the following databases are supported by config and sampler:
+Currently the following databases are supported by configuration and sampler elements:
 NoSQL:
  - Cassandra
+ - RIAK
  - MongoDB
+ - CouchDB
  
+NewSQL:
+ - ???
+
 Relational:
  - PostgreSQL
  - MySQL
+ 
+ TODO:
+ - Cassandra: Check Quorum write and read, and unify the numbers for all the tests.
+ - RIAK: Same as for cassandra. Quorum writen, ONE read probably the best.
+ - Extend MongoDB with Morphia POJO mapping.
+ - Add missing DB samplers.
+ - Unify QuryHandling.
+ - Unify test databases and clusters
+   (Plan: 

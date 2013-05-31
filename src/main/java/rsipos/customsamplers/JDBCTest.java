@@ -43,6 +43,7 @@ public class JDBCTest {
 			//dropTable(connection);
 			//Boolean ok = createTable(connection);
 			Boolean ok = createMySQLTable(connection);
+			
 			//Boolean ok = createLOBTable(connection);
 			//insertTable(connection);
 			connection.commit();
@@ -81,7 +82,7 @@ public class JDBCTest {
 						"hash VARCHAR(225) NOT NULL UNIQUE," +
 						"chunk_id VARCHAR(50) NOT NULL," +
 						"binary_id VARCHAR(50) NOT NULL," +
-		          		"data BLOB)");
+		          		"data LONGBLOB)");
 		Boolean success = create.execute();
 		return success;
 	}

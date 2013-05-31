@@ -1,5 +1,7 @@
 package utils;
 
+import exceptions.CustomSamplersException;
+
 public interface QueryHandler {
 	
 	public void writeBinary(String binaryID, String chunkID, String hash, 
