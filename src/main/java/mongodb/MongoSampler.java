@@ -10,10 +10,10 @@ import org.apache.jmeter.testbeans.TestBean;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
-import exceptions.CustomSamplersException;
 
 import utils.BinaryFileInfo;
 import utils.CustomSamplerUtils;
+import utils.CustomSamplersException;
 
 public class MongoSampler extends AbstractSampler implements TestBean {
 

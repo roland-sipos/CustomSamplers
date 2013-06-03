@@ -10,8 +10,8 @@ import com.basho.riak.client.cap.UnresolvedConflictException;
 import com.basho.riak.client.convert.ConversionException;
 import com.basho.riak.client.operations.StoreObject;
 
-import exceptions.CustomSamplersException;
-import exceptions.NotFoundInDBException;
+import utils.CustomSamplersException;
+import utils.NotFoundInDBException;
 import utils.QueryHandler;
 
 public class RiakQueryHandler implements QueryHandler {

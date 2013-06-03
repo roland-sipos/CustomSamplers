@@ -11,9 +11,9 @@ import org.postgresql.largeobject.LargeObject;
 import org.postgresql.largeobject.LargeObjectManager;
 
 import customjdbc.CustomJDBCConfigElement;
-import exceptions.CustomSamplersException;
-import exceptions.NotFoundInDBException;
 
+import utils.CustomSamplersException;
+import utils.NotFoundInDBException;
 import utils.QueryHandler;
 
 public class PostgreQueryHandler implements QueryHandler {

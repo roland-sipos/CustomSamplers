@@ -8,10 +8,11 @@ import org.apache.jmeter.threads.JMeterContextService;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
+import utils.CustomSamplersException;
+
 import com.fourspaces.couchdb.Database;
 import com.fourspaces.couchdb.Session;
 
-import exceptions.CustomSamplersException;
 
 public class CouchConfigElement extends AbstractTestElement
 	implements ConfigElement, TestStateListener, TestBean {

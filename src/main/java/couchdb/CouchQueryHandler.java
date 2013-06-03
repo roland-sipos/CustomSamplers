@@ -7,8 +7,8 @@ import org.apache.commons.codec.binary.Base64;
 import com.fourspaces.couchdb.Database;
 import com.fourspaces.couchdb.Document;
 
-import exceptions.CustomSamplersException;
-import exceptions.NotFoundInDBException;
+import utils.CustomSamplersException;
+import utils.NotFoundInDBException;
 import utils.QueryHandler;
 
 public class CouchQueryHandler implements QueryHandler {

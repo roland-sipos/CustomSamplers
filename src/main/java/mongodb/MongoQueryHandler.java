@@ -4,6 +4,9 @@ import java.io.ByteArrayOutputStream;
 
 import org.apache.commons.codec.binary.Base64;
 
+import utils.CustomSamplersException;
+import utils.NotFoundInDBException;
+
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -13,8 +16,6 @@ import com.mongodb.gridfs.GridFS;
 import com.mongodb.gridfs.GridFSDBFile;
 import com.mongodb.gridfs.GridFSInputFile;
 
-import exceptions.CustomSamplersException;
-import exceptions.NotFoundInDBException;
 
 
 public class MongoQueryHandler {

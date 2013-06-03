@@ -8,8 +8,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import customjdbc.CustomJDBCConfigElement;
-import exceptions.CustomSamplersException;
-import exceptions.NotFoundInDBException;
+import utils.CustomSamplersException;
+import utils.NotFoundInDBException;
 import utils.QueryHandler;
 
 public class MysqlQueryHandler implements QueryHandler {

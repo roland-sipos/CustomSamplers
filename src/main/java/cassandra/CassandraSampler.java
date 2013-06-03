@@ -13,11 +13,11 @@ import org.apache.jmeter.testbeans.TestBean;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
-import exceptions.CustomSamplersException;
-import exceptions.NotFoundInDBException;
 
 import utils.BinaryFileInfo;
 import utils.CustomSamplerUtils;
+import utils.CustomSamplersException;
+import utils.NotFoundInDBException;
 
 /**
  * @author cb

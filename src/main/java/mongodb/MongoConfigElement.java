@@ -8,6 +8,8 @@ import org.apache.jmeter.threads.JMeterContextService;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
+import utils.CustomSamplersException;
+
 
 import com.mongodb.DB;
 import com.mongodb.MongoClient;
@@ -15,7 +17,6 @@ import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoClientOptions.Builder;
 import com.mongodb.ServerAddress;
 
-import exceptions.CustomSamplersException;
 
 public class MongoConfigElement 
 	extends AbstractTestElement

@@ -1,6 +1,5 @@
 package utils;
 
-import exceptions.CustomSamplersException;
 
 public interface QueryHandler {
 	

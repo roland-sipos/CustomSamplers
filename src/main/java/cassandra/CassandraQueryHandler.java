@@ -1,7 +1,7 @@
 package cassandra;
 
-import exceptions.CustomSamplersException;
-import exceptions.NotFoundInDBException;
+import utils.CustomSamplersException;
+import utils.NotFoundInDBException;
 import me.prettyprint.cassandra.serializers.BytesArraySerializer;
 import me.prettyprint.cassandra.serializers.CompositeSerializer;
 import me.prettyprint.cassandra.serializers.StringSerializer;

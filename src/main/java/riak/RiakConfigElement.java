@@ -8,6 +8,8 @@ import org.apache.jmeter.threads.JMeterContextService;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
+import utils.CustomSamplersException;
+
 import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.RiakException;
 import com.basho.riak.client.RiakFactory;
@@ -16,7 +18,6 @@ import com.basho.riak.client.raw.http.HTTPClusterConfig;
 import com.basho.riak.client.raw.pbc.PBClientConfig;
 import com.basho.riak.client.raw.pbc.PBClusterConfig;
 
-import exceptions.CustomSamplersException;
 
 /**
  * 
