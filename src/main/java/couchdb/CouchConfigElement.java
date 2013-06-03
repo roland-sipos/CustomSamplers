@@ -1,5 +1,8 @@
 package couchdb;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.jmeter.config.ConfigElement;
 import org.apache.jmeter.testbeans.TestBean;
 import org.apache.jmeter.testelement.AbstractTestElement;
@@ -8,10 +11,9 @@ import org.apache.jmeter.threads.JMeterContextService;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
-import utils.CustomSamplersException;
+import org.jcouchdb.db.Database;
 
-import com.fourspaces.couchdb.Database;
-import com.fourspaces.couchdb.Session;
+import utils.CustomSamplersException;
 
 
 public class CouchConfigElement extends AbstractTestElement
@@ -39,7 +41,7 @@ public class CouchConfigElement extends AbstractTestElement
 	public void testEnded(String arg0) {
 		testEnded();
 	}
-
+	
 	public static Database getCouchDB(String database) throws CustomSamplersException {
 		Object couch = JMeterContextService.getContext().getVariables().getObject(database);
 		if (couch == null) {
@@ -67,10 +69,8 @@ public class CouchConfigElement extends AbstractTestElement
 			if (log.isDebugEnabled()) {
 				log.debug(getDatabase() + " is being initialized ...");
 			}
-			
-			Session session = new Session(getHost(), Integer.parseInt(getPort()));
-			Database couch = session.getDatabase(getDatabase());
- 			getThreadContext().getVariables().putObject(getDatabase(), couch);
+			Database couch = new Database(getHost(), Integer.parseInt(getPort()), getDatabase());
+			getThreadContext().getVariables().putObject(getDatabase(), couch);
 		}
 	}
 
