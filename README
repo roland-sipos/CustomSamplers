@@ -20,9 +20,10 @@ Relational:
  
  TODO:
  - Cassandra: Check Quorum write and read, and unify the numbers for all the tests.
- - RIAK: Same as for cassandra. Quorum writen, ONE read probably the best.
- - Extend MongoDB with Morphia POJO mapping.
+ - RIAK: Same as for Cassandra. Quorum writen, ONE read probably the best.
+ - Extend MongoDB with Morphia POJO mapping. (??? Probably not a good idea...)
+ - CouchDB - Base64 encoding flaw? What cause it?
  - Add missing DB samplers.
  - Unify QuryHandling.
  - Unify test databases and clusters
-   (Plan: 
+   (Plan: )
