@@ -81,19 +81,15 @@ public class RiakQueryHandler implements QueryHandler {
 	public void writeBinary(String binaryID, String chunkID, String hash,
 			                byte[] fileContent, boolean isSpecial) throws CustomSamplersException {
 		System.out.println("WOOF -> I'll WRITE WITH KEY: " + hash);
-		//BinaryPojo binaryPojo = new BinaryPojo(binaryID, chunkID, fileContent);
-		//StoreObject<IRiakObject> sObj = bucket.store(hash, fileContent);
+		StoreObject<IRiakObject> sObj = bucket.store(hash, fileContent);
 		try {
-			//IRiakObject res = sObj.pr(1).r(1).pw(1).w(1).dw(1).returnBody(false).execute();
-			bucket.delete(hash).execute();
+			IRiakObject res = sObj.pr(1).r(1).pw(1).w(1).dw(1).returnBody(false).execute();
 		} catch (RiakRetryFailedException e) {
 			throw new CustomSamplersException("RiakRetryFailedException occured. Details: " + e.toString());
 		} catch (UnresolvedConflictException e) {
 			throw new CustomSamplersException("UnresolvedConflictException occured. Details: " + e.toString());
 		} catch (ConversionException e) {
 			throw new CustomSamplersException("ConversionException occured. Details: " + e.toString());
-		} catch (RiakException e) {
-			throw new CustomSamplersException("RiakException occured. Details: " + e.toString());
 		}
 	}
 
