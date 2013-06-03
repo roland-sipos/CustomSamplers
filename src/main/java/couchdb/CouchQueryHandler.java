@@ -1,7 +1,5 @@
 package couchdb;
 
-import java.util.Map;
-
 import org.apache.commons.codec.binary.Base64;
 import org.jcouchdb.db.Database;
 import org.jcouchdb.document.BaseDocument;

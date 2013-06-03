@@ -1,8 +1,5 @@
 package couchdb;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.jmeter.config.ConfigElement;
 import org.apache.jmeter.testbeans.TestBean;
 import org.apache.jmeter.testelement.AbstractTestElement;
