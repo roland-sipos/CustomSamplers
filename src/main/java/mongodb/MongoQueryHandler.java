@@ -46,7 +46,7 @@ public class MongoQueryHandler {
 			}
 			DBObject object = cursor.next();
 			String dataBase64 = object.get("data").toString();
-			byte[] result = new Base64().decode(dataBase64); //object.get("data").toString().getBytes();
+			byte[] result = Base64.decodeBase64(dataBase64); //object.get("data").toString().getBytes();
 			return result;
 		} catch (Exception e) {
 			throw new CustomSamplersException("Exception occured during BSON reading: " + e);
@@ -60,7 +60,7 @@ public class MongoQueryHandler {
 			chunkObj.put("chunkID", chunkID);
 			chunkObj.put("originalID", binaryID);
 			chunkObj.put("hash", hash);
-			String valueBase64 = new Base64().encodeToString(value);
+			String valueBase64 = new String(Base64.encodeBase64(value));
 			chunkObj.put("data", valueBase64);
 			collection.insert(chunkObj);
 		} catch (Exception e) {
