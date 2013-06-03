@@ -1,8 +1,0 @@
-/**
- * 
- */
-/**
- * @author cb
- *
- */
-package exceptions;
