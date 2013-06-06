@@ -13,8 +13,9 @@ import org.jcouchdb.db.Database;
 import utils.CustomSamplersException;
 
 
-public class CouchConfigElement extends AbstractTestElement
-	implements ConfigElement, TestStateListener, TestBean {
+public class CouchConfigElement 
+	extends AbstractTestElement
+		implements ConfigElement, TestStateListener, TestBean {
 
 	private static final long serialVersionUID = -6669728766687401677L;
 	private static final Logger log = LoggingManager.getLoggerForClass();

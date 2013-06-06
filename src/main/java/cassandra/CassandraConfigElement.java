@@ -16,13 +16,11 @@ import org.apache.log.Logger;
 import utils.CustomSamplersException;
 
 
-
 public class CassandraConfigElement
 	extends AbstractTestElement
 		implements ConfigElement, TestStateListener, TestBean {
 
 	private static final long serialVersionUID = 100179183283120561L;
-
 	private static final Logger log = LoggingManager.getLoggerForClass();
 
 	public final static String HOST = "CassandraConfigElement.host"; //DEF: 188.184.23.11

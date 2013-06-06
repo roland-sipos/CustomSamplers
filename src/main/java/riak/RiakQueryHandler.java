@@ -2,7 +2,6 @@ package riak;
 
 import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.IRiakObject;
-import com.basho.riak.client.RiakException;
 import com.basho.riak.client.RiakRetryFailedException;
 import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.cap.Quora;
@@ -19,7 +18,7 @@ public class RiakQueryHandler implements QueryHandler {
 	private static IRiakClient riakClient;
 	private static Bucket bucket;
 
-	protected static class BinaryPojo {
+	/*protected static class BinaryPojo {
 		public BinaryPojo() { }
 		public BinaryPojo(String original, String chunk, byte[] b) {
 			this.originalID = original;
@@ -32,7 +31,7 @@ public class RiakQueryHandler implements QueryHandler {
 		private byte[] blob;
 		
 		public byte[] getBlob() { return this.blob; }
-	}
+	}*/
 	
 	/*protected class KryoBinaryPojoConverter implements Converter<BinaryPojo> {
 		private String bucket;
@@ -81,9 +80,11 @@ public class RiakQueryHandler implements QueryHandler {
 	public void writeBinary(String binaryID, String chunkID, String hash,
 			                byte[] fileContent, boolean isSpecial) throws CustomSamplersException {
 		System.out.println("WOOF -> I'll WRITE WITH KEY: " + hash);
+		//BinaryPojo binaryPojo = new BinaryPojo(binaryID, chunkID, fileContent);
 		StoreObject<IRiakObject> sObj = bucket.store(hash, fileContent);
 		try {
 			IRiakObject res = sObj.pr(1).r(1).pw(1).w(1).dw(1).returnBody(false).execute();
+			res.addUsermeta("chunkID", chunkID);
 		} catch (RiakRetryFailedException e) {
 			throw new CustomSamplersException("RiakRetryFailedException occured. Details: " + e.toString());
 		} catch (UnresolvedConflictException e) {

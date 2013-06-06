@@ -14,7 +14,7 @@ public class CouchSamplerBeanInfo extends BeanInfoSupport {
 		super(CouchSampler.class);
 		
 		createPropertyGroup("couch", new String[] {"database"});
-		createPropertyGroup("sampler", new String[] {"inputLocation", "attachmentMode"});
+		createPropertyGroup("sampler", new String[] {"binaryInfo", "attachmentMode"});
 
 		createPropertyGroup("reading", new String[] {
 				"doRead",
@@ -27,9 +27,9 @@ public class CouchSamplerBeanInfo extends BeanInfoSupport {
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "test");
 
-		p = property("inputLocation");
+		p = property("binaryInfo");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, "/home/cb/INPUT");
+		p.setValue(DEFAULT, "binInfo");
 		p = property("attachmentMode");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, Boolean.FALSE);

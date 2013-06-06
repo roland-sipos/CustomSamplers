@@ -3,9 +3,6 @@
  */
 package cassandra;
 
-import java.util.Arrays;
-import java.util.HashMap;
-
 import org.apache.jmeter.samplers.AbstractSampler;
 import org.apache.jmeter.samplers.Entry;
 import org.apache.jmeter.samplers.SampleResult;
@@ -13,11 +10,10 @@ import org.apache.jmeter.testbeans.TestBean;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
+import binaryconfig.BinaryConfigElement;
 
 import utils.BinaryFileInfo;
 import utils.CustomSamplerUtils;
-import utils.CustomSamplersException;
-import utils.NotFoundInDBException;
 
 /**
  * @author cb
@@ -25,57 +21,56 @@ import utils.NotFoundInDBException;
  */
 public class CassandraSampler extends AbstractSampler implements TestBean {
 
+	private static final long serialVersionUID = 6427570355744485897L;
+	private static final Logger log = LoggingManager.getLoggerForClass();
+	
 	public final static String DATABASE = "CassandraSampler.database";
 	public final static String KEYSPACE = "CassandraSampler.keyspace";
-	public final static String INPUTLOCATION = "CassandraSampler.inputlocation";
+    public final static String COLUMNFAMILY = "CassandraSampler.columnFamily";
+	public final static String BINARYINFO = "CassandraSampler.binaryInfo";
 	public final static String DOREAD = "CassandraSampler.doRead";
 	public final static String USERANDOMACCESS = "CassandraSampler.useRandomAccess";
 	public final static String CHECKREAD = "CassandraSampler.checkRead";
 	public final static String DOWRITE = "CassandraSampler.doWrite";
-	
-	
-	private static final long serialVersionUID = 6427570355744485897L;
-	private static final Logger log = LoggingManager.getLoggerForClass();
-	
-	private static BinaryFileInfo binaryInfo;
-	
+	public final static String ASSIGNED_WRITE = "CassandraSampler.assignedWrite";
+
 	
 	public CassandraSampler() {
-		binaryInfo = null;
 		trace("CassandraSampler() " + this.toString());
 	}
 	
 	@Override
 	public SampleResult sample(Entry arg0) {
-		String threadName = Thread.currentThread().getName();
-		int threadID =  Integer.parseInt(threadName.substring(threadName.length()-1));
+		int threadID = CustomSamplerUtils.getThreadID(Thread.currentThread().getName());
 		trace("sample() ThreadID: " + threadID);
-
-		// Get the static instance of the BinaryFileInfo 
-		binaryInfo = BinaryFileInfo.getInstance(getInputLocation());		
 		
-		// Get a QueryHandler instance.
+		// Get BinaryInfo and QueryHandler instances.
+		BinaryFileInfo binaryInfo = null;
 		CassandraQueryHandler queryHandler = null;
 		try {
-			queryHandler = new CassandraQueryHandler(getDatabase(), getKeyspace());
+			binaryInfo = BinaryConfigElement.getBinaryFileInfo(getBinaryInfo());
+			queryHandler = new CassandraQueryHandler(getDatabase(), getKeyspace(), getColumnFamily());
 		} catch (Exception e) {
-			log.error("Failed to create a CassandraQueryHandler instance for the " + threadName + " sampler.");
-		}				
+			log.error("Failed to create a CassandraQueryHandler instance for the " + 
+					  Thread.currentThread().getName() + " sampler. Details:" + e.toString());
+		}
 
-		// Initialize the sampler and start it.
+		// Get an initial SampleResult and start it.
 		SampleResult res = CustomSamplerUtils.getInitialSampleResult(getTitle());
-        res.sampleStart();
-        
-        if (Boolean.parseBoolean(getDoRead())) // DO THE READS IF THAT WAS REQUESTED.
-        	readFromCassandra(queryHandler, res);
-        else if (Boolean.parseBoolean(getDoWrite())) // DO THE WRITES IF IT WAS REQUESTED.
-        	writeToCassandra(queryHandler, res);
-        
-        return res;
+			
+		if(Boolean.parseBoolean(getDoRead())) // DO THE READ
+			CustomSamplerUtils.doReadWith(queryHandler, binaryInfo, res, 
+					Boolean.parseBoolean(getCheckRead()), false);
+		else if (Boolean.parseBoolean(getDoWrite())) // DO THE WRITE
+			CustomSamplerUtils.doWriteWith(queryHandler, binaryInfo, res, 
+					Boolean.parseBoolean(getAssignedWrite()), false);
+				
+		return res;
+		
 	}
 	
 	
-	private void readFromCassandra(CassandraQueryHandler queryHandler, SampleResult res) {
+	/*private void readFromCassandra(CassandraQueryHandler queryHandler, SampleResult res) {
 		HashMap<String, String> hashes = null;
     	if (Boolean.parseBoolean(getUseRandomAccess()))
     		hashes = binaryInfo.getRandomHashesAndIDs();
@@ -107,9 +102,9 @@ public class CassandraSampler extends AbstractSampler implements TestBean {
     	} finally {
     		res.sampleEnd();
     	}
-	}
+	}*/
 	
-	private void writeToCassandra(CassandraQueryHandler queryHandler, SampleResult res) {
+	/*private void writeToCassandra(CassandraQueryHandler queryHandler, SampleResult res) {
 		HashMap<String, String> hashes = binaryInfo.getRandomHashesAndIDs();
     	String originalID = hashes.get("originalID");
     	String chunkID = hashes.get("chunkID");
@@ -126,7 +121,7 @@ public class CassandraSampler extends AbstractSampler implements TestBean {
 		} finally {
 			res.sampleEnd();
 		}
-	}
+	}*/
 	
 	private void trace(String s) {
 		if(log.isDebugEnabled()) {
@@ -149,11 +144,17 @@ public class CassandraSampler extends AbstractSampler implements TestBean {
 	public void setKeyspace(String keyspace) {
 		setProperty(KEYSPACE, keyspace);
 	}
-	public String getInputLocation() {
-		return getPropertyAsString(INPUTLOCATION);
+	public String getColumnFamily() {
+		return getPropertyAsString(COLUMNFAMILY);
 	}
-	public void setInputLocation(String inputLocation) {
-		setProperty(INPUTLOCATION, inputLocation);
+	public void setColumnFamily(String columnFamily) {
+		setProperty(COLUMNFAMILY, columnFamily);
+	}
+	public String getBinaryInfo() {
+		return getPropertyAsString(BINARYINFO);
+	}
+	public void setBinaryInfo(String binaryInfo) {
+		setProperty(BINARYINFO, binaryInfo);
 	}
 	public String getUseRandomAccess() {
 		return getPropertyAsString(USERANDOMACCESS);
@@ -178,6 +179,12 @@ public class CassandraSampler extends AbstractSampler implements TestBean {
 	}
 	public void setDoWrite(String doWrite) {
 		setProperty(DOWRITE, doWrite);
+	}
+	public String getAssignedWrite() {
+		return getPropertyAsString(ASSIGNED_WRITE);
+	}
+	public void setAssignedWrite(String assignedWrite) {
+		setProperty(ASSIGNED_WRITE, assignedWrite);
 	}
 
 }

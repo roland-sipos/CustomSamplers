@@ -7,6 +7,8 @@ import org.apache.jmeter.testbeans.TestBean;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
+import binaryconfig.BinaryConfigElement;
+
 import utils.BinaryFileInfo;
 import utils.CustomSamplerUtils;
 
@@ -16,19 +18,16 @@ public class CouchSampler extends AbstractSampler implements TestBean {
 	private static final Logger log = LoggingManager.getLoggerForClass();
 	
 	public final static String DATABASE = "CouchSampler.database";
-	public final static String INPUTLOCATION = "CouchSampler.inputlocation";
+	public final static String BINARYINFO = "CouchSampler.binaryInfo";
 	public final static String ATTACHMENT_MODE = "CouchSampler.attachmentMode";
 	public final static String DOREAD = "CouchSampler.doRead";
 	public final static String USERANDOMACCESS = "CouchSampler.useRandomAccess";
 	public final static String CHECKREAD = "CouchSampler.checkRead";
 	public final static String DOWRITE = "CouchSampler.doWrite";
 	public final static String ASSIGNED_WRITE = "CouchSampler.assignedWrite";
-	
-	private static BinaryFileInfo binaryInfo;
+
 	
 	public CouchSampler() {
-		// fields = null;
-		binaryInfo = null;
 		trace("CouchSampler()" + this.toString());
 	}
 	
@@ -38,9 +37,10 @@ public class CouchSampler extends AbstractSampler implements TestBean {
 		trace("sample() ThreadID: " + threadID);
 		
 		// Get BinaryInfo and QueryHandler instances.
-		binaryInfo = BinaryFileInfo.getInstance(getInputLocation());
+		BinaryFileInfo binaryInfo = null;
 		CouchQueryHandler queryHandler = null;
 		try {
+			binaryInfo = BinaryConfigElement.getBinaryFileInfo(getBinaryInfo());
 			queryHandler = new CouchQueryHandler(getDatabase(), "");
 		} catch (Exception e) {
 			log.error("Failed to create a CouchQueryHandler instance for the " + 
@@ -74,11 +74,11 @@ public class CouchSampler extends AbstractSampler implements TestBean {
 	public void setDatabase(String database) {
 		setProperty(DATABASE, database);
 	}
-	public String getInputLocation() {
-		return getPropertyAsString(INPUTLOCATION);
+	public String getBinaryInfo() {
+		return getPropertyAsString(BINARYINFO);
 	}
-	public void setInputLocation(String inputLocation) {
-		setProperty(INPUTLOCATION, inputLocation);
+	public void setBinaryInfo(String binaryInfo) {
+		setProperty(BINARYINFO, binaryInfo);
 	}
 	public String getAttachmentMode() {
 		return getPropertyAsString(ATTACHMENT_MODE);
