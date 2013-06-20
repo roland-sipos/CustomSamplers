@@ -16,14 +16,14 @@
 
   <repositories>
     <repository>
-        <id>central-test</id>
-        <name>central-test</name>
-        <url>https://oss.sonatype.org/content/repositories/central-test</url>
+      <id>central-test</id>
+      <name>central-test</name>
+      <url>https://oss.sonatype.org/content/repositories/central-test</url>
     </repository>
     <repository>
-    	<id>spring-milestones</id>
-    	<url>http://repo.springsource.org/libs-milestone/</url>
-  	</repository>
+      <id>spring-milestones</id>
+      <url>http://repo.springsource.org/libs-milestone/</url>
+    </repository>
   </repositories>
 
   <dependencies>
@@ -80,9 +80,9 @@
       <version>0.11.0-1</version>
     </dependency>
     <dependency> <!--  Voldemort Java API -->
-  	  <groupId>voldemort</groupId>
-  	  <artifactId>voldemort</artifactId>
-  	  <version>0.96</version>
+      <groupId>voldemort</groupId>
+      <artifactId>voldemort</artifactId>
+      <version>0.96</version>
     </dependency>
     
     <dependency> <!--  PostgreSQL Java API -->
@@ -97,10 +97,10 @@
     </dependency>
     
     <dependency>
-	  <groupId>org.drizzle.jdbc</groupId>
-	  <artifactId>drizzle-jdbc</artifactId>
-	  <version>1.2</version>
-	</dependency>
+      <groupId>org.drizzle.jdbc</groupId>
+      <artifactId>drizzle-jdbc</artifactId>
+      <version>1.2</version>
+    </dependency>
     
   </dependencies>
   
