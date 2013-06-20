@@ -15,7 +15,6 @@ import org.apache.log.Logger;
 import utils.CustomSamplersException;
 
 
-
 public class CustomJDBCConfigElement 
 	extends AbstractTestElement
 		implements ConfigElement, TestStateListener, TestBean {

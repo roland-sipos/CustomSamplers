@@ -1,8 +1,6 @@
 /**
+ * This package contains the CustomSampler of the Drizzle database.
  * 
- */
-/**
- * @author cb
- *
+ * @author rsipos
  */
 package drizzle;

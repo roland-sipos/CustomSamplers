@@ -1,8 +1,6 @@
 /**
+ * This package contains the CustomSampler of the Cassandra database.
  * 
- */
-/**
- * @author cb
- *
+ * @author rsipos
  */
 package cassandra;
