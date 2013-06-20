@@ -17,6 +17,7 @@ public class BinaryConfigElement
 
 	private static final long serialVersionUID = 5820940444795925355L;
 	private static final Logger log = LoggingManager.getLoggerForClass();
+
 	public final static String INPUT_LOCATION = "BinaryConfigElement.inputlocation";
 	public final static String BINARY_INFO = "BinaryConfigElement.binaryInfo";
 	
