@@ -32,13 +32,13 @@ public abstract class TestEnvironmentDeployer {
 	public String getUsername() { return username; }
 	public String getPassword() { return password; }
 	
-	public void deployTestEnv() { 
+	public void deployTestEnvironment() { 
 		initialize();
 		setupEnvironment();
 		tearDown();
 	}
 	
-	public void destroyTestEnv() {
+	public void destroyTestEnvironment() {
 		initialize();
 		destroyEnvironment();
 		tearDown();

@@ -1,4 +1,4 @@
-package drizzle;
+package mysql;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -7,35 +7,38 @@ import java.sql.SQLException;
 
 import utils.TestEnvironmentDeployer;
 
-public class DrizzleDeployer {
+public class MysqlDeployer {
 
 	/**
-	 * This class is the extended TestEnvironmentDeployer for Drizzle.
+	 * This class is the extended TestEnvironmentDeployer for MySQL.
 	 * */
-	private static class DrizzleTestEnvironmentDeployer extends TestEnvironmentDeployer {
+	private static class MysqlTestEnvironmentDeployer extends TestEnvironmentDeployer {
 
 		private Connection connection = null;
+		private String whichEngine = null;
 		
-		public DrizzleTestEnvironmentDeployer(String host, String port,
-				String databaseName, String entityName, String username, String password) {
+		public MysqlTestEnvironmentDeployer(String host, String port,
+				String databaseName, String entityName, String username,
+				String password, String whichEngine) {
 			super(host, port, databaseName, entityName, username, password);
+			this.whichEngine = whichEngine;
 		}
 
 		@Override
 		protected void initialize() {
 			/*try {
-				Class.forName("org.drizzle.jdbc.Driver");
+				Class.forName("com.mysql.jdbc.Driver");
 			} catch (ClassNotFoundException e) {
-				System.out.println(" initialize() -> Where is your Drizzle JDBC Driver? "
-						+ "Include in your library path!");
+				System.out.println(" initialize() -> Where is your MySQL JDBC Driver? "
+					+ "Include in your library path!");
 				e.printStackTrace();
 				return;
 			}*/
-	 
-			System.out.println(" initialize() -> Drizzle JDBC Driver Registered!");
-	 
+ 
+			System.out.println(" initialize() -> MySQL JDBC Driver Registered!");
+ 
 			try {
-				connection = DriverManager.getConnection("jdbc:drizzle://" + getHost() + ":" + getPort() 
+				connection = DriverManager.getConnection("jdbc:mysql://" + getHost() + ":" + getPort() 
 						+ "/" + getDatabase(), getUsername(), getPassword());
 				connection.setAutoCommit(false);
 			} catch (SQLException e) {
@@ -63,11 +66,11 @@ public class DrizzleDeployer {
 			System.out.println(" setupEnvironment() -> Setting up the environment...");
 			
 			String createBinariesQuery = "CREATE TABLE IF NOT EXISTS binaries (" +
-					"chunkrow_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
-					"hash VARCHAR(225) NOT NULL," +
-					"chunk_id VARCHAR(50) NOT NULL, " +
-					"binary_id VARCHAR(50) NOT NULL, " +	
-	          		"data BLOB NOT NULL) ENGINE=InnoDB";
+					"chunkrow_id SERIAL NOT NULL PRIMARY KEY," +
+					"hash VARCHAR(225) NOT NULL UNIQUE," +
+					"chunk_id VARCHAR(50) NOT NULL," +
+					"binary_id VARCHAR(50) NOT NULL," +
+	          		"data LONGBLOB) ENGINE=" + whichEngine;
 			PreparedStatement create = null;
 			try {
 				create = connection.prepareStatement(createBinariesQuery);
@@ -81,6 +84,7 @@ public class DrizzleDeployer {
 			}
 			
 			System.out.println(" setupEnvironment() -> The environment has been deployed.\n");
+			
 		}
 
 		@Override
@@ -104,25 +108,19 @@ public class DrizzleDeployer {
 	}
 	
 	/**
-	 * @param args 
+	 * @param args
 	 */
 	public static void main(String[] args) {
-		DrizzleTestEnvironmentDeployer deployer = 
-				new DrizzleTestEnvironmentDeployer("testdb-pc.cern.ch", "4427", 
-						"testdb", "binaries", "testUser", "testPass");
-		
-		/*
-		 * Start the Drizzle server:
-		 * e.g.:
-		 * 	sudo /usr/local/sbin/drizzled --user=testUser --datadir=/opt/drizzle/data/ --basedir=/opt/drizzle/drizzle-7.1.36-stable/ --drizzle-protocol.bind-address=testdb-pc.cern.ch --config-dir=./
-		 * 
-		 * */
-		
-		System.out.println("-------- Drizzle environment setup ------------");
+		MysqlTestEnvironmentDeployer deployer =
+				new MysqlTestEnvironmentDeployer("testdb-pc.cern.ch", "3306", 
+						"testdb", "binaries", "testUser", "testPass", "InnoDB");
+	    
+		System.out.println("-------- MySQL environment setup ------------");
 		deployer.deployTestEnvironment();
-		//System.out.println("------- Drizzle environment teardown -----------");
+		//System.out.println("------- MySQL environment teardown -----------");
 		//deployer.destroyTestEnvironment();
 		
 	}
+	
 
 }

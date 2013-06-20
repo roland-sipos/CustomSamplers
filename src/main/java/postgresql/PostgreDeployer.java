@@ -1,4 +1,4 @@
-package drizzle;
+package postgresql;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -7,35 +7,36 @@ import java.sql.SQLException;
 
 import utils.TestEnvironmentDeployer;
 
-public class DrizzleDeployer {
+public class PostgreDeployer {
 
 	/**
-	 * This class is the extended TestEnvironmentDeployer for Drizzle.
+	 * This class is the extended TestEnvironmentDeployer for PostgreSQL.
 	 * */
-	private static class DrizzleTestEnvironmentDeployer extends TestEnvironmentDeployer {
+	private static class PostgreTestEnvironmentDeployer extends TestEnvironmentDeployer {
 
 		private Connection connection = null;
 		
-		public DrizzleTestEnvironmentDeployer(String host, String port,
+		public PostgreTestEnvironmentDeployer(String host, String port,
 				String databaseName, String entityName, String username, String password) {
 			super(host, port, databaseName, entityName, username, password);
 		}
 
 		@Override
 		protected void initialize() {
+			
 			/*try {
 				Class.forName("org.drizzle.jdbc.Driver");
 			} catch (ClassNotFoundException e) {
 				System.out.println(" initialize() -> Where is your Drizzle JDBC Driver? "
-						+ "Include in your library path!");
-				e.printStackTrace();
-				return;
+					+ "Include in your library path!");
+			e.printStackTrace();
+			return;
 			}*/
-	 
-			System.out.println(" initialize() -> Drizzle JDBC Driver Registered!");
-	 
+ 
+			System.out.println(" initialize() -> PostgreSQL JDBC Driver Registered!");
+ 
 			try {
-				connection = DriverManager.getConnection("jdbc:drizzle://" + getHost() + ":" + getPort() 
+				connection = DriverManager.getConnection("jdbc:postgresql://" + getHost() + ":" + getPort() 
 						+ "/" + getDatabase(), getUsername(), getPassword());
 				connection.setAutoCommit(false);
 			} catch (SQLException e) {
@@ -43,7 +44,7 @@ public class DrizzleDeployer {
 				e.printStackTrace();
 				return;
 			}
-			System.out.println(" initialize() -> Connection established...\n");	
+			System.out.println(" initialize() -> Connection established...\n");			
 		}
 
 		@Override
@@ -62,12 +63,17 @@ public class DrizzleDeployer {
 		protected void setupEnvironment() {
 			System.out.println(" setupEnvironment() -> Setting up the environment...");
 			
-			String createBinariesQuery = "CREATE TABLE IF NOT EXISTS binaries (" +
-					"chunkrow_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
-					"hash VARCHAR(225) NOT NULL," +
-					"chunk_id VARCHAR(50) NOT NULL, " +
-					"binary_id VARCHAR(50) NOT NULL, " +	
-	          		"data BLOB NOT NULL) ENGINE=InnoDB";
+			String createBinariesQuery = "CREATE TABLE IF NOT EXISTS " + getEntity() + "(" +
+					"chunkrow_id SERIAL NOT NULL PRIMARY KEY," +
+					"hash varchar(225) NOT NULL UNIQUE," +
+					"chunk_id varchar(50) NOT NULL," +
+					"binary_id varchar(50) NOT NULL," +
+	          		"data bytea)";
+			String createLOBBinaryQuery = "CREATE TABLE IF NOT EXISTS " + getEntity() + "LO(" +
+					"chunkOID OID," +
+					"hash varchar(225) NOT NULL UNIQUE," +
+					"chunk_id varchar(50) NOT NULL," +
+					"binary_id varchar(50) NOT NULL)";
 			PreparedStatement create = null;
 			try {
 				create = connection.prepareStatement(createBinariesQuery);
@@ -75,6 +81,11 @@ public class DrizzleDeployer {
 				if (!failed)
 					System.out.println(" setupEnvironment() -> The following statement was successfull:\n" 
 							+ createBinariesQuery);
+				create = connection.prepareStatement(createLOBBinaryQuery);
+				failed = create.execute();
+				if (!failed)
+					System.out.println(" setupEnvironment() -> The following statement was successfull:\n"
+							+ createLOBBinaryQuery);
 				create.close();
 			} catch (SQLException e) {
 				System.out.println(" setupEnvironment() -> SQLException occured. Details: " + e.toString());
@@ -87,10 +98,16 @@ public class DrizzleDeployer {
 		protected void destroyEnvironment() {
 			System.out.println(" destroyEnvironment() -> Destroying environment...");
 			String deleteBinariesQuery = "DROP TABLE " + getEntity();
+			String deleteLOBBinariesQuery = "DROP TABLE " + getEntity() + "LO";
 			PreparedStatement delete = null;
 			try {
 				delete = connection.prepareStatement(deleteBinariesQuery);
 				Boolean failed = delete.execute();
+				if (!failed)
+					System.out.println(" destroyEnvironment() -> The following statement was successfull:\n" 
+							+ deleteBinariesQuery);
+				delete = connection.prepareStatement(deleteLOBBinariesQuery);
+				failed = delete.execute();
 				if (!failed)
 					System.out.println(" destroyEnvironment() -> The following statement was successfull:\n" 
 							+ deleteBinariesQuery);
@@ -104,25 +121,18 @@ public class DrizzleDeployer {
 	}
 	
 	/**
-	 * @param args 
+	 * @param args
 	 */
 	public static void main(String[] args) {
-		DrizzleTestEnvironmentDeployer deployer = 
-				new DrizzleTestEnvironmentDeployer("testdb-pc.cern.ch", "4427", 
-						"testdb", "binaries", "testUser", "testPass");
-		
-		/*
-		 * Start the Drizzle server:
-		 * e.g.:
-		 * 	sudo /usr/local/sbin/drizzled --user=testUser --datadir=/opt/drizzle/data/ --basedir=/opt/drizzle/drizzle-7.1.36-stable/ --drizzle-protocol.bind-address=testdb-pc.cern.ch --config-dir=./
-		 * 
-		 * */
-		
-		System.out.println("-------- Drizzle environment setup ------------");
+		PostgreTestEnvironmentDeployer deployer =
+				new PostgreTestEnvironmentDeployer("testdb-pc.cern.ch", "5432", 
+						"testdb", "binaries", "postgres", "testPass");
+	    
+		System.out.println("-------- PostgreSQL environment setup ------------");
 		deployer.deployTestEnvironment();
-		//System.out.println("------- Drizzle environment teardown -----------");
+		//System.out.println("------- PostgreSQL environment teardown -----------");
 		//deployer.destroyTestEnvironment();
-		
+
 	}
 
 }
