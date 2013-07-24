@@ -1,8 +1,10 @@
 CustomSamplers
+==============
 
-The CustomSamplers project is a big extension to JMeter that contains
-custom configurations and samplers for different databases in order
-to measure performance attributes of BLOB data handling.
+The CustomSamplers project is a fairly big extension to JMeter that 
+contains custom configuration and sampler elements for different databases 
+in order to measure performance characteristics of BLOB data handling for
+given scenarios.
 
 Currently the following databases are supported by configuration and sampler elements:
 NoSQL:
