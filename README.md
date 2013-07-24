@@ -8,6 +8,7 @@ given scenarios.
 
 Currently the following databases are supported by configuration and sampler elements:
 NoSQL:
+------
  + Cassandra
  + RIAK
  + MongoDB
@@ -17,15 +18,18 @@ NoSQL:
  - HBase
  
 NewSQL:
+-------
  + Drizzle
  - TokuDB
 
 Relational:
+-----------
  + PostgreSQL
  + MySQL
  - Oracle 11g
  
- TODO:
+TODO:
+-----
  - Cassandra: Check Quorum write and read, and unify the numbers for all the tests.
  - RIAK: Same as for Cassandra. Quorum writen, ONE read probably the best.
  - Extend MongoDB with Morphia POJO mapping. (??? Probably not a good idea...)
