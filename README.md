@@ -27,7 +27,13 @@ Relational:
  + PostgreSQL
  + MySQL
  - Oracle 11g
- 
+
+
+Known issues:
+-------------
+In order to enable the Oracle JDBC driver in Maven's pom.xml, please take a look on the following link:
+http://stackoverflow.com/questions/1074869/find-oracle-jdbc-driver-in-maven-repository
+
 TODO:
 -----
  - Cassandra: Check Quorum write and read, and unify the numbers for all the tests.
