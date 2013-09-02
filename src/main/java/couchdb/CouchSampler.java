@@ -35,7 +35,7 @@ public class CouchSampler extends AbstractSampler implements TestBean {
 	public SampleResult sample(Entry arg0) {
 		int threadID = CustomSamplerUtils.getThreadID(Thread.currentThread().getName());
 		trace("sample() ThreadID: " + threadID);
-		
+
 		// Get BinaryInfo and QueryHandler instances.
 		BinaryFileInfo binaryInfo = null;
 		CouchQueryHandler queryHandler = null;
@@ -47,7 +47,7 @@ public class CouchSampler extends AbstractSampler implements TestBean {
 					  Thread.currentThread().getName() + " sampler. Details:" + e.toString());
 		}
 		
-		// Get an initial SampleResult and start it.
+		// Get an initial SampleResult.
 		SampleResult res = CustomSamplerUtils.getInitialSampleResult(getTitle());
 	
 		if(Boolean.parseBoolean(getDoRead())) // DO THE READ

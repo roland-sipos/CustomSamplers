@@ -1,5 +1,7 @@
 package utils;
 
+import java.util.HashMap;
+
 
 public interface QueryHandler {
 	
@@ -8,5 +10,8 @@ public interface QueryHandler {
 	
 	public byte[] readBinary(String binaryID, String chunkID, String hash, boolean isSpecial)
 			throws CustomSamplersException;
+
+	/*public void writePayload(HashMap<String, String> metaMap, byte[] payload, boolean isSpecial)
+		throws CustomSamplersException;*/
 	
 }

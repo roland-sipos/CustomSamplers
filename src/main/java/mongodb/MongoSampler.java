@@ -1,8 +1,5 @@
 package mongodb;
 
-import java.util.Arrays;
-import java.util.HashMap;
-
 import org.apache.jmeter.samplers.AbstractSampler;
 import org.apache.jmeter.samplers.Entry;
 import org.apache.jmeter.samplers.SampleResult;
@@ -10,10 +7,11 @@ import org.apache.jmeter.testbeans.TestBean;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
+import binaryconfig.BinaryConfigElement;
 
 import utils.BinaryFileInfo;
 import utils.CustomSamplerUtils;
-import utils.CustomSamplersException;
+
 
 public class MongoSampler extends AbstractSampler implements TestBean {
 
@@ -22,7 +20,7 @@ public class MongoSampler extends AbstractSampler implements TestBean {
 	
 	public final static String DATABASE = "MongoSampler.database";
 	public final static String COLLECTION = "MongoSampler.collection";
-	public final static String INPUTLOCATION = "MongoSampler.inputlocation";
+	public final static String BINARYINFO = "CassandraSampler.binaryInfo";
 	public final static String GRIDFSMETHOD = "MongoSampler.gridFsMethod";
 	public final static String DOREAD = "MongoSampler.doRead";
 	public final static String USERANDOMACCESS = "MongoSampler.useRandomAccess";
@@ -30,11 +28,8 @@ public class MongoSampler extends AbstractSampler implements TestBean {
 	public final static String DOWRITE = "MongoSampler.doWrite";
 	public final static String ASSIGNED_WRITE = "MongoSampler.assignedWrite";
 	
-	private static BinaryFileInfo binaryInfo;
 	
 	public MongoSampler() {
-		// fields = null;
-		binaryInfo = null;
 		trace("MongoSampler()" + this.toString());
 	}
 	
@@ -44,9 +39,10 @@ public class MongoSampler extends AbstractSampler implements TestBean {
 		trace("sample() ThreadID: " + threadID);
 		
 		// Get BinaryInfo and QueryHandler instances.
-		binaryInfo = BinaryFileInfo.getInstance(getInputLocation());
+		BinaryFileInfo binaryInfo = null;
 		MongoQueryHandler queryHandler = null;
 		try {
+			binaryInfo = BinaryConfigElement.getBinaryFileInfo(getBinaryInfo());
 			queryHandler = new MongoQueryHandler(getDatabase(), getCollection());
 		} catch (Exception e) {
 			log.error("Failed to create a MongoQueryHandler instance for the " + 
@@ -58,16 +54,18 @@ public class MongoSampler extends AbstractSampler implements TestBean {
 		res.sampleStart();
 		
         if (Boolean.parseBoolean(getDoRead())) { // DO THE READ
-        	readFromMongo(queryHandler, res);
+        	CustomSamplerUtils.doReadWith(queryHandler, binaryInfo, res, 
+					Boolean.parseBoolean(getCheckRead()), Boolean.parseBoolean(getGridFsMethod()));
         } else if (Boolean.parseBoolean(getDoWrite())) { // DO THE WRITE
-        	writeToMongo(queryHandler, res);
+        	CustomSamplerUtils.doWriteWith(queryHandler, binaryInfo, res, 
+					Boolean.parseBoolean(getAssignedWrite()), Boolean.parseBoolean(getGridFsMethod()));
         }
         
         return res;
 	}
 
 	
-	private void readFromMongo(MongoQueryHandler queryHandler, SampleResult res) {
+	/*private void readFromMongo(MongoQueryHandler queryHandler, SampleResult res) {
 		HashMap<String, String> hashes = binaryInfo.getRandomHashesAndIDs();
 		String originalID = hashes.get("originalID");
 		String chunkID = hashes.get("chunkID");
@@ -99,10 +97,10 @@ public class MongoSampler extends AbstractSampler implements TestBean {
 		} finally {
 			res.sampleEnd();
 		}
-	}
+	}*/
 	
 	
-	private void writeToMongo(MongoQueryHandler queryHandler, SampleResult res) {
+	/*private void writeToMongo(MongoQueryHandler queryHandler, SampleResult res) {
 		if (Boolean.parseBoolean(getAssignedWrite())) {
     		String chunkID = "chunk-" + CustomSamplerUtils.getThreadID(Thread.currentThread().getName()) + ".bin";
     		String pathToChunk = binaryInfo.getBinaryFilePathList().get("BIGrbinary-0.bin.chunks").get(chunkID);
@@ -126,7 +124,7 @@ public class MongoSampler extends AbstractSampler implements TestBean {
 				res.sampleEnd();
 			}
     		
-    	} /*else {
+    	}*/ /*else {
     		HashMap<String, String> hashes = binaryInfo.getRandomHashesAndIDs();
     		String originalID = hashes.get("originalID");
     		String chunkID = hashes.get("chunkID");
@@ -147,7 +145,7 @@ public class MongoSampler extends AbstractSampler implements TestBean {
 				res.sampleEnd();
 			}
     	}*/
-	}
+	//}
 	
 	private void trace(String s) {
 		if(log.isDebugEnabled()) {
@@ -170,11 +168,11 @@ public class MongoSampler extends AbstractSampler implements TestBean {
 	public void setCollection(String collection) {
 		setProperty(COLLECTION, collection);
 	}
-	public String getInputLocation() {
-		return getPropertyAsString(INPUTLOCATION);
+	public String getBinaryInfo() {
+		return getPropertyAsString(BINARYINFO);
 	}
-	public void setInputLocation(String inputLocation) {
-		setProperty(INPUTLOCATION, inputLocation);
+	public void setBinaryInfo(String binaryInfo) {
+		setProperty(BINARYINFO, binaryInfo);
 	}
 	public String getGridFsMethod() {
 		return getPropertyAsString(GRIDFSMETHOD);

@@ -6,6 +6,7 @@ import org.apache.commons.codec.binary.Base64;
 
 import utils.CustomSamplersException;
 import utils.NotFoundInDBException;
+import utils.QueryHandler;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -18,7 +19,7 @@ import com.mongodb.gridfs.GridFSInputFile;
 
 
 
-public class MongoQueryHandler {
+public class MongoQueryHandler implements QueryHandler {
 
 	private static DB mongo;
 	private static DBCollection collection;
@@ -105,6 +106,22 @@ public class MongoQueryHandler {
 			throw new CustomSamplersException("Exception occured during GridFS file reading: " + e.toString());
 		}
 		return resultOs.toByteArray();
+	}
+
+	@Override
+	public void writeBinary(String binaryID, String chunkID, String hash,
+			byte[] fileContent, boolean isSpecial)
+			throws CustomSamplersException {
+		
+		
+		
+	}
+
+	@Override
+	public byte[] readBinary(String binaryID, String chunkID, String hash,
+			boolean isSpecial) throws CustomSamplersException {
+		
+		return null;
 	}
 	
 }

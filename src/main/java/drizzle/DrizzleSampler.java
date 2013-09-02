@@ -19,7 +19,6 @@ public class DrizzleSampler extends AbstractSampler implements TestBean {
 	public final static String DATABASE = "DrizzleSampler.database";
 	public final static String TABLE = "DrizzleSampler.table";
 	public final static String BINARYINFO = "DrizzleSampler.binaryInfo";
-	public final static String INPUTLOCATION = "DrizzleSampler.inputlocation";
 	public final static String DOREAD = "DrizzleSampler.doRead";
 	public final static String USERANDOMACCESS = "DrizzleSampler.useRandomAccess";
 	public final static String CHECKREAD = "DrizzleSampler.checkRead";
@@ -85,12 +84,6 @@ public class DrizzleSampler extends AbstractSampler implements TestBean {
 	}
 	public void setBinaryInfo(String binaryInfo) {
 		setProperty(BINARYINFO, binaryInfo);
-	}
-	public String getInputLocation() {
-		return getPropertyAsString(INPUTLOCATION);
-	}
-	public void setInputLocation(String inputLocation) {
-		setProperty(INPUTLOCATION, inputLocation);
 	}
 	public String getUseRandomAccess() {
 		return getPropertyAsString(USERANDOMACCESS);
