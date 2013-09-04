@@ -1,5 +1,7 @@
 package riak;
 
+import java.util.HashMap;
+
 import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakRetryFailedException;
@@ -110,6 +112,49 @@ public class RiakQueryHandler implements QueryHandler {
 			throw new CustomSamplersException("ConversionException occured. Details: " + e.toString());
 		}
 		return ret;
+	}
+
+	@Override
+	public void writePayload(HashMap<String, String> metaMap, byte[] payload,
+			byte[] streamerInfo, boolean isSpecial)
+			throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public byte[] readPayload(HashMap<String, String> metaMap, boolean isSpecial)
+			throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void writeIov(HashMap<String, String> keyAndMetaMap)
+			throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public String readIov(HashMap<String, String> keyMap)
+			throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void writeTag(HashMap<String, String> metaMap)
+			throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public HashMap<String, Object> readTag(String tagKey)
+			throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

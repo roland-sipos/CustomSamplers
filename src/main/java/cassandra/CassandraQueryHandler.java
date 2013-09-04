@@ -1,5 +1,7 @@
 package cassandra;
 
+import java.util.HashMap;
+
 import utils.CustomSamplersException;
 import utils.NotFoundInDBException;
 import utils.QueryHandler;
@@ -117,6 +119,49 @@ public class CassandraQueryHandler implements QueryHandler {
 			throw new CustomSamplersException("Row with the key not found in the database");
 		
 		return value;
+	}
+
+	@Override
+	public void writePayload(HashMap<String, String> metaMap, byte[] payload,
+			byte[] streamerInfo, boolean isSpecial)
+			throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public byte[] readPayload(HashMap<String, String> metaMap, boolean isSpecial)
+			throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void writeIov(HashMap<String, String> keyAndMetaMap)
+			throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public String readIov(HashMap<String, String> keyMap)
+			throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void writeTag(HashMap<String, String> metaMap)
+			throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public HashMap<String, Object> readTag(String tagKey)
+			throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 }

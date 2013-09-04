@@ -28,6 +28,7 @@ public class CustomJDBCConfigElement
 	public final static String HOST = "CustomJDBCConfigElement.host";
 	public final static String PORT = "CustomJDBCConfigElement.port";
 	public final static String DATABASE = "CustomJDBCConfigElement.database";
+	public final static String SID = "CustomJDBCConfigElement.sid";
 	public final static String USERNAME = "CustomJDBCConfigElement.username";
 	public final static String PASSWORD = "CustomJDBCConfigElement.password";
 	
@@ -80,6 +81,9 @@ public class CustomJDBCConfigElement
 			
 			Connection connection = null;
 			String connectionStr = getJdbcname() + "://" + getHost() + ":" + getPort() + "/" + getDatabase();
+			if (getSid() != "")
+				connectionStr = getJdbcname() + ":@" + getHost() + ":" + getPort() + ":" + getSid();
+
 			try {
 				connection = DriverManager.getConnection(connectionStr, getUsername(), getPassword());
 			} catch (SQLException e) {
@@ -154,6 +158,14 @@ public class CustomJDBCConfigElement
 
 	public void setDatabase(String database) {
 		setProperty(DATABASE, database);
+	}
+	
+	public String getSid() {
+		return getPropertyAsString(SID);
+	}
+
+	public void setSid(String sid) {
+		setProperty(SID, sid);
 	}
 	
 	public String getUsername() {

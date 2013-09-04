@@ -1,5 +1,7 @@
 package couchdb;
 
+import java.util.HashMap;
+
 import org.apache.commons.codec.binary.Base64;
 import org.jcouchdb.db.Database;
 import org.jcouchdb.document.BaseDocument;
@@ -89,6 +91,49 @@ public class CouchQueryHandler implements QueryHandler {
 					                          + "Details: " + e.toString());
 		}
 		return result;
+	}
+
+	@Override
+	public void writePayload(HashMap<String, String> metaMap, byte[] payload,
+			byte[] streamerInfo, boolean isSpecial)
+			throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public byte[] readPayload(HashMap<String, String> metaMap, boolean isSpecial)
+			throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void writeIov(HashMap<String, String> keyAndMetaMap)
+			throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public String readIov(HashMap<String, String> keyMap)
+			throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void writeTag(HashMap<String, String> metaMap)
+			throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public HashMap<String, Object> readTag(String tagKey)
+			throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 }

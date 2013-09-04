@@ -15,7 +15,7 @@ public class CustomJDBCConfigElementBeanInfo extends BeanInfoSupport {
 		
 		createPropertyGroup("connection", new String[] {
 	            "jdbcname", "classname", 
-				"host", "port", "database", 
+				"host", "port", "database", "sid", 
 				"username", "password"});
 		
 		PropertyDescriptor p = property("jdbcname");
@@ -33,6 +33,9 @@ public class CustomJDBCConfigElementBeanInfo extends BeanInfoSupport {
         p = property("database");
         p.setValue(NOT_UNDEFINED, Boolean.TRUE);
         p.setValue(DEFAULT, "testdb");
+        p = property("sid");
+        p.setValue(NOT_UNDEFINED, Boolean.TRUE);
+        p.setValue(DEFAULT, "");
         p = property("username");
         p.setValue(NOT_UNDEFINED, Boolean.TRUE);
         p.setValue(DEFAULT, "postgres");
