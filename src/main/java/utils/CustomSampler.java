@@ -1,6 +1,6 @@
 package utils;
 
-public interface CustomSampler {
+/*public interface CustomSampler {
 
 	public final static String DATABASE = "CustomSampler.database";
 	public final static String INPUTLOCATION = "CustomSampler.inputlocation";
@@ -25,4 +25,4 @@ public interface CustomSampler {
 	public String getAssignedWrite();
 	public void setAssignedWrite(String assignedWrite);
 	
-}
+}*/

@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 
 import customjdbc.CustomJDBCConfigElement;
 import utils.CustomSamplersException;
@@ -79,6 +80,49 @@ public class MysqlQueryHandler implements QueryHandler {
 		}
 		return result;
 		
+	}
+
+	@Override
+	public void writePayload(HashMap<String, String> metaMap, byte[] payload,
+			byte[] streamerInfo, boolean isSpecial)
+			throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public byte[] readPayload(HashMap<String, String> metaMap, boolean isSpecial)
+			throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void writeIov(HashMap<String, String> keyAndMetaMap)
+			throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public String readIov(HashMap<String, String> keyMap)
+			throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void writeTag(HashMap<String, String> metaMap)
+			throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public HashMap<String, Object> readTag(String tagKey)
+			throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 }

@@ -18,10 +18,11 @@ public class BinaryFileInfo {
 	private static BinaryFileInfo instance = null;
 	
 	private static String location;
+	private static int numOfFiles;
 	// TreeMap<"binaryId", "metaFilePathList">
 	private static TreeMap<String, String> metaFileList;
 	// TreeMap<"binaryId", TreeMap<"chunkId", "hash"> >
-	private static TreeMap<String, TreeMap<String, String> > metaInfo;
+	private static TreeMap<String, HashMap<String, String> > metaInfo;
     // TreeMap<"binaryId", TreeMap<"chunkId", "path"> >
 	private static TreeMap<String, TreeMap<String, String> > binaryFilePathList;
 	// TreeMap<"binaryId", "path">
@@ -30,7 +31,10 @@ public class BinaryFileInfo {
     public String getInputLocation() {
         return location;
     }
-    public TreeMap<String, TreeMap<String, String> > getMetaInfo() {
+    public int getNumOfFiles() {
+    	return numOfFiles;
+    }
+    public TreeMap<String, HashMap<String, String> > getMetaInfo() {
         return metaInfo;
     }
     public TreeMap<String, String> getMetaFileList() {
@@ -52,15 +56,17 @@ public class BinaryFileInfo {
     
     protected BinaryFileInfo(String loc) {
         location = loc; //baseDir.concat("BIGrbinary-"+ID+".bin.chunks/");
-        metaInfo = new TreeMap<String, TreeMap<String, String> >();
+        metaInfo = new TreeMap<String, HashMap<String, String> >();
         metaFileList = new TreeMap<String, String>();
         binaryFilePathList = new TreeMap<String, TreeMap<String, String> >();
         originalFilePathList = new TreeMap<String, String>();
-
+        numOfFiles = 0;
+        
         File[] locFolder = new File(location).listFiles();
         for (File sub : locFolder) {
         	if (sub.isDirectory()) {
         		try {
+        			numOfFiles++;
         			prepareMETA(sub);
         			String metaFilePath = getMetaFilePath(sub);
         			metaFileList.put(sub.getName(), metaFilePath);
@@ -85,11 +91,12 @@ public class BinaryFileInfo {
         File metaFile = new File(getMetaFilePath(folder));
         BufferedReader in = new BufferedReader(new FileReader(metaFile));
         String line = "";
-        TreeMap<String, String> metaMapForBinary = new TreeMap<String, String>();
+        HashMap<String, String> metaMapForBinary = new HashMap<String, String>();
         while ((line = in.readLine()) != null) {
             String cols[] = line.split(" ");
             metaMapForBinary.put(cols[0], cols[1]);
         }
+        metaMapForBinary.put("full_id", binaryName);
         metaInfo.put(binaryName, metaMapForBinary);
         in.close();
     }
@@ -185,6 +192,28 @@ public class BinaryFileInfo {
         }
         return result;
     }
+    
+	public HashMap<String, String> getRandomMeta() {
+		Random random = new Random();
+    	// Get a random Binary ID.
+		Object[] binaryIDsArray = getMetaFileList().keySet().toArray();
+		String binaryID = (String) binaryIDsArray[random.nextInt(binaryIDsArray.length)];  
+		
+		// TODO: Create a RANDOM ACCESS PATTERN with the usage of the IOV and TAG tables.
+		return getMetaInfo().get(binaryID);
+	}
+	
+	public String getXthBinaryID(int x) {
+		Object[] binaryIDsArray = getOriginalFilePathList().keySet().toArray();
+		return (String) binaryIDsArray[x-1];
+		
+		//System.out.println(getOriginalFilePathList().get("rbinary-HUGE-1.bin"));
+	}
+	
+	public HashMap<String, String> getAssignedMeta() {
+		//TODO: Get an assigned meta information based on current Thread group and id.
+		return null;
+	}
 	
     
 }

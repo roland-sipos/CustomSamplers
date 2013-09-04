@@ -32,6 +32,11 @@ public abstract class TestEnvironmentDeployer {
 	public String getUsername() { return username; }
 	public String getPassword() { return password; }
 	
+	protected void checkAndNotify(Boolean failed, String query, String prefix) {
+	  if (!failed)
+	    System.out.println(prefix + "The following statement was successfull:\n" + query);
+	}
+	
 	public void deployTestEnvironment() { 
 		initialize();
 		setupEnvironment();
