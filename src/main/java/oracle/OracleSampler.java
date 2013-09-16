@@ -12,11 +12,11 @@ import utils.CustomSamplerUtils;
 import binaryconfig.BinaryConfigElement;
 
 public class OracleSampler extends AbstractSampler
-  implements TestBean {
+implements TestBean {
 
 	private static final long serialVersionUID = 2177540240166358248L;
 	private static final Logger log = LoggingManager.getLoggerForClass();
-	
+
 	public final static String DATABASE = "OracleSampler.database";
 	public final static String BINARYINFO = "OracleSampler.binaryInfo";
 	public final static String DOREAD = "OracleSampler.doRead";
@@ -24,16 +24,16 @@ public class OracleSampler extends AbstractSampler
 	public final static String CHECKREAD = "OracleSampler.checkRead";
 	public final static String DOWRITE = "OracleSampler.doWrite";
 	public final static String ASSIGNED_WRITE = "OracleSampler.assignedWrite";
-	
+
 	public OracleSampler() {
 		trace("OracleSampler()" + this.toString());
 	}
-	
+
 	@Override
 	public SampleResult sample(Entry arg0) {
 		int threadID = CustomSamplerUtils.getThreadID(Thread.currentThread().getName());
 		trace("sample() ThreadID: " + threadID);
-		
+
 		// Get BinaryInfo and QueryHandler instances.
 		BinaryFileInfo binaryInfo = null;
 		OracleQueryHandler queryHandler = null;
@@ -42,27 +42,27 @@ public class OracleSampler extends AbstractSampler
 			queryHandler = new OracleQueryHandler(getDatabase());
 		} catch (Exception e) {
 			log.error("Failed to create a OracleQueryHandler instance for the " + 
-					  Thread.currentThread().getName() + " sampler. Details:" + e.toString());
+					Thread.currentThread().getName() + " sampler. Details:" + e.toString());
 		}
 
 		// Get an initial SampleResult and start it.
 		SampleResult res = CustomSamplerUtils.getInitialSampleResult(getTitle());
-		
-        if (Boolean.parseBoolean(getDoRead())) { // DO THE READ
-        	CustomSamplerUtils.readWith(queryHandler, binaryInfo, res, 
+
+		if (Boolean.parseBoolean(getDoRead())) { // DO THE READ
+			CustomSamplerUtils.readWith(queryHandler, binaryInfo, res, 
 					Boolean.parseBoolean(getCheckRead()), false, false); //isCheckRead, isRandom, isSpecial
-        } else if (Boolean.parseBoolean(getDoWrite())) { // DO THE WRITE
-        	CustomSamplerUtils.writeWith(queryHandler, binaryInfo, res, 
+		} else if (Boolean.parseBoolean(getDoWrite())) { // DO THE WRITE
+			CustomSamplerUtils.writeWith(queryHandler, binaryInfo, res, 
 					Boolean.parseBoolean(getAssignedWrite()), false);
-        }
-        
-        return res;
+		}
+
+		return res;
 	}
 
 	private void trace(String s) {
 		if(log.isDebugEnabled()) {
 			log.debug(Thread.currentThread().getName() + " (" + getTitle() + " " + s + " " + this.toString());
-	    }
+		}
 	}
 
 	public String getTitle() {
@@ -110,5 +110,5 @@ public class OracleSampler extends AbstractSampler
 	public void setAssignedWrite(String assignedWrite) {
 		setProperty(ASSIGNED_WRITE, assignedWrite);
 	}
-	
+
 }

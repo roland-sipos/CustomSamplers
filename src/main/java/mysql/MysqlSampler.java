@@ -14,7 +14,7 @@ public class MysqlSampler extends AbstractSampler implements TestBean {
 
 	private static final long serialVersionUID = 3170361822373773213L;
 	private static final Logger log = LoggingManager.getLoggerForClass();
-	
+
 	public final static String DATABASE = "MysqlSampler.database";
 	public final static String TABLE = "MysqlSampler.table";
 	public final static String INPUTLOCATION = "MysqlSampler.inputlocation";
@@ -26,7 +26,7 @@ public class MysqlSampler extends AbstractSampler implements TestBean {
 
 	public static BinaryFileInfo binaryInfo;
 
-	
+
 	public MysqlSampler() {
 		binaryInfo = null;
 		trace("MysqlSampler()" + this.toString());
@@ -36,7 +36,7 @@ public class MysqlSampler extends AbstractSampler implements TestBean {
 	public SampleResult sample(Entry arg0) {
 		int threadID = CustomSamplerUtils.getThreadID(Thread.currentThread().getName());
 		trace("sample() ThreadID: " + threadID);
-		
+
 		// Get BinaryInfo and QueryHandler instances.
 		binaryInfo = BinaryFileInfo.getInstance(getInputLocation());
 		MysqlQueryHandler queryHandler = null;
@@ -44,19 +44,19 @@ public class MysqlSampler extends AbstractSampler implements TestBean {
 			queryHandler = new MysqlQueryHandler(getDatabase(), getTable());
 		} catch (Exception e) {
 			log.error("Failed to create a PostgreQueryHandler instance for the " + 
-					  Thread.currentThread().getName() + " sampler. Details:" + e.toString());
+					Thread.currentThread().getName() + " sampler. Details:" + e.toString());
 		}
-		
+
 		// Get an initial SampleResult and start it.
 		SampleResult res = CustomSamplerUtils.getInitialSampleResult(getTitle());
-	
+
 		if(Boolean.parseBoolean(getDoRead())) // DO THE READ
 			CustomSamplerUtils.doReadWith(queryHandler, binaryInfo, res, 
 					Boolean.parseBoolean(getCheckRead()), false);
 		else if (Boolean.parseBoolean(getDoWrite())) // DO THE WRITE
 			CustomSamplerUtils.doWriteWith(queryHandler, binaryInfo, res, 
 					Boolean.parseBoolean(getAssignedWrite()), false);
-		
+
 		return res;
 	}
 
@@ -67,7 +67,7 @@ public class MysqlSampler extends AbstractSampler implements TestBean {
 	public String getTitle() {
 		return this.getName();
 	}
-	
+
 	public String getDatabase() {
 		return getPropertyAsString(DATABASE);
 	}
@@ -116,5 +116,5 @@ public class MysqlSampler extends AbstractSampler implements TestBean {
 	public void setAssignedWrite(String assignedWrite) {
 		setProperty(ASSIGNED_WRITE, assignedWrite);
 	}
-	
+
 }
