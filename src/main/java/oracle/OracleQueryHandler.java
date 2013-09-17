@@ -61,7 +61,7 @@ public class OracleQueryHandler implements QueryHandler {
 			ps.setString(7, metaInfo.get("cmssw_release"));
 			ps.execute();
 			ps.close();
-		} catch (Exception se) { // ORIGINAL: SQL exception.
+		} catch (SQLException se) {
 			throw new CustomSamplersException("SQLException occured during write attempt: " + se.toString());
 		}
 	}
