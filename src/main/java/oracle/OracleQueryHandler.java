@@ -18,9 +18,6 @@ import utils.QueryHandler;
 public class OracleQueryHandler implements QueryHandler {
 
 	private static Connection connection;
-	private static String payloadTableName = "PAYLOAD";
-	private static String tagTableName = "TAG";
-	private static String iovTableName = "IOV";
 
 	public OracleQueryHandler(String databaseName) 
 			throws CustomSamplersException, NotFoundInDBException {
@@ -52,10 +49,10 @@ public class OracleQueryHandler implements QueryHandler {
 					throws CustomSamplersException {
 		PreparedStatement ps;
 		try {
-			ps = connection.prepareStatement("INSERT INTO " + payloadTableName
+			ps = connection.prepareStatement("INSERT INTO PAYLOAD"
 					+ " (HASH, OBJECT_TYPE, DATA, STREAMER_INFO, VERSION, CREATION_TIME, CMSSW_RELEASE)"
 					+ " VALUES (?, ?, ?, ?, ?, ?, ?)");
-			ps.setString(1, metaInfo.get("hash"));
+			ps.setString(1, metaInfo.get("payload_hash"));
 			ps.setString(2, metaInfo.get("object_type"));
 			ps.setBinaryStream(3, new ByteArrayInputStream(payload), payload.length);
 			ps.setBinaryStream(4, new ByteArrayInputStream(streamerInfo), streamerInfo.length);
@@ -70,13 +67,13 @@ public class OracleQueryHandler implements QueryHandler {
 	}
 
 	@Override
-	public byte[] readPayload(HashMap<String, String> metaMap, boolean isSpecial) 
+	public byte[] readPayload(String hashKey, boolean isSpecial) 
 			throws CustomSamplersException {
 		PreparedStatement ps;
 		byte[] result = null;
 		try {
-			ps = connection.prepareStatement("SELECT DATA FROM " + payloadTableName + " WHERE HASH=?");
-			ps.setString(1, metaMap.get("hash"));
+			ps = connection.prepareStatement("SELECT DATA FROM PAYLOAD WHERE HASH=?");
+			ps.setString(1, hashKey);
 			ResultSet rs = ps.executeQuery();
 
 			if (rs != null) {
@@ -87,14 +84,14 @@ public class OracleQueryHandler implements QueryHandler {
 				}
 				if (counter > 1) {
 					throw new CustomSamplersException("More than one row found with hash="
-							+ metaMap.get("hash") + " in " + payloadTableName + " !");
+							+ hashKey + " in PAYLOAD !");
 				}
 				rs.close();
 
 			} else {
 
-				throw new CustomSamplersException("The row with hash=" + metaMap.get("hash")
-						+ " not found in the database!");
+				throw new CustomSamplersException("The row with hash=" + hashKey
+						+ " not found in PAYLOAD!");
 			}
 
 			ps.close();
@@ -108,7 +105,7 @@ public class OracleQueryHandler implements QueryHandler {
 			throws CustomSamplersException {
 		PreparedStatement ps;
 		try {
-			ps = connection.prepareStatement("INSERT INTO " + tagTableName
+			ps = connection.prepareStatement("INSERT INTO TAG"
 					+ " (NAME, REVISION, REVISION_TIME, COMMENT, TIME_TYPE, OBJECT_TYPE,"
 					+ " LAST_VALIDATED, END_OF_VALIDITY, LAST_SINCE, LAST_SINCE_PID, CREATION_TIME)"
 					+ " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
@@ -135,7 +132,7 @@ public class OracleQueryHandler implements QueryHandler {
 			throws CustomSamplersException {
 		PreparedStatement ps;
 		try {
-			ps = connection.prepareStatement("INSERT INTO " + iovTableName
+			ps = connection.prepareStatement("INSERT INTO IOV"
 					+ " (TAG_NAME, SINCE, PAYLOAD_HASH, INSERT_TIME) VALUES (?, ?, ?, ?)");
 			ps.setString(1, keyAndMetaMap.get("tag_name"));
 			ps.setLong(2, Long.parseLong(keyAndMetaMap.get("since")));
@@ -154,8 +151,8 @@ public class OracleQueryHandler implements QueryHandler {
 		PreparedStatement ps;
 		String result = null;
 		try {
-			ps = connection.prepareStatement("SELECT DATA FROM "
-					+ payloadTableName + " WHERE TAG_NAME=? AND SINCE=?");
+			ps = connection.prepareStatement("SELECT PAYLOAD_HASH FROM IOV"
+					+ " WHERE TAG_NAME=? AND SINCE=?");
 			ps.setString(1, keyMap.get("tag_name"));
 			ps.setLong(2, Long.parseLong(keyMap.get("since")));
 			ResultSet rs = ps.executeQuery();
@@ -169,8 +166,7 @@ public class OracleQueryHandler implements QueryHandler {
 				if (counter > 1) {
 					throw new CustomSamplersException("More than one row found with "
 							+ "tag_name=" + keyMap.get("tag_name")
-							+ " and since=" + keyMap.get("since")
-							+ " in " + payloadTableName + " !");
+							+ " and since=" + keyMap.get("since") + " in IOV !");
 				}
 				rs.close();
 
@@ -179,7 +175,7 @@ public class OracleQueryHandler implements QueryHandler {
 				throw new CustomSamplersException("The row with"
 						+ " tag_name=" + keyMap.get("tag_name")
 						+ " and since=" + keyMap.get("since")
-						+ " is not found in the database!");
+						+ " is not found in IOV!");
 			}
 
 			ps.close();
@@ -251,7 +247,7 @@ public class OracleQueryHandler implements QueryHandler {
 			} else {
 
 				throw new CustomSamplersException("The row with"
-						+ " name=" + tagKey + " is not found in the database!");
+						+ " name=" + tagKey + " is not found in TAG!");
 			}
 
 			ps.close();

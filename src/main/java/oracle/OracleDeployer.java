@@ -132,7 +132,7 @@ public class OracleDeployer {
 				insertTT.setDate(3, new Date(System.currentTimeMillis()));
 				insertTT.setString(4, "This is the first and only tag for testing.");
 				insertTT.setInt(5, 1);
-				insertTT.setString(6, "any_obj_type");
+				insertTT.setString(6, "RANDOM");
 				insertTT.setInt(7, 111);
 				insertTT.setInt(8, 222);
 				insertTT.setInt(9, 333);

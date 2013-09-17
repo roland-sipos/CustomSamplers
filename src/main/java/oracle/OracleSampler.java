@@ -50,7 +50,7 @@ implements TestBean {
 
 		if (Boolean.parseBoolean(getDoRead())) { // DO THE READ
 			CustomSamplerUtils.readWith(queryHandler, binaryInfo, res, 
-					Boolean.parseBoolean(getCheckRead()), false, false); //isCheckRead, isRandom, isSpecial
+					Boolean.parseBoolean(getCheckRead()), Boolean.parseBoolean(getUseRandomAccess()), false); //isCheckRead, isRandom, isSpecial
 		} else if (Boolean.parseBoolean(getDoWrite())) { // DO THE WRITE
 			CustomSamplerUtils.writeWith(queryHandler, binaryInfo, res, 
 					Boolean.parseBoolean(getAssignedWrite()), false);
