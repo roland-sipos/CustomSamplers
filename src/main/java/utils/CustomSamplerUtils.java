@@ -1,7 +1,8 @@
 package utils;
 
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.jmeter.samplers.SampleResult;
 
@@ -36,28 +37,38 @@ public class CustomSamplerUtils {
 	}
 
 	public static void readWith(QueryHandler queryHandler, BinaryFileInfo binaryInfo,
-			SampleResult res, boolean isCheckRead, boolean isRandom, boolean isSpecial) {
+			SampleResult res, HashMap<String, Boolean> options) {
+			//SampleResult res, boolean isCheckRead, boolean isRandom, boolean isSpecial) {
 		HashMap<String, String> meta = new HashMap<String, String>();
-		if (isRandom) {
+		if (options.get("isRandom")) {
 			meta = binaryInfo.getRandomMeta();
 		} else {
-			meta = binaryInfo.getAssignedMeta();
+			meta = binaryInfo.getAssignedMeta(1);
 		}
-
 		try {
 			res.sampleStart();
 			String hash = queryHandler.readIov(meta);
 			byte[] result = null;
-			result = queryHandler.readPayload(hash, isSpecial);
+			result = queryHandler.readPayload(hash, options.get("isSpecial"));
 
-			if (result == null)
-				finalizeResponse(res, false, "500", "The result is empty!");
-
-			//TODO: if (isCheckRead)
-			//String filePath = binaryInfo.getBinaryFilePathList().get()
-			finalizeResponse(res, true, "200", 
-					"Payload read: " + meta.get("full_id") + " read successfully!");
-
+			if (result == null) {
+				finalizeResponse(res, false, "500", "The result is empty for " + meta.get("id") + " !");
+			} else {
+				if (options.get("isCheckRead")) {
+					String binaryFullPath = binaryInfo.getFilePathList().get(meta.get("id"));
+					byte[] payload = binaryInfo.read(binaryFullPath);
+					if (result.equals(payload)) {
+						finalizeResponse(res, false, "600",
+								"Payload content for: " + meta.get("id") + " differs from the original!");
+					} else {
+						finalizeResponse(res, true, "200",
+								"Payload read: " + meta.get("id") + " read successfully and matching with original!");
+					}
+				} else {
+					finalizeResponse(res, true, "200",
+							"Payload read: " + meta.get("id") + " read successfully!");
+				}
+			}
 		} catch (CustomSamplersException ex) {
 			finalizeResponse(res, false, "500", ex.toString());
 		} finally {
@@ -66,90 +77,66 @@ public class CustomSamplerUtils {
 	}
 
 	public static void writeWith(QueryHandler queryHandler, BinaryFileInfo binaryInfo,
-			SampleResult res, boolean isAssigned, boolean isSpecial) {
-		if (!isAssigned) { // Then binaryID is based on ThreadID.
+			SampleResult res, HashMap<String, Boolean> options) {
+		String binaryID = null;
+		HashMap<String, String> binaryMeta = null;
+		if (!options.get("isAssigned")) { // Then binaryID is based on ThreadID.
 			int threadID = getThreadID(Thread.currentThread().getName());
-			String binaryID = binaryInfo.getXthBinaryID(threadID);
-			HashMap<String, String> binaryMeta = binaryInfo.getMetaInfo().get(binaryID + ".chunks");
+			binaryID = binaryInfo.getXthFileName(threadID);
+			binaryMeta = binaryInfo.getMetaInfo().get(binaryID);
+		} else {
+			// TODO: String binaryID = BinaryInfo.getAssignedIDForThread(threadID);
+		}
+		String streamerInfoFullPath = binaryInfo.getPathForStreamerInfo(binaryID);
+		byte[] streamerInfo = binaryInfo.read(streamerInfoFullPath);
 
-			String binaryFullPath = binaryInfo.getOriginalFilePathList().get(binaryID);
-			byte[] payload = binaryInfo.read(binaryFullPath);
-			byte[] streamerInfo = binaryInfo.read(binaryFullPath + ".chunks/STREAMER_INFO.bin");
+		if (options.get("useChunks")) { // Write the chunks, not the big file.
+			TreeMap<String, String> chunkPathList = binaryInfo.getChunkPathList().get(binaryID);
 			try {
 				res.sampleStart();
-				queryHandler.writePayload(binaryMeta, payload, streamerInfo, isSpecial);
+				queryHandler.writePayload(binaryMeta, null, streamerInfo, options.get("isSpecial"));
+				res.samplePause();
+				for (Map.Entry<String, String> it : chunkPathList.entrySet()) {
+					byte[] chunk = binaryInfo.read(it.getValue());
+					SampleResult subres = getInitialSampleResult(binaryID + " - " + it.getKey());
+					subres.sampleStart();
+					queryHandler.writeChunk(binaryMeta, it.getKey(), chunk, options.get("isSpecial"));
+					finalizeResponse(subres, true, "200", "Chunk write: " + it.getKey() + " Successfull!");
+					subres.sampleEnd();
+					res.storeSubResult(subres);
+				}
+				res.sampleResume();
 				queryHandler.writeIov(binaryMeta);
-				finalizeResponse(res, true, "200",
-						"Payload write: " + binaryID + " Successfull!");
+				finalizeResponse(res, true, "200", "Payload (chunk) write: " + binaryID + " Successfull!");
 			} catch (CustomSamplersException ex) {
 				finalizeResponse(res, false, "500", ex.toString());
 			} finally {
 				res.sampleEnd();
 			}
-		} else {
-			// TODO
-			// String binaryID = BinaryInfo.getAssignedIDForThread(threadID);
+		} else { // Write the big file, not it's chunks.
+			String binaryFullPath = binaryInfo.getFilePathList().get(binaryID);
+			byte[] payload = binaryInfo.read(binaryFullPath);
+			try {
+				res.sampleStart();
+				queryHandler.writePayload(binaryMeta, payload, streamerInfo, options.get("isSpecial"));
+				queryHandler.writeIov(binaryMeta);
+				finalizeResponse(res, true, "200", "Payload write: " + binaryID + " Successfull!");
+			} catch (CustomSamplersException ex) {
+				finalizeResponse(res, false, "500", ex.toString());
+			} finally {
+				res.sampleEnd();
+			}
 		}
 	}
 
 	@Deprecated
 	public static void doReadWith(QueryHandler queryHandler, BinaryFileInfo binaryInfo,
 			SampleResult res, boolean isCheckRead, boolean isSpecial) {
-		/*HashMap<String, String> hashes = binaryInfo.getRandomHashesAndIDs();
-		String originalID = hashes.get("originalID");
-		String chunkID = hashes.get("chunkID");
-
-		try {
-			byte[] result = null;	
-			res.sampleStart();
-			result = queryHandler.readBinary(originalID, chunkID,
-					hashes.get("original") + "__" + hashes.get("chunk"), isSpecial);
-
-			if (result == null)
-				finalizeResponse(res, false, "500", "The result is empty!");
-
-			if (isCheckRead) {
-				String filePath = binaryInfo.getBinaryFilePathList().get(originalID).get(chunkID);
-				byte[] fileContent = binaryInfo.read(filePath);
-				if (!Arrays.equals(result, fileContent))
-					finalizeResponse(res, false, "500", "Read value is not correct!");
-			}
-
-			finalizeResponse(res, true, "200",
-					"Value read for:" + " B:" + originalID + " C:" + chunkID + " Success!");
-
-		} catch (CustomSamplersException ex) {
-			finalizeResponse(res, false, "500", ex.toString());
-		} finally {
-			res.sampleEnd();
-		}*/
 	}
 
 	@Deprecated
 	public static void doWriteWith(QueryHandler queryHandler, BinaryFileInfo binaryInfo, 
 			SampleResult res, boolean isAssigned, boolean isSpecial) {
-		/*if (isAssigned) {
-			String chunkID = "chunk-" + getThreadID(Thread.currentThread().getName()) + ".bin";
-			String pathToChunk = binaryInfo.getBinaryFilePathList().get("BIGrbinary-0.bin.chunks").get(chunkID);
-			byte[] chunkContent = binaryInfo.read(pathToChunk);
-			HashMap<String, String> hashes = binaryInfo.getHashesForIDs("BIGrbinary-0.bin.chunks", chunkID);
-			try {
-				res.sampleStart();
-				queryHandler.writeBinary("BIGrbinary-0.bin.chunks", chunkID, 
-						hashes.get("original") + "__" + hashes.get("chunk"), chunkContent, isSpecial);
-
-				finalizeResponse(res, true, "200",
-						"Value read for:" + " B: BIGrbinary-0.bin.chunks" + " C:" + chunkID + " Success!");
-
-			} catch (CustomSamplersException ex) {
-				//log.error("PostgreSampler write attempt failed: " + ex.toString());
-				finalizeResponse(res, false, "500", ex.toString());
-			} finally {
-				res.sampleEnd();
-			}
-		} else {
-			// TODO
-		}*/
 	}
 
 }
