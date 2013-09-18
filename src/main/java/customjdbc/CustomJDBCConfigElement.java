@@ -15,8 +15,7 @@ import org.apache.log.Logger;
 import utils.CustomSamplersException;
 
 
-public class CustomJDBCConfigElement 
-extends AbstractTestElement
+public class CustomJDBCConfigElement extends AbstractTestElement
 implements ConfigElement, TestStateListener, TestBean {
 
 	private static final long serialVersionUID = 6256939089220907405L;
@@ -81,9 +80,9 @@ implements ConfigElement, TestStateListener, TestBean {
 
 			Connection connection = null;
 			String connectionStr = getJdbcname() + "://" + getHost() + ":" + getPort() + "/" + getDatabase();
-			if (getSid() != "")
+			if (!getSid().isEmpty()) {
 				connectionStr = getJdbcname() + ":@" + getHost() + ":" + getPort() + ":" + getSid();
-
+			}
 			try {
 				connection = DriverManager.getConnection(connectionStr, getUsername(), getPassword());
 			} catch (SQLException e) {
