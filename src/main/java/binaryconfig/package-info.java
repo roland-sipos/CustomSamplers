@@ -1,7 +1,5 @@
 /**
- * This package contains the Binary input related ConfigElement for the JMeter tests. 
- * 
- * @author cb
- *
+ * This package contains the CustomSamplers' specific binary reader embedding ConfigElement.
+ * @author Roland Sipos
  */
 package binaryconfig;

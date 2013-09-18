@@ -11,16 +11,15 @@ import org.apache.log.Logger;
 import utils.BinaryFileInfo;
 import utils.CustomSamplersException;
 
-public class BinaryConfigElement 
-	extends AbstractTestElement
-		implements ConfigElement, TestStateListener, TestBean {
+public class BinaryConfigElement extends AbstractTestElement
+implements ConfigElement, TestStateListener, TestBean {
 
 	private static final long serialVersionUID = 5820940444795925355L;
 	private static final Logger log = LoggingManager.getLoggerForClass();
 
 	public final static String INPUT_LOCATION = "BinaryConfigElement.inputlocation";
 	public final static String BINARY_INFO = "BinaryConfigElement.binaryInfo";
-	
+
 	@Override
 	public void testEnded() {
 		getThreadContext().getVariables().putObject(getBinaryInfo(), null);
@@ -45,14 +44,14 @@ public class BinaryConfigElement
 			}
 		}
 	}
-	
+
 	@Override
 	public void testStarted() {
 		if (log.isDebugEnabled()) {
 			log.debug(getTitle() + " test started...");
 			log.debug("Input location of binary files is: " + getInputLocation());
 		}
-		
+
 		if (getThreadContext().getVariables().getObject(getBinaryInfo()) != null) {
 			if (log.isWarnEnabled()) {
 				log.warn(getBinaryInfo() + " has already been defined!");
@@ -62,11 +61,11 @@ public class BinaryConfigElement
 			if (log.isDebugEnabled()) {
 				log.debug(getBinaryInfo() + " is being defined...");
 			}
-			
+
 			BinaryFileInfo binaryInfo = BinaryFileInfo.getInstance(getInputLocation());
 			getThreadContext().getVariables().putObject(getBinaryInfo(), binaryInfo);
 		}
-		
+
 	}
 
 	@Override
@@ -77,7 +76,7 @@ public class BinaryConfigElement
 	@Override
 	public void addConfigElement(ConfigElement arg0) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -89,7 +88,7 @@ public class BinaryConfigElement
 	public String getTitle() {
 		return this.getName();
 	}
-	
+
 	public String getInputLocation() {
 		return getPropertyAsString(INPUT_LOCATION);
 	}
@@ -102,5 +101,5 @@ public class BinaryConfigElement
 	public void setBinaryInfo(String binaryInfo) {
 		setProperty(BINARY_INFO, binaryInfo);
 	}
-	
+
 }
