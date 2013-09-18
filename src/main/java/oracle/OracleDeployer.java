@@ -77,6 +77,7 @@ public class OracleDeployer {
 					+ " LAST_SINCE_PID INT NULL,"
 					+ " CREATION_TIME DATE NULL,"
 					+ " PRIMARY KEY (NAME) )";
+
 			String createPayloadQuery = "CREATE TABLE PAYLOAD ("
 					+ " HASH VARCHAR(40) NOT NULL,"
 					+ " OBJECT_TYPE VARCHAR(100) NULL,"
@@ -86,6 +87,7 @@ public class OracleDeployer {
 					+ " CREATION_TIME DATE NULL,"
 					+ " CMSSW_RELEASE VARCHAR(45) NULL,"
 					+ " PRIMARY KEY (HASH) )";
+
 			String createChunkQuery = "CREATE TABLE CHUNK ("
 					+ " PAYLOAD_HASH VARCHAR(40) NOT NULL,"
 					+ " CHUNK_HASH VARCHAR(40) NOT NULL,"
@@ -94,6 +96,7 @@ public class OracleDeployer {
 			String createChunkIdxQuery = "CREATE INDEX PAYLOAD_HASH_FK_IDX ON CHUNK (PAYLOAD_HASH ASC)";
 			String alterChunkHashFK = "ALTER TABLE CHUNK ADD CONSTRAINT PAYLOAD_HASH_FK_IDX "
 					+ " FOREIGN KEY (PAYLOAD_HASH) REFERENCES PAYLOAD(HASH)";
+
 			String createIOVQuery = "CREATE TABLE IOV ("
 					+ " TAG_NAME VARCHAR(100) NOT NULL,"
 					+ " SINCE INT NOT NULL,"

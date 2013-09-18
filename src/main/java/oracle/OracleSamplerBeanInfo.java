@@ -15,10 +15,7 @@ public class OracleSamplerBeanInfo extends BeanInfoSupport {
 
 		createPropertyGroup("oracle", new String[] {"database"});
 		createPropertyGroup("sampler", new String[] {"binaryInfo", "useChunks"});
-
-		createPropertyGroup("reading", new String[] {
-				"doRead", "useRandomAccess", "checkRead"});
-
+		createPropertyGroup("reading", new String[] {"doRead", "useRandomAccess", "checkRead"});
 		createPropertyGroup("writing", new String[] {"doWrite", "assignedWrite"});
 
 		PropertyDescriptor p = property("database");
