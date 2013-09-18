@@ -49,8 +49,7 @@ public class OracleQueryHandler implements QueryHandler {
 		PreparedStatement ps;
 		try {
 			ps = connection.prepareStatement("INSERT INTO CHUNK"
-					+ " (PAYLOAD_HASH, CHUNK_HASH, DATA)"
-					+ " VALUES (?, ?, ?)");
+					+ " (PAYLOAD_HASH, CHUNK_HASH, DATA) VALUES (?, ?, ?)");
 			ps.setString(1, metaInfo.get("payload_hash"));
 			ps.setString(2, metaInfo.get(chunkID));
 			ps.setBinaryStream(3, new ByteArrayInputStream(chunk), chunk.length);
