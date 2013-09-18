@@ -17,12 +17,10 @@ import utils.QueryHandler;
 public class MysqlQueryHandler implements QueryHandler {
 
 	private static Connection connection;
-	private static String table;
 
-	public MysqlQueryHandler(String databaseName, String tableName) 
+	public MysqlQueryHandler(String databaseName) 
 			throws CustomSamplersException, NotFoundInDBException {
 		connection = CustomJDBCConfigElement.getJDBCConnection(databaseName);
-		table = tableName;
 		if (connection == null)
 			throw new NotFoundInDBException("JDBCConnection instance with name: " + databaseName + " was not found in config!");
 	}
@@ -33,23 +31,6 @@ public class MysqlQueryHandler implements QueryHandler {
 			byte[] fileContent, boolean isSpecial)
 					throws CustomSamplersException {
 		System.out.println("This method is deprecated! Don't use it!");
-		/*ByteArrayInputStream valueStream = new ByteArrayInputStream(fileContent);
-		PreparedStatement ps;
-		try {
-			ps = connection.prepareStatement(
-					"INSERT INTO "+ table + "(hash, chunk_id, binary_id, data) VALUES (?, ?, ?, ?)");
-			ps.setString(1, hash);
-			ps.setString(2, chunkID);
-			ps.setString(3, binaryID);
-			ps.setBinaryStream(4, valueStream, fileContent.length);
-			ps.execute();
-			ps.close();
-			valueStream.close();
-		} catch (SQLException se) {
-			throw new CustomSamplersException("SQLException occured during write attempt: " + se.toString());
-		} catch (IOException ie) {
-			throw new CustomSamplersException("IOException occured during write attempt: " + ie.toString());
-		}*/
 	}
 
 	@Deprecated
@@ -58,31 +39,60 @@ public class MysqlQueryHandler implements QueryHandler {
 			throws CustomSamplersException {
 		System.out.println("This method is deprecated! Don't use it!");
 		return null;
-		/*PreparedStatement ps;
+	}
+
+	@Override
+	public void writeChunk(HashMap<String, String> metaInfo, String chunkID,
+			byte[] chunk, Boolean isSpecial) throws CustomSamplersException {
+		PreparedStatement ps;
+		try {
+			ps = connection.prepareStatement("INSERT INTO `CHUNK`"
+					+ " (`PAYLOAD_HASH`, `CHUNK_HASH`, `DATA`)"
+					+ " VALUES (?, ?, ?)");
+			ps.setString(1, metaInfo.get("payload_hash"));
+			ps.setString(2, metaInfo.get(chunkID));
+			ps.setBinaryStream(3, new ByteArrayInputStream(chunk), chunk.length);
+			ps.execute();
+			ps.close();
+		} catch (SQLException se) {
+			throw new CustomSamplersException("SQLException occured during write attempt: " + se.toString());
+		}
+	}
+
+	@Override
+	public byte[] readChunk(String hashKey, String chunkHashKey,
+			boolean isSpecial) throws CustomSamplersException {
+		PreparedStatement ps;
 		byte[] result = null;
 		try {
-			ps = connection.prepareStatement(
-					"SELECT data FROM " + table + " WHERE hash=?");
-			ps.setString(1, hash);
+			ps = connection.prepareStatement("SELECT `DATA` FROM `CHUNK` WHERE `PAYLOAD_HASH`=? AND `CHUNK_HASH`=?");
+			ps.setString(1, hashKey);
+			ps.setString(2, chunkHashKey);
 			ResultSet rs = ps.executeQuery();
+
 			if (rs != null) {
 				int counter = 0;
 				while(rs.next()) {
-					result = rs.getBytes(1);
+					result = rs.getBytes("DATA");
 					counter++;
 				}
-				if (counter > 1)
-					throw new CustomSamplersException(
-							"More than one row found with hash=" + hash + " in " + table + " !");
+				if (counter > 1) {
+					throw new CustomSamplersException("More than one row found with "
+							+ "hash=" + hashKey + " and chunk_hash=" + chunkHashKey + " in CHUNK !");
+				}
 				rs.close();
+
 			} else {
-				throw new CustomSamplersException("The row with hash=" + hash + " not found in the database!");
+
+				throw new CustomSamplersException("The row with hash=" + hashKey
+						+ " chunk_hash=" +chunkHashKey + " not found in CHUNK!");
 			}
+
 			ps.close();
 		} catch (SQLException e) {
 			throw new CustomSamplersException("SQLException occured during read attempt: " + e.toString());
 		}
-		return result;*/
+		return result;
 	}
 
 	@Override
@@ -91,31 +101,35 @@ public class MysqlQueryHandler implements QueryHandler {
 					throws CustomSamplersException {
 		PreparedStatement ps;
 		try {
-			ps = connection.prepareStatement("INSERT INTO PAYLOAD"
+			ps = connection.prepareStatement("INSERT INTO `PAYLOAD`"
 					+ " (HASH, OBJECT_TYPE, DATA, STREAMER_INFO, VERSION, CREATION_TIME, CMSSW_RELEASE)"
 					+ " VALUES (?, ?, ?, ?, ?, ?, ?)");
-			ps.setString(1, metaMap.get("hash"));
+			ps.setString(1, metaMap.get("payload_hash"));
 			ps.setString(2, metaMap.get("object_type"));
-			ps.setBinaryStream(3, new ByteArrayInputStream(payload), payload.length);
+			if (payload != null) {
+				ps.setBinaryStream(3, new ByteArrayInputStream(payload), payload.length);
+			} else {
+				ps.setBinaryStream(3, new ByteArrayInputStream(new byte[0]));
+			}
 			ps.setBinaryStream(4, new ByteArrayInputStream(streamerInfo), streamerInfo.length);
 			ps.setString(5, metaMap.get("version"));
 			ps.setTimestamp(6, new Timestamp(System.currentTimeMillis()));
 			ps.setString(7, metaMap.get("cmssw_release"));
 			ps.execute();
 			ps.close();
-		} catch (Exception se) { // ORIGINAL: SQL exception.
+		} catch (SQLException se) {
 			throw new CustomSamplersException("SQLException occured during write attempt: " + se.toString());
 		}
 	}
 
 	@Override
-	public byte[] readPayload(HashMap<String, String> metaMap, boolean isSpecial)
+	public byte[] readPayload(String hashKey, boolean isSpecial)
 			throws CustomSamplersException {
 		PreparedStatement ps;
 		byte[] result = null;
 		try {
-			ps = connection.prepareStatement("SELECT DATA FROM PAYLOAD WHERE HASH=?");
-			ps.setString(1, metaMap.get("hash"));
+			ps = connection.prepareStatement("SELECT DATA FROM `PAYLOAD` WHERE HASH=?");
+			ps.setString(1, hashKey);
 			ResultSet rs = ps.executeQuery();
 
 			if (rs != null) {
@@ -126,13 +140,13 @@ public class MysqlQueryHandler implements QueryHandler {
 				}
 				if (counter > 1) {
 					throw new CustomSamplersException("More than one row found with hash="
-							+ metaMap.get("hash") + " in PAYLOAD !");
+							+ hashKey + " in PAYLOAD !");
 				}
 				rs.close();
 
 			} else {
 
-				throw new CustomSamplersException("The row with hash=" + metaMap.get("hash")
+				throw new CustomSamplersException("The row with hash=" + hashKey
 						+ " not found in the database!");
 			}
 
@@ -148,10 +162,10 @@ public class MysqlQueryHandler implements QueryHandler {
 			throws CustomSamplersException {
 		PreparedStatement ps;
 		try {
-			ps = connection.prepareStatement("INSERT INTO IOV"
+			ps = connection.prepareStatement("INSERT INTO `IOV`"
 					+ " (TAG_NAME, SINCE, PAYLOAD_HASH, INSERT_TIME) VALUES (?, ?, ?, ?)");
 			ps.setString(1, keyAndMetaMap.get("tag_name"));
-			ps.setInt(2, Integer.parseInt(keyAndMetaMap.get("since")));
+			ps.setLong(2, Long.parseLong(keyAndMetaMap.get("since")));
 			ps.setString(3, keyAndMetaMap.get("payload_hash"));
 			ps.setDate(4, new Date(System.currentTimeMillis()));
 			ps.execute();
@@ -167,7 +181,7 @@ public class MysqlQueryHandler implements QueryHandler {
 		PreparedStatement ps;
 		String result = null;
 		try {
-			ps = connection.prepareStatement("SELECT DATA FROM `PAYLOAD`"
+			ps = connection.prepareStatement("SELECT PAYLOAD_HASH FROM `IOV`"
 					+ " WHERE TAG_NAME=? AND SINCE=?");
 			ps.setString(1, keyMap.get("tag_name"));
 			ps.setLong(2, Long.parseLong(keyMap.get("since")));
@@ -219,7 +233,7 @@ public class MysqlQueryHandler implements QueryHandler {
 			ps.setString(6, metaMap.get("object_type"));
 			ps.setInt(7, Integer.parseInt(metaMap.get("last_validated_time")));
 			ps.setInt(8, Integer.parseInt(metaMap.get("end_of_validity")));
-			ps.setInt(9, Integer.parseInt(metaMap.get("last_since")));
+			ps.setLong(9, Long.parseLong(metaMap.get("last_since")));
 			ps.setInt(10, Integer.parseInt(metaMap.get("last_since_pid")));
 			ps.setTimestamp(11, new Timestamp(System.currentTimeMillis()));
 		} catch (SQLException se) {

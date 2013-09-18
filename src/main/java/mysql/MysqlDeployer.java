@@ -74,7 +74,7 @@ public class MysqlDeployer {
 					+ " `OBJECT_TYPE` VARCHAR(100) NULL,"
 					+ " `LAST_VALIDATED_TIME` INT NULL,"
 					+ " `END_OF_VALIDITY` INT NULL,"
-					+ " `LAST_SINCE` INT NULL,"
+					+ " `LAST_SINCE` BIGINT NULL,"
 					+ " `LAST_SINCE_PID` INT NULL,"
 					+ " `CREATION_TIME` TIMESTAMP NULL,"
 					+ " PRIMARY KEY (`NAME`) )"
@@ -83,7 +83,7 @@ public class MysqlDeployer {
 			String createPayloadQuery = "CREATE  TABLE IF NOT EXISTS `PAYLOAD` ("
 					+ " `HASH` VARCHAR(40) NOT NULL ,"
 					+ " `OBJECT_TYPE` VARCHAR(100) NULL ,"
-					+ " `DATA` BLOB NULL ,"
+					+ " `DATA` LONGBLOB NULL ,"
 					+ " `STREAMER_INFO` BLOB NULL ,"
 					+ " `VERSION` VARCHAR(20) NULL ,"
 					+ " `CREATION_TIME` TIMESTAMP NULL ,"
@@ -91,14 +91,25 @@ public class MysqlDeployer {
 					+ " PRIMARY KEY (`HASH`) )"
 					+ " ENGINE = " + whichEngine;
 
+			String createChunkQuery = "CREATE TABLE IF NOT EXISTS `CHUNK` ("
+					+ " `PAYLOAD_HASH` VARCHAR(40) NOT NULL,"
+					+ " `CHUNK_HASH` VARCHAR(40) NOT NULL,"
+					+ " `DATA` LONGBLOB NULL,"
+					+ " PRIMARY KEY (`PAYLOAD_HASH`, `CHUNK_HASH`) )"
+					+ " ENGINE = " + whichEngine;
+			String createChunkIdxQuery = "CREATE INDEX `PAYLOAD_HASH_FK_IDX` ON `CHUNK` (`PAYLOAD_HASH` ASC)";
+			String alterChunkHashFK = "ALTER TABLE `CHUNK` ADD CONSTRAINT `PAYLOAD_HASH_FK_IDX` "
+					+ " FOREIGN KEY (`PAYLOAD_HASH`) REFERENCES `PAYLOAD`(`HASH`)";
+
 			String createIOVQuery = "CREATE TABLE IF NOT EXISTS `IOV` ("
 					+ " `TAG_NAME` VARCHAR(100) NOT NULL,"
-					+ " `SINCE` INT NOT NULL,"
+					+ " `SINCE` BIGINT NOT NULL,"
 					+ " `PAYLOAD_HASH` VARCHAR(40) NOT NULL,"
 					+ " `INSERT_TIME` DATETIME NOT NULL,"
 					+ " PRIMARY KEY (`TAG_NAME`, `SINCE`),"
 					+ "CONSTRAINT `TAG_FK_idx`"
-					+ " FOREIGN KEY (`TAG_NAME` ) REFERENCES `PAYLOAD` (`HASH` ) )"
+					+ " FOREIGN KEY (`TAG_NAME` ) REFERENCES `TAG` (`NAME` ),"
+					+ " FOREIGN KEY (`PAYLOAD_HASH`) REFERENCES `PAYLOAD` (`HASH`) )"
 					+ "ENGINE = " + whichEngine;
 
 			String createTagIdxQuery = "CREATE INDEX `TAG_FK_idx` ON `IOV` (`TAG_NAME` ASC)";
@@ -113,6 +124,15 @@ public class MysqlDeployer {
 				create = connection.prepareStatement(createPayloadQuery);
 				failed = create.execute();
 				checkAndNotify(failed, createPayloadQuery, prefix);
+				create = connection.prepareStatement(createChunkQuery);
+				failed = create.execute();
+				checkAndNotify(failed, createChunkQuery, prefix);
+				create = connection.prepareStatement(createChunkIdxQuery);
+				failed = create.execute();
+				checkAndNotify(failed, createChunkIdxQuery, prefix);
+				create = connection.prepareStatement(alterChunkHashFK);
+				failed = create.execute();
+				checkAndNotify(failed, alterChunkHashFK, prefix);
 				create = connection.prepareStatement(createIOVQuery);
 				failed = create.execute();
 				checkAndNotify(failed, createIOVQuery, prefix);
@@ -131,7 +151,7 @@ public class MysqlDeployer {
 				insertTT.setDate(3, new Date(System.currentTimeMillis()));
 				insertTT.setString(4, "This is the first and only tag for testing.");
 				insertTT.setInt(5, 1);
-				insertTT.setString(6, "any_obj_type");
+				insertTT.setString(6, "RANDOM");
 				insertTT.setInt(7, 111);
 				insertTT.setInt(8, 222);
 				insertTT.setInt(9, 333);
@@ -153,6 +173,7 @@ public class MysqlDeployer {
 		protected void destroyEnvironment() {
 			System.out.println(" destroyEnvironment() -> Destroying environment...");
 			String deleteTagQuery = "DROP TABLE IF EXISTS `TAG`";
+			String deleteChunkQuery = "DROP TABLE IF EXISTS `CHUNK`";
 			String deletePayloadQuery = "DROP TABLE IF EXISTS `PAYLOAD`";
 			String deleteIOVQuery = "DROP TABLE IF EXISTS `IOV`";
 			PreparedStatement delete = null;
@@ -161,6 +182,9 @@ public class MysqlDeployer {
 				delete = connection.prepareStatement(deleteIOVQuery);
 				Boolean failed = delete.execute();
 				checkAndNotify(failed, deleteIOVQuery, prefix);
+				delete = connection.prepareStatement(deleteChunkQuery);
+				failed = delete.execute();
+				checkAndNotify(failed, deleteChunkQuery, prefix);
 				delete = connection.prepareStatement(deletePayloadQuery);
 				failed = delete.execute();
 				checkAndNotify(failed, deletePayloadQuery, prefix);

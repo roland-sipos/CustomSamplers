@@ -1,11 +1,15 @@
 package mysql;
 
+import java.util.HashMap;
+
 import org.apache.jmeter.samplers.AbstractSampler;
 import org.apache.jmeter.samplers.Entry;
 import org.apache.jmeter.samplers.SampleResult;
 import org.apache.jmeter.testbeans.TestBean;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
+
+import binaryconfig.BinaryConfigElement;
 
 import utils.BinaryFileInfo;
 import utils.CustomSamplerUtils;
@@ -16,19 +20,15 @@ public class MysqlSampler extends AbstractSampler implements TestBean {
 	private static final Logger log = LoggingManager.getLoggerForClass();
 
 	public final static String DATABASE = "MysqlSampler.database";
-	public final static String TABLE = "MysqlSampler.table";
-	public final static String INPUTLOCATION = "MysqlSampler.inputlocation";
+	public final static String BINARYINFO = "MysqlSampler.binaryInfo";
+	public final static String USECHUNKS = "MysqlSampler.useChunks";
 	public final static String DOREAD = "MysqlSampler.doRead";
 	public final static String USERANDOMACCESS = "MysqlSampler.useRandomAccess";
 	public final static String CHECKREAD = "MysqlSampler.checkRead";
 	public final static String DOWRITE = "MysqlSampler.doWrite";
 	public final static String ASSIGNED_WRITE = "MysqlSampler.assignedWrite";
 
-	public static BinaryFileInfo binaryInfo;
-
-
 	public MysqlSampler() {
-		binaryInfo = null;
 		trace("MysqlSampler()" + this.toString());
 	}
 
@@ -38,53 +38,65 @@ public class MysqlSampler extends AbstractSampler implements TestBean {
 		trace("sample() ThreadID: " + threadID);
 
 		// Get BinaryInfo and QueryHandler instances.
-		binaryInfo = BinaryFileInfo.getInstance(getInputLocation());
+		BinaryFileInfo binaryInfo = null;
 		MysqlQueryHandler queryHandler = null;
 		try {
-			queryHandler = new MysqlQueryHandler(getDatabase(), getTable());
+			binaryInfo = BinaryConfigElement.getBinaryFileInfo(getBinaryInfo());
+			queryHandler = new MysqlQueryHandler(getDatabase());
 		} catch (Exception e) {
-			log.error("Failed to create a PostgreQueryHandler instance for the " + 
+			log.error("Failed to create a MysqlQueryHandler instance for the " + 
 					Thread.currentThread().getName() + " sampler. Details:" + e.toString());
 		}
 
-		// Get an initial SampleResult and start it.
+		// Get an initial SampleResult and parse options.
 		SampleResult res = CustomSamplerUtils.getInitialSampleResult(getTitle());
+		HashMap<String, Boolean> options = prepareOptions();
 
-		if(Boolean.parseBoolean(getDoRead())) // DO THE READ
-			CustomSamplerUtils.doReadWith(queryHandler, binaryInfo, res, 
-					Boolean.parseBoolean(getCheckRead()), false);
-		else if (Boolean.parseBoolean(getDoWrite())) // DO THE WRITE
-			CustomSamplerUtils.doWriteWith(queryHandler, binaryInfo, res, 
-					Boolean.parseBoolean(getAssignedWrite()), false);
-
+		if(Boolean.parseBoolean(getDoRead())) { // DO THE READ
+			CustomSamplerUtils.readWith(queryHandler, binaryInfo, res, options);
+		} else if (Boolean.parseBoolean(getDoWrite())) { // DO THE WRITE
+			CustomSamplerUtils.writeWith(queryHandler, binaryInfo, res, options);
+		}
 		return res;
 	}
 
+	private HashMap<String, Boolean> prepareOptions() {
+		HashMap<String, Boolean> options = new HashMap<String, Boolean>();
+		options.put("doRead", Boolean.parseBoolean(getDoRead()));
+		options.put("doWrite", Boolean.parseBoolean(getDoWrite()));
+		options.put("useChunks", Boolean.parseBoolean(getUseChunks()));
+		options.put("isRandom", Boolean.parseBoolean(getUseRandomAccess()));
+		options.put("isCheckRead", Boolean.parseBoolean(getCheckRead()));
+		options.put("isSpecial", false);
+		options.put("isAssigned", Boolean.parseBoolean(getAssignedWrite()));
+		return options;
+	}
+	
 	private void trace(String s) {
 		if(log.isDebugEnabled())
 			log.debug(Thread.currentThread().getName() + " (" + getTitle() + " " + s + " " + this.toString());
 	}
+
 	public String getTitle() {
 		return this.getName();
 	}
-
 	public String getDatabase() {
 		return getPropertyAsString(DATABASE);
 	}
 	public void setDatabase(String database) {
 		setProperty(DATABASE, database);
 	}
-	public String getTable() {
-		return getPropertyAsString(TABLE);
+	public String getBinaryInfo() {
+		return getPropertyAsString(BINARYINFO);
 	}
-	public void setTable(String table) {
-		setProperty(TABLE, table);
+	public void setBinaryInfo(String binaryInfo) {
+		setProperty(BINARYINFO, binaryInfo);
 	}
-	public String getInputLocation() {
-		return getPropertyAsString(INPUTLOCATION);
+	public String getUseChunks() {
+		return getPropertyAsString(USECHUNKS);
 	}
-	public void setInputLocation(String inputLocation) {
-		setProperty(INPUTLOCATION, inputLocation);
+	public void setUseChunks(String useChunks) {
+		setProperty(USECHUNKS, useChunks);
 	}
 	public String getUseRandomAccess() {
 		return getPropertyAsString(USERANDOMACCESS);
