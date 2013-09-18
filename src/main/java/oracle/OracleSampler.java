@@ -1,5 +1,7 @@
 package oracle;
 
+import java.util.HashMap;
+
 import org.apache.jmeter.samplers.AbstractSampler;
 import org.apache.jmeter.samplers.Entry;
 import org.apache.jmeter.samplers.SampleResult;
@@ -11,14 +13,14 @@ import utils.BinaryFileInfo;
 import utils.CustomSamplerUtils;
 import binaryconfig.BinaryConfigElement;
 
-public class OracleSampler extends AbstractSampler
-implements TestBean {
+public class OracleSampler extends AbstractSampler implements TestBean {
 
 	private static final long serialVersionUID = 2177540240166358248L;
 	private static final Logger log = LoggingManager.getLoggerForClass();
 
 	public final static String DATABASE = "OracleSampler.database";
 	public final static String BINARYINFO = "OracleSampler.binaryInfo";
+	public final static String USECHUNKS = "OracleSampler.useChunks";
 	public final static String DOREAD = "OracleSampler.doRead";
 	public final static String USERANDOMACCESS = "OracleSampler.useRandomAccess";
 	public final static String CHECKREAD = "OracleSampler.checkRead";
@@ -45,26 +47,37 @@ implements TestBean {
 					Thread.currentThread().getName() + " sampler. Details:" + e.toString());
 		}
 
-		// Get an initial SampleResult and start it.
+		// Get an initial SampleResult and parse options.
 		SampleResult res = CustomSamplerUtils.getInitialSampleResult(getTitle());
-
-		if (Boolean.parseBoolean(getDoRead())) { // DO THE READ
-			CustomSamplerUtils.readWith(queryHandler, binaryInfo, res, 
-					Boolean.parseBoolean(getCheckRead()), Boolean.parseBoolean(getUseRandomAccess()), false); //isCheckRead, isRandom, isSpecial
-		} else if (Boolean.parseBoolean(getDoWrite())) { // DO THE WRITE
-			CustomSamplerUtils.writeWith(queryHandler, binaryInfo, res, 
-					Boolean.parseBoolean(getAssignedWrite()), false);
+		HashMap<String, Boolean> options = prepareOptions();
+		
+		if (options.get("doRead")) { // DO THE READ
+			CustomSamplerUtils.readWith(queryHandler, binaryInfo, res, options);
+		} else if (options.get("doWrite")) { // DO THE WRITE
+			CustomSamplerUtils.writeWith(queryHandler, binaryInfo, res, options);
 		}
 
 		return res;
 	}
 
+	private HashMap<String, Boolean> prepareOptions() {
+		HashMap<String, Boolean> options = new HashMap<String, Boolean>();
+		options.put("doRead", Boolean.parseBoolean(getDoRead()));
+		options.put("doWrite", Boolean.parseBoolean(getDoWrite()));
+		options.put("useChunks", Boolean.parseBoolean(getUseChunks()));
+		options.put("isRandom", Boolean.parseBoolean(getUseRandomAccess()));
+		options.put("isCheckRead", Boolean.parseBoolean(getCheckRead()));
+		options.put("isSpecial", false);
+		options.put("isAssigned", Boolean.parseBoolean(getAssignedWrite()));
+		return options;
+	}
+	
 	private void trace(String s) {
 		if(log.isDebugEnabled()) {
 			log.debug(Thread.currentThread().getName() + " (" + getTitle() + " " + s + " " + this.toString());
 		}
 	}
-
+	
 	public String getTitle() {
 		return this.getName();
 	}
@@ -79,6 +92,12 @@ implements TestBean {
 	}
 	public void setBinaryInfo(String binaryInfo) {
 		setProperty(BINARYINFO, binaryInfo);
+	}
+	public String getUseChunks() {
+		return getPropertyAsString(USECHUNKS);
+	}
+	public void setUseChunks(String useChunks) {
+		setProperty(USECHUNKS, useChunks);
 	}
 	public String getUseRandomAccess() {
 		return getPropertyAsString(USERANDOMACCESS);

@@ -14,7 +14,7 @@ public class OracleSamplerBeanInfo extends BeanInfoSupport {
 		super(OracleSampler.class);
 
 		createPropertyGroup("oracle", new String[] {"database"});
-		createPropertyGroup("sampler", new String[] {"binaryInfo"});
+		createPropertyGroup("sampler", new String[] {"binaryInfo", "useChunks"});
 
 		createPropertyGroup("reading", new String[] {
 				"doRead", "useRandomAccess", "checkRead"});
@@ -28,6 +28,10 @@ public class OracleSamplerBeanInfo extends BeanInfoSupport {
 		p = property("binaryInfo");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "binInfo");
+	
+		p = property("useChunks");
+		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
+		p.setValue(DEFAULT, Boolean.FALSE);
 
 		p = property("doRead");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);

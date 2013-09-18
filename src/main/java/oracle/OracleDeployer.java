@@ -86,12 +86,20 @@ public class OracleDeployer {
 					+ " CREATION_TIME DATE NULL,"
 					+ " CMSSW_RELEASE VARCHAR(45) NULL,"
 					+ " PRIMARY KEY (HASH) )";
+			String createChunkQuery = "CREATE TABLE CHUNK ("
+					+ " PAYLOAD_HASH VARCHAR(40) NOT NULL,"
+					+ " CHUNK_HASH VARCHAR(40) NOT NULL,"
+					+ " DATA BLOB NULL,"
+					+ " PRIMARY KEY (PAYLOAD_HASH, CHUNK_HASH) )";
+			String createChunkIdxQuery = "CREATE INDEX PAYLOAD_HASH_FK_IDX ON CHUNK (PAYLOAD_HASH ASC)";
+			String alterChunkHashFK = "ALTER TABLE CHUNK ADD CONSTRAINT PAYLOAD_HASH_FK_IDX "
+					+ " FOREIGN KEY (PAYLOAD_HASH) REFERENCES PAYLOAD(HASH)";
 			String createIOVQuery = "CREATE TABLE IOV ("
 					+ " TAG_NAME VARCHAR(100) NOT NULL,"
 					+ " SINCE INT NOT NULL,"
 					+ " PAYLOAD_HASH VARCHAR(40) NOT NULL,"
 					+ " INSERT_TIME DATE NOT NULL,"
-					+ " PRIMARY KEY (TAG_NAME, SINCE))";
+					+ " PRIMARY KEY (TAG_NAME, SINCE) )";
 			String createTagIdxQuery = "CREATE INDEX TAG_FK_IDX ON IOV (TAG_NAME ASC)";
 			String createPayloadIdxQuery = "CREATE INDEX PAYLOAD_FK_IDX ON IOV (PAYLOAD_HASH ASC)";
 			String alterIovTagFK = "ALTER TABLE IOV ADD CONSTRAINT TAG_FK_IDX "
@@ -108,6 +116,15 @@ public class OracleDeployer {
 				create = connection.prepareStatement(createPayloadQuery);
 				failed = create.execute();
 				checkAndNotify(failed, createPayloadQuery, prefix);
+				create = connection.prepareStatement(createChunkQuery);
+				failed = create.execute();
+				checkAndNotify(failed, createChunkQuery, prefix);
+				create = connection.prepareStatement(createChunkIdxQuery);
+				failed = create.execute();
+				checkAndNotify(failed, createChunkIdxQuery, prefix);
+				create = connection.prepareStatement(alterChunkHashFK);
+				failed = create.execute();
+				checkAndNotify(failed, alterChunkHashFK, prefix);
 				create = connection.prepareStatement(createIOVQuery);
 				failed = create.execute();
 				checkAndNotify(failed, createIOVQuery, prefix);
@@ -153,6 +170,7 @@ public class OracleDeployer {
 		protected void destroyEnvironment() {
 			System.out.println(" destroyEnvironment() -> Destroying environment...");
 			String deleteTagQuery = "DROP TABLE TAG CASCADE CONSTRAINTS";
+			String deleteChunkQuery = "DROP TABLE CHUNK CASCADE CONSTRAINTS";
 			String deletePayloadQuery = "DROP TABLE PAYLOAD CASCADE CONSTRAINTS";
 			String deleteIOVQuery = "DROP TABLE IOV CASCADE CONSTRAINTS";
 			PreparedStatement delete = null;
@@ -161,6 +179,9 @@ public class OracleDeployer {
 				delete = connection.prepareStatement(deleteIOVQuery);
 				Boolean failed = delete.execute();
 				checkAndNotify(failed, deleteIOVQuery, prefix);
+				delete = connection.prepareStatement(deleteChunkQuery);
+				failed = delete.execute();
+				checkAndNotify(failed, deleteChunkQuery, prefix);
 				delete = connection.prepareStatement(deletePayloadQuery);
 				failed = delete.execute();
 				checkAndNotify(failed, deletePayloadQuery, prefix);

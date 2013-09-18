@@ -44,6 +44,60 @@ public class OracleQueryHandler implements QueryHandler {
 	}
 
 	@Override
+	public void writeChunk(HashMap<String, String> metaInfo, String chunkID, byte[] chunk,
+			Boolean isSpecial) throws CustomSamplersException {
+		PreparedStatement ps;
+		try {
+			ps = connection.prepareStatement("INSERT INTO CHUNK"
+					+ " (PAYLOAD_HASH, CHUNK_HASH, DATA)"
+					+ " VALUES (?, ?, ?)");
+			ps.setString(1, metaInfo.get("payload_hash"));
+			ps.setString(2, metaInfo.get(chunkID));
+			ps.setBinaryStream(3, new ByteArrayInputStream(chunk), chunk.length);
+			ps.execute();
+			ps.close();
+		} catch (SQLException se) {
+			throw new CustomSamplersException("SQLException occured during write attempt: " + se.toString());
+		}
+	}
+
+	@Override
+	public byte[] readChunk(String hashKey, String chunkHashKey,
+			boolean isSpecial) throws CustomSamplersException {
+		PreparedStatement ps;
+		byte[] result = null;
+		try {
+			ps = connection.prepareStatement("SELECT DATA FROM CHUNK WHERE PAYLOAD_HASH=? AND CHUNK_HASH=?");
+			ps.setString(1, hashKey);
+			ps.setString(2, chunkHashKey);
+			ResultSet rs = ps.executeQuery();
+
+			if (rs != null) {
+				int counter = 0;
+				while(rs.next()) {
+					result = rs.getBytes("DATA");
+					counter++;
+				}
+				if (counter > 1) {
+					throw new CustomSamplersException("More than one row found with "
+							+ "hash=" + hashKey + " and chunk_hash=" + chunkHashKey + " in CHUNK !");
+				}
+				rs.close();
+
+			} else {
+
+				throw new CustomSamplersException("The row with hash=" + hashKey
+						+ " chunk_hash=" +chunkHashKey + " not found in CHUNK!");
+			}
+
+			ps.close();
+		} catch (SQLException e) {
+			throw new CustomSamplersException("SQLException occured during read attempt: " + e.toString());
+		}
+		return result;
+	}
+	
+	@Override
 	public void writePayload(HashMap<String, String> metaInfo,
 			byte[] payload, byte[] streamerInfo, boolean isSpecial)
 					throws CustomSamplersException {
@@ -54,7 +108,11 @@ public class OracleQueryHandler implements QueryHandler {
 					+ " VALUES (?, ?, ?, ?, ?, ?, ?)");
 			ps.setString(1, metaInfo.get("payload_hash"));
 			ps.setString(2, metaInfo.get("object_type"));
-			ps.setBinaryStream(3, new ByteArrayInputStream(payload), payload.length);
+			if (payload != null) {
+				ps.setBinaryStream(3, new ByteArrayInputStream(payload), payload.length);
+			} else {
+				ps.setBinaryStream(3, new ByteArrayInputStream(new byte[0]));
+			}
 			ps.setBinaryStream(4, new ByteArrayInputStream(streamerInfo), streamerInfo.length);
 			ps.setString(5, metaInfo.get("version"));
 			ps.setTimestamp(6, new Timestamp(System.currentTimeMillis()));
