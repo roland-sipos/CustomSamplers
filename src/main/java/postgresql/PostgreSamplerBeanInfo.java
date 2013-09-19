@@ -13,20 +13,21 @@ public class PostgreSamplerBeanInfo extends BeanInfoSupport {
 	public PostgreSamplerBeanInfo() {
 		super(PostgreSampler.class);
 		
-		createPropertyGroup("postgre", new String[] {"database", "table"});
-		createPropertyGroup("sampler", new String[] {"inputLocation", "largeObjectMethod"});
+		createPropertyGroup("postgre", new String[] {"database"});
+		createPropertyGroup("sampler", new String[] {"binaryInfo", "useChunks", "largeObjectMethod"});
 		createPropertyGroup("reading", new String[] {"doRead", "useRandomAccess", "checkRead"});
 		createPropertyGroup("writing", new String[] {"doWrite", "assignedWrite"});
 		
 		PropertyDescriptor p = property("database");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "testdb");
-		p = property("table");
+
+		p = property("binaryInfo");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, "binaries");
-		p = property("inputLocation");
+		p.setValue(DEFAULT, "binInfo");
+		p = property("useChunks");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, "/home/cb/INPUT");
+		p.setValue(DEFAULT, Boolean.FALSE);
 		p = property("largeObjectMethod");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, Boolean.FALSE);
