@@ -45,34 +45,43 @@ public class CustomSamplerUtils {
 		} else {
 			meta = binaryInfo.getAssignedMeta(1);
 		}
-		try {
-			res.sampleStart();
-			String hash = queryHandler.readIov(meta);
-			byte[] result = null;
-			result = queryHandler.readPayload(hash, options.get("isSpecial"));
+		
+		if (options.get("useChunks")) {
+			
+		} else {
+			try {
+				res.sampleStart();
+				String hash = queryHandler.readIov(meta);
+				byte[] result = null;
+				// TODO: READ Chunks too if useChunks is ON!!!
+				result = queryHandler.readPayload(hash, options.get("isSpecial"));
 
-			if (result == null) {
-				finalizeResponse(res, false, "500", "The result is empty for " + meta.get("id") + " !");
-			} else {
-				if (options.get("isCheckRead")) {
-					String binaryFullPath = binaryInfo.getFilePathList().get(meta.get("id"));
-					byte[] payload = binaryInfo.read(binaryFullPath);
-					if (result.equals(payload)) {
-						finalizeResponse(res, false, "600",
-								"Payload content for: " + meta.get("id") + " differs from the original!");
+				if (result == null) {
+					finalizeResponse(res, false, "500",
+							"The result is empty for " + meta.get("id") + " !");
+				} else {
+					if (options.get("isCheckRead")) {
+						String binaryFullPath = binaryInfo.getFilePathList().get(meta.get("id"));
+						byte[] payload = binaryInfo.read(binaryFullPath);
+						if (result.equals(payload)) {
+							finalizeResponse(res, false, "600",
+									"Payload content for: " + meta.get("id")
+									+ " differs from the original!");
+						} else {
+							finalizeResponse(res, true, "200",
+									"Payload read: " + meta.get("id")
+									+ " read successfully and matching with original!");
+						}
 					} else {
 						finalizeResponse(res, true, "200",
-								"Payload read: " + meta.get("id") + " read successfully and matching with original!");
+								"Payload read: " + meta.get("id") + " read successfully!");
 					}
-				} else {
-					finalizeResponse(res, true, "200",
-							"Payload read: " + meta.get("id") + " read successfully!");
 				}
+			} catch (CustomSamplersException ex) {
+				finalizeResponse(res, false, "500", ex.toString());
+			} finally {
+				res.sampleEnd();
 			}
-		} catch (CustomSamplersException ex) {
-			finalizeResponse(res, false, "500", ex.toString());
-		} finally {
-			res.sampleEnd();
 		}
 	}
 

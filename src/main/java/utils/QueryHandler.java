@@ -15,23 +15,25 @@ public interface QueryHandler {
 
 
 	// The implemented function writes a PAYLOAD to the DB based on all it's meta and key.
-	public void writePayload(HashMap<String, String> metaMap,
-			byte[] payload, byte[] streamerInfo,
-			boolean isSpecial) throws CustomSamplersException;
+	public void writePayload(HashMap<String, String> metaInfo,
+			byte[] payload, byte[] streamerInfo, boolean isSpecial)
+					throws CustomSamplersException;
 
 	// The implemented function reads a PAYLOAD based on the HASH key.
 	public byte[] readPayload(String hashKey, boolean isSpecial)
 			throws CustomSamplersException;
 
-
 	// The implemented function writes a CHUNK into the database.
-	public void writeChunk(HashMap<String, String> metaInfo, String chunkID, byte[] chunk, Boolean isSpecial)
-			throws CustomSamplersException;
+	public void writeChunk(HashMap<String, String> metaInfo, String chunkID,
+			byte[] chunk, Boolean isSpecial)
+					throws CustomSamplersException;
 
 	// The implemented function reads a CHUNK based on the PAYLOAD_HASH and CHUNK_HASH attributes.
 	public byte[] readChunk(String hashKey, String chunkHashKey, boolean isSpecial)
 			throws CustomSamplersException;
 
+	public byte[][] readChunksOfPayload(String hashKey, boolean isSpecial)
+			throws CustomSamplersException;
 
 	// The implemented function should write an IOV to the database. (Composite key + Payload hash.)
 	public void writeIov(HashMap<String, String> keyAndMetaMap)
