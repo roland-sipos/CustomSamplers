@@ -46,9 +46,8 @@ public class OracleQueryHandler implements QueryHandler {
 	@Override
 	public void writeChunk(HashMap<String, String> metaInfo, String chunkID, byte[] chunk,
 			Boolean isSpecial) throws CustomSamplersException {
-		PreparedStatement ps;
 		try {
-			ps = connection.prepareStatement("INSERT INTO CHUNK"
+			PreparedStatement ps = connection.prepareStatement("INSERT INTO CHUNK"
 					+ " (PAYLOAD_HASH, CHUNK_HASH, DATA) VALUES (?, ?, ?)");
 			ps.setString(1, metaInfo.get("payload_hash"));
 			ps.setString(2, metaInfo.get(chunkID));
@@ -61,12 +60,12 @@ public class OracleQueryHandler implements QueryHandler {
 	}
 
 	@Override
-	public byte[] readChunk(String hashKey, String chunkHashKey,
-			boolean isSpecial) throws CustomSamplersException {
-		PreparedStatement ps;
+	public byte[] readChunk(String hashKey, String chunkHashKey, boolean isSpecial)
+			throws CustomSamplersException {
 		byte[] result = null;
 		try {
-			ps = connection.prepareStatement("SELECT DATA FROM CHUNK WHERE PAYLOAD_HASH=? AND CHUNK_HASH=?");
+			PreparedStatement ps = connection.prepareStatement(
+					"SELECT DATA FROM CHUNK WHERE PAYLOAD_HASH=? AND CHUNK_HASH=?");
 			ps.setString(1, hashKey);
 			ps.setString(2, chunkHashKey);
 			ResultSet rs = ps.executeQuery();
@@ -97,12 +96,11 @@ public class OracleQueryHandler implements QueryHandler {
 	}
 	
 	@Override
-	public void writePayload(HashMap<String, String> metaInfo,
-			byte[] payload, byte[] streamerInfo, boolean isSpecial)
+	public void writePayload(HashMap<String, String> metaInfo, byte[] payload,
+			byte[] streamerInfo, boolean isSpecial) 
 					throws CustomSamplersException {
-		PreparedStatement ps;
 		try {
-			ps = connection.prepareStatement("INSERT INTO PAYLOAD"
+			PreparedStatement ps = connection.prepareStatement("INSERT INTO PAYLOAD"
 					+ " (HASH, OBJECT_TYPE, DATA, STREAMER_INFO, VERSION, CREATION_TIME, CMSSW_RELEASE)"
 					+ " VALUES (?, ?, ?, ?, ?, ?, ?)");
 			ps.setString(1, metaInfo.get("payload_hash"));
@@ -126,13 +124,11 @@ public class OracleQueryHandler implements QueryHandler {
 	@Override
 	public byte[] readPayload(String hashKey, boolean isSpecial) 
 			throws CustomSamplersException {
-		PreparedStatement ps;
 		byte[] result = null;
 		try {
-			ps = connection.prepareStatement("SELECT DATA FROM PAYLOAD WHERE HASH=?");
+			PreparedStatement ps = connection.prepareStatement("SELECT DATA FROM PAYLOAD WHERE HASH=?");
 			ps.setString(1, hashKey);
 			ResultSet rs = ps.executeQuery();
-
 			if (rs != null) {
 				int counter = 0;
 				while(rs.next()) {
@@ -144,13 +140,10 @@ public class OracleQueryHandler implements QueryHandler {
 							+ hashKey + " in PAYLOAD !");
 				}
 				rs.close();
-
 			} else {
-
 				throw new CustomSamplersException("The row with hash=" + hashKey
 						+ " not found in PAYLOAD!");
 			}
-
 			ps.close();
 		} catch (SQLException e) {
 			throw new CustomSamplersException("SQLException occured during read attempt: " + e.toString());
@@ -160,9 +153,8 @@ public class OracleQueryHandler implements QueryHandler {
 
 	public void writeTag(HashMap<String, String> stringMetaInfo, HashMap<String, Integer> intMetaInfo, boolean isSpecial)
 			throws CustomSamplersException {
-		PreparedStatement ps;
 		try {
-			ps = connection.prepareStatement("INSERT INTO TAG"
+			PreparedStatement ps = connection.prepareStatement("INSERT INTO TAG"
 					+ " (NAME, REVISION, REVISION_TIME, COMMENT, TIME_TYPE, OBJECT_TYPE,"
 					+ " LAST_VALIDATED, END_OF_VALIDITY, LAST_SINCE, LAST_SINCE_PID, CREATION_TIME)"
 					+ " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
@@ -187,9 +179,8 @@ public class OracleQueryHandler implements QueryHandler {
 	@Override
 	public void writeIov(HashMap<String, String> keyAndMetaMap)
 			throws CustomSamplersException {
-		PreparedStatement ps;
 		try {
-			ps = connection.prepareStatement("INSERT INTO IOV"
+			PreparedStatement ps = connection.prepareStatement("INSERT INTO IOV"
 					+ " (TAG_NAME, SINCE, PAYLOAD_HASH, INSERT_TIME) VALUES (?, ?, ?, ?)");
 			ps.setString(1, keyAndMetaMap.get("tag_name"));
 			ps.setLong(2, Long.parseLong(keyAndMetaMap.get("since")));
@@ -205,10 +196,9 @@ public class OracleQueryHandler implements QueryHandler {
 	@Override
 	public String readIov(HashMap<String, String> keyMap)
 			throws CustomSamplersException {
-		PreparedStatement ps;
 		String result = null;
 		try {
-			ps = connection.prepareStatement("SELECT PAYLOAD_HASH FROM IOV"
+			PreparedStatement ps = connection.prepareStatement("SELECT PAYLOAD_HASH FROM IOV"
 					+ " WHERE TAG_NAME=? AND SINCE=?");
 			ps.setString(1, keyMap.get("tag_name"));
 			ps.setLong(2, Long.parseLong(keyMap.get("since")));
@@ -245,9 +235,8 @@ public class OracleQueryHandler implements QueryHandler {
 	@Override
 	public void writeTag(HashMap<String, String> metaMap)
 			throws CustomSamplersException {
-		PreparedStatement ps;
 		try {
-			ps = connection.prepareStatement("INSERT INTO TAG"
+			PreparedStatement ps = connection.prepareStatement("INSERT INTO TAG"
 					+ " (NAME, REVISION, REVISION_TIME, COMMENT, TIME_TYPE, OBJECT_TYPE,"
 					+ " LAST_VALIDATED, END_OF_VALIDITY, LAST_SINCE, LAST_SINCE_PID, CREATION_TIME)"
 					+ " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
@@ -270,10 +259,9 @@ public class OracleQueryHandler implements QueryHandler {
 	@Override
 	public HashMap<String, Object> readTag(String tagKey)
 			throws CustomSamplersException {
-		PreparedStatement ps;
 		HashMap<String, Object> result = new HashMap<String, Object>();
 		try {
-			ps = connection.prepareStatement("SELECT REVISION, REVISION_TIME,"
+			PreparedStatement ps = connection.prepareStatement("SELECT REVISION, REVISION_TIME,"
 					+ " COMMENT, TIME_TYPE, OBJECT_TYPE, LAST_VALIDATED, END_OF_VALIDITY,"
 					+ " LAST_SINCE, LAST_SINCE_PID, CREATION_TIME"
 					+ " FROM `TAG` WHERE NAME=?");

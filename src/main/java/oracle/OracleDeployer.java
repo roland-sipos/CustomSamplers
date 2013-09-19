@@ -19,8 +19,8 @@ public class OracleDeployer {
 		private Connection connection = null;
 
 		public OracleTestEnvironmentDeployer(String host, String port,
-				String databaseName, String entityName, String username, String password) {
-			super(host, port, databaseName, entityName, username, password);
+				String databaseName, String username, String password) {
+			super(host, port, databaseName, username, password);
 		}
 
 		@Override
@@ -207,7 +207,7 @@ public class OracleDeployer {
 	public static void main(String[] args) {
 		OracleTestEnvironmentDeployer deployer =
 				new OracleTestEnvironmentDeployer("testdb-ora.cern.ch", "1521",
-						"test", "binaries", "testUser", "testPass");
+						"test", "testUser", "testPass");
 
 		//System.out.println("-------- Oracle environment setup ------------");
 		//deployer.deployTestEnvironment();		

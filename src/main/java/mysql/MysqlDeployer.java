@@ -20,8 +20,8 @@ public class MysqlDeployer {
 		private String whichEngine = null;
 
 		public MysqlTestEnvironmentDeployer(String host, String port, String databaseName,
-				String entityName, String username, String password, String whichEngine) {
-			super(host, port, databaseName, entityName, username, password);
+				String username, String password, String whichEngine) {
+			super(host, port, databaseName, username, password);
 			this.whichEngine = whichEngine;
 		}
 
@@ -208,7 +208,7 @@ public class MysqlDeployer {
 	public static void main(String[] args) {
 		MysqlTestEnvironmentDeployer deployer =
 				new MysqlTestEnvironmentDeployer("testdb-pc.cern.ch", "3306", 
-						"testdb", "binaries", "testUser", "testPass", "InnoDB");
+						"testdb", "testUser", "testPass", "InnoDB");
 
 		//System.out.println("-------- MySQL environment setup ------------");
 		//deployer.deployTestEnvironment();
