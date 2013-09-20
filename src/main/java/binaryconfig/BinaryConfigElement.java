@@ -19,6 +19,7 @@ implements ConfigElement, TestStateListener, TestBean {
 
 	public final static String INPUT_LOCATION = "BinaryConfigElement.inputlocation";
 	public final static String BINARY_INFO = "BinaryConfigElement.binaryInfo";
+	public final static String ASSIGNMENT_FILE = "BinaryConfigElement.assignmentFile";
 
 	@Override
 	public void testEnded() {
@@ -62,7 +63,8 @@ implements ConfigElement, TestStateListener, TestBean {
 				log.debug(getBinaryInfo() + " is being defined...");
 			}
 
-			BinaryFileInfo binaryInfo = BinaryFileInfo.getInstance(getInputLocation());
+			BinaryFileInfo binaryInfo = BinaryFileInfo.getInstance(
+					getInputLocation(), getAssignmentFile());
 			getThreadContext().getVariables().putObject(getBinaryInfo(), binaryInfo);
 		}
 
@@ -100,6 +102,12 @@ implements ConfigElement, TestStateListener, TestBean {
 	}
 	public void setBinaryInfo(String binaryInfo) {
 		setProperty(BINARY_INFO, binaryInfo);
+	}
+	public String getAssignmentFile() {
+		return getPropertyAsString(ASSIGNMENT_FILE);
+	}
+	public void setAssignmentFile(String assignmentFile) {
+		setProperty(ASSIGNMENT_FILE, assignmentFile);
 	}
 
 }

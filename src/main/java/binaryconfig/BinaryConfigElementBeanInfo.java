@@ -14,6 +14,7 @@ public class BinaryConfigElementBeanInfo extends BeanInfoSupport {
 		super(BinaryConfigElement.class);
 
 		createPropertyGroup("binary", new String[] { "inputLocation", "binaryInfo"});
+		createPropertyGroup("assignment", new String[] {"assignmentFile"});
 
 		PropertyDescriptor p = property("inputLocation");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
@@ -21,6 +22,9 @@ public class BinaryConfigElementBeanInfo extends BeanInfoSupport {
 		p = property("binaryInfo");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "binInfo");
+		p = property("assignmentFile");
+		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
+		p.setValue(DEFAULT, "");
 
 		if(log.isDebugEnabled()) {
 			for (PropertyDescriptor pd : getPropertyDescriptors()) {

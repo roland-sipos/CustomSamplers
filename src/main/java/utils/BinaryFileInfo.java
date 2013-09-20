@@ -13,11 +13,23 @@ import java.util.HashMap;
 import java.util.Random;
 import java.util.TreeMap;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
 public class BinaryFileInfo {
 
 	private static BinaryFileInfo instance = null;
 
 	private static String location;
+	private static boolean isAssignAvailable;
+	private static String assignmentFile;
 	private static int numOfFiles;
 
 	private static TreeMap<String, HashMap<String, String> > metaInfo;
@@ -28,6 +40,14 @@ public class BinaryFileInfo {
 		return location;
 	}
 
+	public String getAssignmentFile() {
+		return assignmentFile;
+	}
+	
+	public boolean isAssignAvailable() {
+		return isAssignAvailable;
+	}
+	
 	public int getNumOfFiles() {
 		return numOfFiles;
 	}
@@ -56,15 +76,23 @@ public class BinaryFileInfo {
 		return filePathList.get(fileName) + ".chunks/STREAMER_INFO.bin";
 	}
 
-	public static BinaryFileInfo getInstance(String location) {
+	public static BinaryFileInfo getInstance(String location, String assignFile) {
 		if (instance == null) {
-			instance = new BinaryFileInfo(location);
+			instance = new BinaryFileInfo(location, assignFile);
 		}
 		return instance;
 	}
 
-	protected BinaryFileInfo(String loc) {
-		location = loc; //baseDir.concat("BIGrbinary-"+ID+".bin.chunks/");
+	protected BinaryFileInfo(String loc, String assignFile) {
+		location = loc;
+		if (assignFile != "") {
+			assignmentFile = assignFile;
+			createAssignmentTable();
+			isAssignAvailable = true;
+		} else {
+			assignmentFile = "";
+			isAssignAvailable = false;
+		}
 		numOfFiles = 0;
 		filePathList = new TreeMap<String, String>();
 		chunkPathList = new TreeMap<String, TreeMap<String, String> >();
@@ -91,6 +119,50 @@ public class BinaryFileInfo {
 				// IGNORE ANYTHING ELSE, dirs already processed.
 			}
 		}
+	}
+
+	private void createAssignmentTable() {
+		
+		try {
+			File asFile = new File(assignmentFile);
+
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = dBuilder.parse(asFile);
+			doc.getDocumentElement().normalize();
+			System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
+
+			NodeList nList = doc.getElementsByTagName("payload");
+			System.out.println("----------------------------");
+		 
+			for (int temp = 0; temp < nList.getLength(); temp++) {
+				Node nNode = nList.item(temp);
+				System.out.println("\nCurrent Element :" + nNode.getNodeName());
+				if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+					Element eElement = (Element) nNode;
+					System.out.println("Payload name : " + eElement.getAttribute("name"));
+					System.out.println("threadIDList : " + eElement.getElementsByTagName("threadIDList").item(0).getTextContent());
+					Element subE = (Element) eElement.getElementsByTagName("threadIDRange").item(0);
+					System.out.println("threadIDRange FROM: " + subE.getAttribute("from"));
+					System.out.println("threadIDRange TO: " + subE.getAttribute("to"));
+					//System.out.println("Nick Name : " + eElement.getElementsByTagName("nickname").item(0).getTextContent());
+					//System.out.println("Salary : " + eElement.getElementsByTagName("salary").item(0).getTextContent());
+		 
+				}
+			}
+			
+			/*BufferedReader in = new BufferedReader(new FileReader(asFile));
+			String line = "";
+			HashMap<String, String> metaMapForBinary = new HashMap<String, String>();
+			while ((line = in.readLine()) != null) {
+				String cols[] = line.split(" ");
+				metaMapForBinary.put(cols[0], cols[1]);
+			}
+			in.close();*/
+		} catch (Exception e) {
+			System.out.println(e.toString());
+		}
+		
 	}
 
 	/*private String getMetaFilePath(File folder) {
