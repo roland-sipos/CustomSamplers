@@ -32,9 +32,10 @@ public interface QueryHandler {
 	public byte[] readChunk(String hashKey, String chunkHashKey, boolean isSpecial)
 			throws CustomSamplersException;
 
-	public byte[][] readChunksOfPayload(String hashKey, boolean isSpecial)
+	// The implemented function reads all of the CHUNKS of a given PAYLOAD_HASH.
+	public byte[] readChunks(String hashKey, boolean isSpecial)
 			throws CustomSamplersException;
-
+	
 	// The implemented function should write an IOV to the database. (Composite key + Payload hash.)
 	public void writeIov(HashMap<String, String> keyAndMetaMap)
 			throws CustomSamplersException;
@@ -42,7 +43,6 @@ public interface QueryHandler {
 	// The implemented function should pass a PayloadHash based on IOV keys (TAG_NAME and SINCE).
 	public String readIov(HashMap<String, String> keyMap)
 			throws CustomSamplersException;
-
 
 	// The implemented function should write a TAG to the DB. (All meta + NAME as key.)
 	public void writeTag(HashMap<String, String> metaMap)

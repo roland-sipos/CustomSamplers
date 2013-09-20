@@ -61,7 +61,7 @@ public class PostgreSampler extends AbstractSampler implements TestBean {
 		} else if (options.get("doWrite")) { // DO THE WRITE
 			CustomSamplerUtils.writeWith(queryHandler, binaryInfo, res, options);
 		}
-
+		
 		return res;
 	}
 

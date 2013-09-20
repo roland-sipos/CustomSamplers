@@ -1,6 +1,8 @@
 package mysql;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -89,6 +91,34 @@ public class MysqlQueryHandler implements QueryHandler {
 			ps.close();
 		} catch (SQLException e) {
 			throw new CustomSamplersException("SQLException occured during read attempt: " + e.toString());
+		}
+		return result;
+	}
+
+	@Override
+	public byte[] readChunks(String hashKey, boolean isSpecial)
+			throws CustomSamplersException {
+		byte[] result = null;
+		try {
+			PreparedStatement ps = connection.prepareStatement(
+					"SELECT `DATA` FROM `CHUNK` WHERE `PAYLOAD_HASH`=?");
+			ps.setString(1, hashKey);
+			ResultSet rs = ps.executeQuery();
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			if (rs != null) {
+				while(rs.next()) {
+					os.write(rs.getBytes("DATA"));
+				}
+				rs.close();
+			} else {
+				throw new CustomSamplersException("The rows with hash=" + hashKey + " not found in CHUNK!");
+			}
+			ps.close();
+			result = os.toByteArray();
+		} catch (SQLException e) {
+			throw new CustomSamplersException("SQLException occured during read attempt: " + e.toString());
+		} catch (IOException e) {
+			throw new CustomSamplersException("IOException occured during stream write attempt: " + e.toString());
 		}
 		return result;
 	}

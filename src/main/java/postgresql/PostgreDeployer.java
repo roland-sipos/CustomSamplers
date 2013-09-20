@@ -287,12 +287,12 @@ public class PostgreDeployer {
 				new PostgreTestEnvironmentDeployer("testdb-pc.cern.ch", "5432", 
 						"testdb", "postgres", "testPass", true); // Don't use LO API.
 
-		System.out.println("-------- PostgreSQL environment setup ------------");
-		deployer.deployTestEnvironment();
+		//System.out.println("-------- PostgreSQL environment setup ------------");
+		//deployer.deployTestEnvironment();
 		//System.out.println("------- PostgreSQL environment teardown -----------");
 		//deployer.destroyTestEnvironment();
-		//System.out.println("-------- PostgreSQL environment teardown and setup ------------");
-		//deployer.redeployEnvironment();
+		System.out.println("-------- PostgreSQL environment teardown and setup ------------");
+		deployer.redeployEnvironment();
 
 	}
 

@@ -1,6 +1,8 @@
 package postgresql;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -77,6 +79,7 @@ public class PostgreQueryHandler implements QueryHandler {
 	private void writeLOBPayload(HashMap<String, String> metaInfo, byte[] payload, byte[] streamerInfo)
 			throws CustomSamplersException {
 		try {
+			connection.setAutoCommit(false);
 			LargeObjectManager lobManager = 
 					((org.postgresql.PGConnection)connection).getLargeObjectAPI();
 			long objectId = lobManager.createLO(LargeObjectManager.READWRITE);
@@ -100,9 +103,8 @@ public class PostgreQueryHandler implements QueryHandler {
 			ps.setString(7, metaInfo.get("cmssw_release"));
 			ps.execute();
 			ps.close();
-			
-			//connection.commit();
-			//connection.setAutoCommit(true); ????
+			connection.commit();
+			connection.setAutoCommit(true);
 		} catch (SQLException e) {
 			throw new CustomSamplersException("SQLException occured during LOB insert attempt: " + e.toString());
 		}
@@ -144,6 +146,7 @@ public class PostgreQueryHandler implements QueryHandler {
 	private byte[] readLOBPayload(String hashKey) throws CustomSamplersException {
 		byte[] result = null;
 		try {
+			connection.setAutoCommit(false);
 			PreparedStatement ps = connection.prepareStatement(
 					"SELECT DATA FROM LOB_PAYLOAD WHERE HASH=?");
 			ps.setString(1, hashKey);
@@ -169,6 +172,7 @@ public class PostgreQueryHandler implements QueryHandler {
 						+ " not found in LOB_PAYLOAD!");
 			}
 			ps.close();
+			connection.setAutoCommit(true);
 		} catch (SQLException e) {
 			throw new CustomSamplersException("SQLException occured during read attempt: " + e.toString());
 		}
@@ -199,6 +203,7 @@ public class PostgreQueryHandler implements QueryHandler {
 	private void writeLOBChunk(HashMap<String, String> metaInfo, String chunkID, byte[] chunk) 
 			throws CustomSamplersException {
 		try {
+			connection.setAutoCommit(false);
 			LargeObjectManager lobManager = 
 					((org.postgresql.PGConnection)connection).getLargeObjectAPI();
 			long objectId = lobManager.createLO(LargeObjectManager.READWRITE);
@@ -212,6 +217,8 @@ public class PostgreQueryHandler implements QueryHandler {
 			ps.setLong(3, objectId);
 			ps.execute();
 			ps.close();
+			connection.commit();
+			connection.setAutoCommit(true);
 		} catch (SQLException se) {
 			throw new CustomSamplersException(
 					"SQLException occured during write attempt: " + se.toString());
@@ -258,10 +265,42 @@ public class PostgreQueryHandler implements QueryHandler {
 		}
 	}
 
+	@Override
+	public byte[] readChunks(String hashKey, boolean isSpecial)
+			throws CustomSamplersException {
+		if (isSpecial) {
+			return readLOBChunks(hashKey);
+		}
+		byte[] result = null;
+		try {
+			PreparedStatement ps = connection.prepareStatement(
+					"SELECT DATA FROM CHUNK WHERE PAYLOAD_HASH=?");
+			ps.setString(1, hashKey);
+			ResultSet rs = ps.executeQuery();
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			if (rs != null) {
+				while(rs.next()) {
+					os.write(rs.getBytes("DATA"));
+				}
+				rs.close();
+			} else {
+				throw new CustomSamplersException("The rows with hash=" + hashKey + " not found in CHUNK!");
+			}
+			ps.close();
+			result = os.toByteArray();
+		} catch (SQLException e) {
+			throw new CustomSamplersException("SQLException occured during read attempt: " + e.toString());
+		} catch (IOException e) {
+			throw new CustomSamplersException("IOException occured during stream write attempt: " + e.toString());
+		}
+		return result;
+	}
+
 	private byte[] readLOBChunk(String hashKey, String chunkHashKey) 
 			throws CustomSamplersException {
 		byte[] result = null;
 		try {
+			connection.setAutoCommit(false);
 			PreparedStatement ps = connection.prepareStatement(
 					"SELECT DATA FROM LOB_CHUNK WHERE PAYLOAD_HASH=? AND CHUNK_HASH=?");
 			ps.setString(1, hashKey);
@@ -290,14 +329,52 @@ public class PostgreQueryHandler implements QueryHandler {
 				throw new CustomSamplersException("The row with hash=" + hashKey
 						+ " chunk_hash=" +chunkHashKey + " not found in LOB_CHUNK!");
 			}
-
 			ps.close();
+			connection.setAutoCommit(true);
 		} catch (SQLException e) {
 			throw new CustomSamplersException("SQLException occured during read attempt: " + e.toString());
 		}
 		return result;
 	}
 
+	public byte[] readLOBChunks(String hashKey)
+			throws CustomSamplersException {
+		byte[] result = null;
+		try {
+			connection.setAutoCommit(false);
+			PreparedStatement ps = connection.prepareStatement(
+					"SELECT DATA FROM LOB_CHUNK WHERE PAYLOAD_HASH=?");
+			ps.setString(1, hashKey);
+			ResultSet rs = ps.executeQuery();
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			if (rs != null) {
+				while(rs.next()) {
+					long objectID = rs.getLong(1);
+					LargeObject object = ((org.postgresql.PGConnection)connection)
+							.getLargeObjectAPI().open(objectID, LargeObjectManager.READ);
+					byte[] chunk = new byte[object.size()];
+					object.read(chunk, 0, object.size());
+					object.close();
+					os.write(chunk);
+				}
+				rs.close();
+			} else {
+				throw new CustomSamplersException("The rows with hash=" + hashKey + " not found in LOB_CHUNK!");
+			}
+			ps.close();
+			connection.setAutoCommit(true);
+			result = os.toByteArray();
+		} catch (SQLException e) {
+			throw new CustomSamplersException("SQLException occured during read attempt: " + e.toString()
+					+ " ---- " + e.getSQLState()
+					+ " ---- " + e.getErrorCode()
+					+ " -----" + e.getLocalizedMessage());
+		} catch (IOException e) {
+			throw new CustomSamplersException("IOException occured during stream write attempt: " + e.toString());
+		}
+		return result;
+	}
+	
 	@Override
 	public void writeIov(HashMap<String, String> keyAndMetaMap)
 			throws CustomSamplersException {

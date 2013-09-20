@@ -38,51 +38,57 @@ public class CustomSamplerUtils {
 
 	public static void readWith(QueryHandler queryHandler, BinaryFileInfo binaryInfo,
 			SampleResult res, HashMap<String, Boolean> options) {
-			//SampleResult res, boolean isCheckRead, boolean isRandom, boolean isSpecial) {
 		HashMap<String, String> meta = new HashMap<String, String>();
 		if (options.get("isRandom")) {
 			meta = binaryInfo.getRandomMeta();
 		} else {
 			meta = binaryInfo.getAssignedMeta(1);
 		}
-		
-		if (options.get("useChunks")) {
-			
-		} else {
-			try {
-				res.sampleStart();
-				String hash = queryHandler.readIov(meta);
-				byte[] result = null;
-				// TODO: READ Chunks too if useChunks is ON!!!
-				result = queryHandler.readPayload(hash, options.get("isSpecial"));
+		try {
+			res.sampleStart();
+			String hash = queryHandler.readIov(meta);
+			byte[] result = null;
+			res.samplePause();
 
-				if (result == null) {
-					finalizeResponse(res, false, "500",
-							"The result is empty for " + meta.get("id") + " !");
-				} else {
-					if (options.get("isCheckRead")) {
-						String binaryFullPath = binaryInfo.getFilePathList().get(meta.get("id"));
-						byte[] payload = binaryInfo.read(binaryFullPath);
-						if (result.equals(payload)) {
-							finalizeResponse(res, false, "600",
-									"Payload content for: " + meta.get("id")
-									+ " differs from the original!");
-						} else {
-							finalizeResponse(res, true, "200",
-									"Payload read: " + meta.get("id")
-									+ " read successfully and matching with original!");
-						}
-					} else {
-						finalizeResponse(res, true, "200",
-								"Payload read: " + meta.get("id") + " read successfully!");
-					}
-				}
-			} catch (CustomSamplersException ex) {
-				finalizeResponse(res, false, "500", ex.toString());
-			} finally {
-				res.sampleEnd();
+			Boolean chunkMode = options.get("useChunks");
+			if (chunkMode) {
+				res.sampleResume();
+				result = queryHandler.readChunks(hash, options.get("isSpecial"));
+			} else {
+				res.sampleResume();
+				result = queryHandler.readPayload(hash, options.get("isSpecial"));
 			}
+			res.samplePause();
+
+			if (result == null) {
+				finalizeResponse(res, false, "500", "The result is empty for " + meta.get("id") + " !");
+			} else {
+				if (options.get("isCheckRead")) {
+					if (checkMatch(result, binaryInfo, meta)) {
+						finalizeResponse(res, false, "600", "Payload content for: " + meta.get("id")
+								+ " differs from the original! (Chunks?:" + chunkMode.toString() + ")");
+					} else {
+						finalizeResponse(res, true, "200", "Payload read: " + meta.get("id")
+								+ " read successfully and matching with original! "
+								+ "(Chunks?:" + chunkMode.toString() + ")");
+					}
+				} else {
+					finalizeResponse(res, true, "200", "Payload read: " + meta.get("id")
+							+ " read successfully! (Chunks?:" + chunkMode.toString() + ")");
+				}
+			}
+		} catch (CustomSamplersException ex) {
+			finalizeResponse(res, false, "500", ex.toString());
+		} finally {
+			res.sampleEnd();
 		}
+	}
+
+	private static boolean checkMatch(byte[] result, BinaryFileInfo binaryInfo, 
+			HashMap<String, String> meta) {
+		String binaryFullPath = binaryInfo.getFilePathList().get(meta.get("id"));
+		byte[] payload = binaryInfo.read(binaryFullPath);
+		return result.equals(payload);
 	}
 
 	public static void writeWith(QueryHandler queryHandler, BinaryFileInfo binaryInfo,
