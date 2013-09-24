@@ -41,12 +41,13 @@
         <binaryconfig.BinaryConfigElement guiclass="TestBeanGUI" testclass="binaryconfig.BinaryConfigElement" testname="Custom - BinaryFileInfo Configuration" enabled="true">
           <stringProp name="binaryInfo">binInfo</stringProp>
           <stringProp name="inputLocation">/home/cb/CMS/Projects/PaGeS/fb6fd61e48a708d56383/out</stringProp>
+          <stringProp name="assignmentFile"></stringProp>
         </binaryconfig.BinaryConfigElement>
         <hashTree/>
         <postgresql.PostgreSampler guiclass="TestBeanGUI" testclass="postgresql.PostgreSampler" testname="Custom - PostgeSQL Sampler" enabled="true">
           <stringProp name="assignedWrite">False</stringProp>
           <stringProp name="binaryInfo">binInfo</stringProp>
-          <stringProp name="checkRead">False</stringProp>
+          <stringProp name="checkRead">True</stringProp>
           <stringProp name="database">testdb</stringProp>
           <stringProp name="doRead">True</stringProp>
           <stringProp name="doWrite">False</stringProp>
