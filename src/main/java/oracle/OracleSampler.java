@@ -43,7 +43,7 @@ public class OracleSampler extends AbstractSampler implements TestBean {
 			binaryInfo = BinaryConfigElement.getBinaryFileInfo(getBinaryInfo());
 			queryHandler = new OracleQueryHandler(getDatabase());
 		} catch (Exception e) {
-			log.error("Failed to create a OracleQueryHandler instance for the " + 
+			log.error("Failed to create a OracleSampler prerequisites for the " + 
 					Thread.currentThread().getName() + " sampler. Details:" + e.toString());
 		}
 
