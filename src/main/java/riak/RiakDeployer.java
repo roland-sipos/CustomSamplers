@@ -17,11 +17,10 @@ public class RiakDeployer {
 
 		private IRiakClient riakClient = null;
 		private int totalMaxConnections = 0;
-		
-		public RiakTestEnvironmentDeployer(String host, String port,
-				String databaseName, String entityName, String username, 
-				String password, int totalMaxConnections) {
-			super(host, port, databaseName, entityName, username, password);
+
+		public RiakTestEnvironmentDeployer(String host, String port, String databaseName,
+				String username, String password, int totalMaxConnections) {
+			super(host, port, databaseName, username, password);
 		}
 
 		@Override
@@ -31,10 +30,10 @@ public class RiakDeployer {
 			configBuilder.withHost(hosts[0]);
 			configBuilder.withPort(Integer.parseInt(getPort()));
 			System.out.println(" initialize() -> HTTPClientConfig.Builder is ready...");
-			
+
 			HTTPClientConfig clientConfig = configBuilder.build();
 			System.out.println(" initialize() -> HTTPClientConfig build successfull!");
-			
+
 			HTTPClusterConfig clusterConf = new HTTPClusterConfig(totalMaxConnections);
 			clusterConf.addClient(clientConfig);
 			for (int i = 0; i < hosts.length; ++i) {
@@ -55,13 +54,13 @@ public class RiakDeployer {
 		@Override
 		protected void tearDown() {
 			try {
-	        	if (riakClient != null)
-	        		riakClient.shutdown();
-	        	System.out.println(" tearDown() -> Connection closed.\n");
-	        }
-	        catch (Exception e){
-	        	System.out.println(" tearDown() -> Connection closing failed: " + e.toString());
-	        }
+				if (riakClient != null)
+					riakClient.shutdown();
+				System.out.println(" tearDown() -> Connection closed.\n");
+			}
+			catch (Exception e){
+				System.out.println(" tearDown() -> Connection closing failed: " + e.toString());
+			}
 		}
 
 		@Override
@@ -69,16 +68,41 @@ public class RiakDeployer {
 			try {
 				Set<String> buckets = riakClient.listBuckets();
 				System.out.println(" setupEnvironment() -> Found buckets: " + buckets.toString());
-				if (buckets.contains(getEntity())) {
-					System.out.println(" setupEnvironment() -> " + getEntity() + " bucket already available.");
-					return;
+				Bucket b = null;
+				if (buckets.contains("TAG")) {
+					System.out.println(" setupEnvironment() -> TAG bucket already available ...");
+				} else {
+					b = riakClient.createBucket("TAG")
+						.allowSiblings(false).nVal(1).lastWriteWins(true).execute();
+					b.store("TAG", "Init store").execute();
+					System.out.println(" setupEnvironment() -> TAG bucket created ...");
 				}
-				Bucket bucket = riakClient.createBucket(getEntity())
-						.allowSiblings(false).nVal(1).execute();
-				System.out.println(" setupEnvironment() -> " + bucket.getName() + " bucket created.");
+				if (buckets.contains("PAYLOAD")) {
+					System.out.println(" setupEnvironment() -> PAYLOAD bucket already available ...");
+				} else {
+					b = riakClient.createBucket("PAYLOAD")
+						.allowSiblings(false).nVal(1).lastWriteWins(true).execute();
+					b.store("PAYLOAD", "Init store").execute();
+					System.out.println(" setupEnvironment() -> PAYLOAD bucket created ...");
+				}
+				if (buckets.contains("CHUNK")) {
+					System.out.println(" setupEnvironment() -> CHUNK bucket already available ...");
+				} else {
+					b = riakClient.createBucket("CHUNK")
+						.allowSiblings(false).nVal(1).lastWriteWins(true).execute();
+					b.store("CHUNK", "Init store").execute();
+					System.out.println(" setupEnvironment() -> CHUNK bucket created ...");
+				}
+				System.out.println(riakClient.listBuckets().toString());
 			} catch (RiakException e) {
 				System.out.println(" setupEnvironment() -> RiakException occured on bucket creation." 
 						+ " Details: " + e.toString());
+			}
+		}
+
+		private void truncateBucket(Bucket bucket) throws RiakException {
+			for (String key : bucket.keys()) {
+				bucket.delete(key).execute();
 			}
 		}
 
@@ -86,34 +110,38 @@ public class RiakDeployer {
 		protected void destroyEnvironment() {
 			Bucket bucket = null;
 			try {
-				bucket = riakClient.fetchBucket(getEntity()).execute();
-				for (String key : bucket.keys()) {
-					bucket.delete(key).execute();
-				}
-				System.out.println(" destroyEnvironment() -> Deleting content of " + getEntity() + " bucket.");
+				bucket = riakClient.fetchBucket("TAG").execute();
+				truncateBucket(bucket);
+				System.out.println(" destroyEnvironment() -> Deleted content of TAG bucket.");
+				bucket = riakClient.fetchBucket("PAYLOAD").execute();
+				truncateBucket(bucket);
+				System.out.println(" destroyEnvironment() -> Deleted content of PAYLOAD bucket.");
+				bucket = riakClient.fetchBucket("CHUNK").execute();
+				truncateBucket(bucket);
+				System.out.println(" destroyEnvironment() -> Deleted content of CHUNK bucket.");
 			} catch (RiakException e) {
-				System.out.println(" destroyEnvironment() -> RiakException occured while deleting element " 
-						+ " of " + bucket.getName() + "!");
+				System.out.println(" destroyEnvironment() -> RiakException occured while deleting buckets!");
 			}
-			
 		}
-		
 	}
-	
+
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
 		RiakTestEnvironmentDeployer deployer =
 				new RiakTestEnvironmentDeployer(
-						"188.184.20.73:188.184.20.74:137.138.241.22:137.138.241.69",
-						"8098", "", "binaries", "", "", 10);
-	
-		System.out.println("-------- RIAK environment setup ------------");
-		deployer.deployTestEnvironment();
+						"veszterdb1.cern.ch:veszterdb2.cern.ch:veszterdb3.cern.ch:"+
+						"veszterdb4.cern.ch:veszterdb5.cern.ch:veszterdb6.cern.ch",
+						"8098", "" , "", "", 10);
+
+		//System.out.println("-------- RIAK environment setup ------------");
+		//deployer.deployTestEnvironment();
 		//System.out.println("------- RIAK environment teardown -----------");
 		//deployer.destroyTestEnvironment();
-		
+		System.out.println("-------- RIAK environment teardown and setup ------------");
+		deployer.redeployEnvironment();
+
 	}
 
 }

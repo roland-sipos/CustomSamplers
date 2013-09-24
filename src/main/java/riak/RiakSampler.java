@@ -1,11 +1,15 @@
 package riak;
 
+import java.util.HashMap;
+
 import org.apache.jmeter.samplers.AbstractSampler;
 import org.apache.jmeter.samplers.Entry;
 import org.apache.jmeter.samplers.SampleResult;
 import org.apache.jmeter.testbeans.TestBean;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
+
+import binaryconfig.BinaryConfigElement;
 
 import utils.BinaryFileInfo;
 import utils.CustomSamplerUtils;
@@ -14,51 +18,62 @@ public class RiakSampler extends AbstractSampler implements TestBean {
 
 	private static final long serialVersionUID = 8935021647941079090L;
 	private static final Logger log = LoggingManager.getLoggerForClass();
-	
-	public final static String CLUSTER = "RiakSampler.database";
-	public final static String BUCKET = "RiakSampler.collection";
-	public final static String INPUTLOCATION = "RiakSampler.inputlocation";
+
+	public final static String CLUSTER = "RiakSampler.cluster";
+	public final static String BINARYINFO = "RiakSampler.binaryInfo";
+	public final static String USECHUNKS = "RiakSampler.useChunks";
 	public final static String KRYO_METHOD = "RiakSampler.kryoMethod";
 	public final static String DOREAD = "RiakSampler.doRead";
 	public final static String USERANDOMACCESS = "RiakSampler.useRandomAccess";
 	public final static String CHECKREAD = "RiakSampler.checkRead";
 	public final static String DOWRITE = "RiakSampler.doWrite";
 	public final static String ASSIGNED_WRITE = "RiakSampler.assignedWrite";
-	
-	public static BinaryFileInfo binaryInfo;
-	
+
 	@Override
 	public SampleResult sample(Entry arg0) {
 		int threadID = CustomSamplerUtils.getThreadID(Thread.currentThread().getName());
 		trace("sample() ThreadID: " + threadID);
-		
+
 		// Get BinaryInfo and QueryHandler instances.
-		binaryInfo = BinaryFileInfo.getInstance(getInputLocation());
+		BinaryFileInfo binaryInfo = null;
 		RiakQueryHandler queryHandler = null;
 		try {
-			queryHandler = new RiakQueryHandler(getCluster(), getBucket());
+			binaryInfo = BinaryConfigElement.getBinaryFileInfo(getBinaryInfo());
+			queryHandler = new RiakQueryHandler(getCluster());
 		} catch (Exception e) {
-			log.error("Failed to create a RiakQueryHandler instance for the " + 
-					  Thread.currentThread().getName() + " sampler. Details:" + e.toString());
+			log.error("Failed to create a RiakSampler prerequisites for the " + 
+					Thread.currentThread().getName() + " sampler. Details:" + e.toString());
 		}
-		
-		// Get an initial SampleResult and start it.
+
+		// Get an initial SampleResult and parse options.
 		SampleResult res = CustomSamplerUtils.getInitialSampleResult(getTitle());
-	
-		if(Boolean.parseBoolean(getDoRead())) // DO THE READ
-			CustomSamplerUtils.doReadWith(queryHandler, binaryInfo, res, 
-					Boolean.parseBoolean(getCheckRead()), Boolean.parseBoolean(getKryoMethod()));
-		else if (Boolean.parseBoolean(getDoWrite())) // DO THE WRITE
-			CustomSamplerUtils.doWriteWith(queryHandler, binaryInfo, res, 
-					Boolean.parseBoolean(getAssignedWrite()), Boolean.parseBoolean(getKryoMethod()));
-		
+		HashMap<String, Boolean> options = prepareOptions();
+
+		if (options.get("doRead")) { // DO THE READ
+			CustomSamplerUtils.readWith(queryHandler, binaryInfo, res, options);
+		} else if (options.get("doWrite")) { // DO THE WRITE
+			CustomSamplerUtils.writeWith(queryHandler, binaryInfo, res, options);
+		}
+
 		return res;
+	}
+
+	private HashMap<String, Boolean> prepareOptions() {
+		HashMap<String, Boolean> options = new HashMap<String, Boolean>();
+		options.put("doRead", Boolean.parseBoolean(getDoRead()));
+		options.put("doWrite", Boolean.parseBoolean(getDoWrite()));
+		options.put("useChunks", Boolean.parseBoolean(getUseChunks()));
+		options.put("isRandom", Boolean.parseBoolean(getUseRandomAccess()));
+		options.put("isCheckRead", Boolean.parseBoolean(getCheckRead()));
+		options.put("isSpecial", Boolean.parseBoolean(getKryoMethod()));
+		options.put("isAssigned", Boolean.parseBoolean(getAssignedWrite()));
+		return options;
 	}
 
 	private void trace(String s) {
 		if(log.isDebugEnabled()) {
 			log.debug(Thread.currentThread().getName() + " (" + getTitle() + " " + s + " " + this.toString());
-	    }
+		}
 	}
 
 	public String getTitle() {
@@ -70,17 +85,17 @@ public class RiakSampler extends AbstractSampler implements TestBean {
 	public void setCluster(String cluster) {
 		setProperty(CLUSTER, cluster);
 	}
-	public String getBucket() {
-		return getPropertyAsString(BUCKET);
+	public String getBinaryInfo() {
+		return getPropertyAsString(BINARYINFO);
 	}
-	public void setBucket(String bucket) {
-		setProperty(BUCKET, bucket);
+	public void setBinaryInfo(String binaryInfo) {
+		setProperty(BINARYINFO, binaryInfo);
 	}
-	public String getInputLocation() {
-		return getPropertyAsString(INPUTLOCATION);
+	public String getUseChunks() {
+		return getPropertyAsString(USECHUNKS);
 	}
-	public void setInputLocation(String inputLocation) {
-		setProperty(INPUTLOCATION, inputLocation);
+	public void setInputLocation(String useChunks) {
+		setProperty(USECHUNKS, useChunks);
 	}
 	public String getKryoMethod() {
 		return getPropertyAsString(KRYO_METHOD);
@@ -118,5 +133,5 @@ public class RiakSampler extends AbstractSampler implements TestBean {
 	public void setAssignedWrite(String assignedWrite) {
 		setProperty(ASSIGNED_WRITE, assignedWrite);
 	}
-	
+
 }
