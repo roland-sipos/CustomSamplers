@@ -68,20 +68,36 @@ public class RiakQueryHandler implements QueryHandler {
 					+ " was not found in config!");
 	}
 
-	@Deprecated
 	@Override
-	public void writeBinary(String binaryID, String chunkID, String hash,
-			byte[] fileContent, boolean isSpecial) throws CustomSamplersException {
-	}
-
-	@Deprecated
-	@Override
-	public byte[] readBinary(String binaryID, String chunkID, String hash, boolean isSpecial) 
+	public byte[] getData(String tagName, long since)
 			throws CustomSamplersException {
+		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
+	public void putData(HashMap<String, String> metaInfo, byte[] payload, byte[] streamerInfo)
+			throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public byte[] getChunks(String tagName, long since)
+			throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	@Override
+	public void putChunk(HashMap<String, String> metaInfo, String chunkID, byte[] chunk)
+			throws CustomSamplersException {
+		
+	}
+	
+
+
+	/*@Override
 	public void writePayload(HashMap<String, String> metaInfo, byte[] payload,
 			byte[] streamerInfo, boolean isSpecial)
 					throws CustomSamplersException {
@@ -288,6 +304,6 @@ public class RiakQueryHandler implements QueryHandler {
 			throw new CustomSamplersException("SQLException occured during write attempt: " + se.toString());
 		}
 		return result;
-	}
+	}*/
 
 }

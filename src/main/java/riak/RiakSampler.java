@@ -39,6 +39,7 @@ public class RiakSampler extends AbstractSampler implements TestBean {
 		RiakQueryHandler queryHandler = null;
 		try {
 			binaryInfo = BinaryConfigElement.getBinaryFileInfo(getBinaryInfo());
+			// TODO: IF KRYO METHOD, KRYO QueryHandler!!!!!
 			queryHandler = new RiakQueryHandler(getCluster());
 		} catch (Exception e) {
 			log.error("Failed to create a RiakSampler prerequisites for the " + 
