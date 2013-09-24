@@ -285,7 +285,7 @@ public class PostgreDeployer {
 	public static void main(String[] args) {
 		PostgreTestEnvironmentDeployer deployer =
 				new PostgreTestEnvironmentDeployer("testdb-pc.cern.ch", "5432", 
-						"testdb", "postgres", "testPass", true); // Don't use LO API.
+						"testdb", "postgres", "testPass", false); // Don't use LO API.
 
 		//System.out.println("-------- PostgreSQL environment setup ------------");
 		//deployer.deployTestEnvironment();

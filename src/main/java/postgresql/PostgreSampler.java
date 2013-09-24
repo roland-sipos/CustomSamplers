@@ -13,6 +13,7 @@ import binaryconfig.BinaryConfigElement;
 
 import utils.BinaryFileInfo;
 import utils.CustomSamplerUtils;
+import utils.QueryHandler;
 
 public class PostgreSampler extends AbstractSampler implements TestBean {
 
@@ -29,10 +30,7 @@ public class PostgreSampler extends AbstractSampler implements TestBean {
 	public final static String DOWRITE = "PostgreSampler.doWrite";
 	public final static String ASSIGNED_WRITE = "PostgreSampler.assignedWrite";
 
-	public static BinaryFileInfo binaryInfo;
-
 	public PostgreSampler() {
-		binaryInfo = null;
 		trace("PostgreSampler()" + this.toString());
 	}
 
@@ -43,12 +41,16 @@ public class PostgreSampler extends AbstractSampler implements TestBean {
 
 		// Get BinaryInfo and QueryHandler instances.
 		BinaryFileInfo binaryInfo = null;
-		PostgreQueryHandler queryHandler = null;
+		QueryHandler queryHandler = null;
 		try {
 			binaryInfo = BinaryConfigElement.getBinaryFileInfo(getBinaryInfo());
-			queryHandler = new PostgreQueryHandler(getDatabase());
+			if (Boolean.parseBoolean(getLargeObjectMethod())) {
+				queryHandler = new PostgreLOBQueryHandler(getDatabase());
+			} else {
+				queryHandler = new PostgreQueryHandler(getDatabase());
+			}
 		} catch (Exception e) {
-			log.error("Failed to create a PostgreQueryHandler instance for the " + 
+			log.error("Failed to create a PostgreSampler prerequisites for the " + 
 					Thread.currentThread().getName() + " sampler. Details:" + e.toString());
 		}
 

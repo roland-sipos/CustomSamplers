@@ -11,9 +11,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.HashMap;
 
-import org.postgresql.largeobject.LargeObject;
-import org.postgresql.largeobject.LargeObjectManager;
-
 import customjdbc.CustomJDBCConfigElement;
 
 import utils.CustomSamplersException;
@@ -31,30 +28,104 @@ public class PostgreQueryHandler implements QueryHandler {
 			throw new NotFoundInDBException("JDBCConnection instance with name: " + databaseName + " was not found in config!");
 	}
 
-	@Deprecated
 	@Override
-	public byte[] readBinary(String binaryID, String chunkID, String hash, boolean isSpecial)
+	public byte[] getData(String tagName, long since)
 			throws CustomSamplersException {
-		return null;
+		byte[] result = null;
+		try {
+			PreparedStatement ps = connection.prepareStatement("SELECT data FROM PAYLOAD p, "
+					+ "(SELECT payload_hash FROM IOV WHERE tag_name=? AND since=?) iov "
+					+ "WHERE p.hash = iov.payload_hash");
+			ps.setString(1, tagName);
+			ps.setLong(2, since);
+			ResultSet rs = ps.executeQuery();
+
+			if (rs != null) {
+				int counter = 0;
+				while(rs.next()) {
+					result = rs.getBytes("data");
+					counter++;
+				}
+				if (counter > 1) {
+					throw new CustomSamplersException("More than one payload found for "
+							+ "TAG=" + tagName + " SINCE=" + since +" !");
+				}
+				rs.close();
+
+			} else {
+
+				throw new CustomSamplersException("Payload not found for "
+						+ "TAG=" + tagName + " SINCE=" + since +" !");
+			}
+
+			ps.close();
+		} catch (SQLException e) {
+			throw new CustomSamplersException("SQLException occured during read attempt: " + e.toString());
+		}
+		return result;
 	}
 
-	@Deprecated
 	@Override
-	public void writeBinary(String binaryID, String chunkID, String hash, 
-			byte[] fileContent, boolean isSpecial) 
-					throws CustomSamplersException {
+	public void putData(HashMap<String, String> metaInfo, byte[] payload,
+			byte[] streamerInfo) throws CustomSamplersException {
+		writePayload(metaInfo, payload, streamerInfo);
+		writeIov(metaInfo);
 	}
 
 	@Override
-	public void writePayload(HashMap<String, String> metaInfo, byte[] payload,
-			byte[] streamerInfo, boolean isSpecial)
+	public byte[] getChunks(String tagName, long since)
+			throws CustomSamplersException {
+		byte[] result = null;
+		try {
+			PreparedStatement ps = connection.prepareStatement("SELECT data "
+					+ "FROM CHUNK c, (SELECT payload_hash FROM IOV WHERE tag_name=? AND since=?) iov "
+					+ "WHERE c.payload_hash = iov.payload_hash");
+			ps.setString(1, tagName);
+			ps.setLong(2, since);
+			ResultSet rs = ps.executeQuery();
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			if (rs != null) {
+				while(rs.next()) {
+					os.write(rs.getBytes("data"));
+				}
+				rs.close();
+			} else {
+				throw new CustomSamplersException("Payload not found for "
+						+ "TAG=" + tagName + " SINCE=" + since +" ! (via chunk read)");
+			}
+			ps.close();
+			result = os.toByteArray();
+		} catch (SQLException e) {
+			throw new CustomSamplersException("SQLException occured during read attempt: " + e.toString());
+		} catch (IOException e) {
+			throw new CustomSamplersException("IOException occured during stream write attempt: " + e.toString());
+		}
+		return result;
+	}
+
+	@Override
+	public void putChunk(HashMap<String, String> metaInfo, String chunkID,
+			byte[] chunk) throws CustomSamplersException {
+		try {
+			PreparedStatement ps = connection.prepareStatement("INSERT INTO CHUNK"
+					+ " (PAYLOAD_HASH, CHUNK_HASH, DATA) VALUES (?, ?, ?)");
+			ps.setString(1, metaInfo.get("payload_hash"));
+			ps.setString(2, metaInfo.get(chunkID));
+			ps.setBinaryStream(3, new ByteArrayInputStream(chunk), chunk.length);
+			ps.execute();
+			ps.close();
+		} catch (SQLException se) {
+			throw new CustomSamplersException("SQLException occured during write attempt: " + se.toString());
+		}
+	}
+
+	public void writePayload(HashMap<String, String> metaInfo, byte[] payload, byte[] streamerInfo)
 					throws CustomSamplersException {
-		if (isSpecial) {
+		/*if (isSpecial) {
 			writeLOBPayload(metaInfo, payload, streamerInfo);
-		} else {
-			PreparedStatement ps;
+		} else { */
 			try {
-				ps = connection.prepareStatement("INSERT INTO PAYLOAD"
+				PreparedStatement ps = connection.prepareStatement("INSERT INTO PAYLOAD"
 						+ " (HASH, OBJECT_TYPE, DATA, STREAMER_INFO, VERSION, CREATION_TIME, CMSSW_RELEASE)"
 						+ " VALUES (?, ?, ?, ?, ?, ?, ?)");
 				ps.setString(1, metaInfo.get("payload_hash"));
@@ -73,49 +144,14 @@ public class PostgreQueryHandler implements QueryHandler {
 			} catch (SQLException se) {
 				throw new CustomSamplersException("SQLException occured during write attempt: " + se.toString());
 			}
-		}
+		//}
 	}
 
-	private void writeLOBPayload(HashMap<String, String> metaInfo, byte[] payload, byte[] streamerInfo)
+	public byte[] readPayload(String hashKey)
 			throws CustomSamplersException {
-		try {
-			connection.setAutoCommit(false);
-			LargeObjectManager lobManager = 
-					((org.postgresql.PGConnection)connection).getLargeObjectAPI();
-			long objectId = lobManager.createLO(LargeObjectManager.READWRITE);
-			LargeObject object = lobManager.open(objectId, LargeObjectManager.WRITE);
-			if (payload != null) {
-				object.write(payload);
-			} else {
-				object.write(new byte[0]);
-			}
-			object.close();
-
-			PreparedStatement ps = connection.prepareStatement("INSERT INTO LOB_PAYLOAD"
-					+ " (HASH, OBJECT_TYPE, DATA, STREAMER_INFO, VERSION, CREATION_TIME, CMSSW_RELEASE)"
-					+ " VALUES (?, ?, ?, ?, ?, ?, ?)");
-			ps.setString(1, metaInfo.get("payload_hash"));
-			ps.setString(2, metaInfo.get("object_type"));
-			ps.setLong(3, objectId);
-			ps.setBinaryStream(4, new ByteArrayInputStream(streamerInfo), streamerInfo.length);
-			ps.setString(5, metaInfo.get("version"));
-			ps.setTimestamp(6, new Timestamp(System.currentTimeMillis()));
-			ps.setString(7, metaInfo.get("cmssw_release"));
-			ps.execute();
-			ps.close();
-			connection.commit();
-			connection.setAutoCommit(true);
-		} catch (SQLException e) {
-			throw new CustomSamplersException("SQLException occured during LOB insert attempt: " + e.toString());
-		}
-	}
-
-	@Override
-	public byte[] readPayload(String hashKey, boolean isSpecial)
-			throws CustomSamplersException {
-		if (isSpecial) {
+		/*if (isSpecial) {
 			return readLOBPayload(hashKey);
-		}
+		}*/
 		byte[] result = null;
 		try {
 			PreparedStatement ps = connection.prepareStatement("SELECT DATA FROM PAYLOAD WHERE HASH=?");
@@ -143,48 +179,11 @@ public class PostgreQueryHandler implements QueryHandler {
 		return result;
 	}
 
-	private byte[] readLOBPayload(String hashKey) throws CustomSamplersException {
-		byte[] result = null;
-		try {
-			connection.setAutoCommit(false);
-			PreparedStatement ps = connection.prepareStatement(
-					"SELECT DATA FROM LOB_PAYLOAD WHERE HASH=?");
-			ps.setString(1, hashKey);
-			ResultSet rs = ps.executeQuery();
-			if (rs != null) {
-				int counter = 0;
-				while(rs.next()) {
-					long objectID = rs.getLong(1);
-					LargeObject object = ((org.postgresql.PGConnection)connection)
-							.getLargeObjectAPI().open(objectID, LargeObjectManager.READ);
-					result = new byte[object.size()];
-					object.read(result, 0, object.size());
-					object.close();
-					counter++;
-				}
-				if (counter > 1) {
-					throw new CustomSamplersException("More than one row found with hash="
-							+ hashKey + " in LOB_PAYLOAD !");
-				}
-				rs.close();
-			} else {
-				throw new CustomSamplersException("The row with hash=" + hashKey
-						+ " not found in LOB_PAYLOAD!");
-			}
-			ps.close();
-			connection.setAutoCommit(true);
-		} catch (SQLException e) {
-			throw new CustomSamplersException("SQLException occured during read attempt: " + e.toString());
-		}
-		return result;
-	}
-
-	@Override
-	public void writeChunk(HashMap<String, String> metaInfo, String chunkID,
-			byte[] chunk, Boolean isSpecial) throws CustomSamplersException {
-		if (isSpecial) {
+	public void writeChunk(HashMap<String, String> metaInfo, String chunkID, byte[] chunk)
+			throws CustomSamplersException {
+		/*if (isSpecial) {
 			writeLOBChunk(metaInfo, chunkID, chunk);
-		} else {
+		} else {*/
 			try {
 				PreparedStatement ps = connection.prepareStatement("INSERT INTO CHUNK"
 						+ " (PAYLOAD_HASH, CHUNK_HASH, DATA) VALUES (?, ?, ?)");
@@ -197,40 +196,14 @@ public class PostgreQueryHandler implements QueryHandler {
 				throw new CustomSamplersException(
 						"SQLException occured during write attempt: " + se.toString());
 			}
-		}
+		//}
 	}
 
-	private void writeLOBChunk(HashMap<String, String> metaInfo, String chunkID, byte[] chunk) 
+	public byte[] readChunk(String hashKey, String chunkHashKey)
 			throws CustomSamplersException {
-		try {
-			connection.setAutoCommit(false);
-			LargeObjectManager lobManager = 
-					((org.postgresql.PGConnection)connection).getLargeObjectAPI();
-			long objectId = lobManager.createLO(LargeObjectManager.READWRITE);
-			LargeObject object = lobManager.open(objectId, LargeObjectManager.WRITE);
-			object.write(chunk);
-			object.close();
-			PreparedStatement ps = connection.prepareStatement("INSERT INTO LOB_CHUNK"
-					+ " (PAYLOAD_HASH, CHUNK_HASH, DATA) VALUES (?, ?, ?)");
-			ps.setString(1, metaInfo.get("payload_hash"));
-			ps.setString(2, metaInfo.get(chunkID));
-			ps.setLong(3, objectId);
-			ps.execute();
-			ps.close();
-			connection.commit();
-			connection.setAutoCommit(true);
-		} catch (SQLException se) {
-			throw new CustomSamplersException(
-					"SQLException occured during write attempt: " + se.toString());
-		}
-	}
-
-	@Override
-	public byte[] readChunk(String hashKey, String chunkHashKey, boolean isSpecial)
-			throws CustomSamplersException {
-		if (isSpecial) {
+		/*if (isSpecial) {
 			return readLOBChunk(hashKey, chunkHashKey);
-		} else {
+		} else {*/
 			byte[] result = null;
 			try {
 				PreparedStatement ps = connection.prepareStatement(
@@ -262,15 +235,14 @@ public class PostgreQueryHandler implements QueryHandler {
 				throw new CustomSamplersException("SQLException occured during read attempt: " + e.toString());
 			}
 			return result;
-		}
+		//}
 	}
 
-	@Override
-	public byte[] readChunks(String hashKey, boolean isSpecial)
+	public byte[] readChunks(String hashKey)
 			throws CustomSamplersException {
-		if (isSpecial) {
+		/*if (isSpecial) {
 			return readLOBChunks(hashKey);
-		}
+		}*/
 		byte[] result = null;
 		try {
 			PreparedStatement ps = connection.prepareStatement(
@@ -296,86 +268,6 @@ public class PostgreQueryHandler implements QueryHandler {
 		return result;
 	}
 
-	private byte[] readLOBChunk(String hashKey, String chunkHashKey) 
-			throws CustomSamplersException {
-		byte[] result = null;
-		try {
-			connection.setAutoCommit(false);
-			PreparedStatement ps = connection.prepareStatement(
-					"SELECT DATA FROM LOB_CHUNK WHERE PAYLOAD_HASH=? AND CHUNK_HASH=?");
-			ps.setString(1, hashKey);
-			ps.setString(2, chunkHashKey);
-			ResultSet rs = ps.executeQuery();
-
-			if (rs != null) {
-				int counter = 0;
-				while(rs.next()) {
-					long objectID = rs.getLong(1);
-					LargeObject object = ((org.postgresql.PGConnection)connection)
-							.getLargeObjectAPI().open(objectID, LargeObjectManager.READ);
-					result = new byte[object.size()];
-					object.read(result, 0, object.size());
-					object.close();
-					counter++;
-				}
-				if (counter > 1) {
-					throw new CustomSamplersException("More than one row found with "
-							+ "hash=" + hashKey + " and chunk_hash=" + chunkHashKey + " in LOB_CHUNK !");
-				}
-				rs.close();
-
-			} else {
-
-				throw new CustomSamplersException("The row with hash=" + hashKey
-						+ " chunk_hash=" +chunkHashKey + " not found in LOB_CHUNK!");
-			}
-			ps.close();
-			connection.setAutoCommit(true);
-		} catch (SQLException e) {
-			throw new CustomSamplersException("SQLException occured during read attempt: " + e.toString());
-		}
-		return result;
-	}
-
-	public byte[] readLOBChunks(String hashKey)
-			throws CustomSamplersException {
-		byte[] result = null;
-		try {
-			connection.setAutoCommit(false);
-			PreparedStatement ps = connection.prepareStatement(
-					"SELECT DATA FROM LOB_CHUNK WHERE PAYLOAD_HASH=?");
-			ps.setString(1, hashKey);
-			ResultSet rs = ps.executeQuery();
-			ByteArrayOutputStream os = new ByteArrayOutputStream();
-			if (rs != null) {
-				while(rs.next()) {
-					long objectID = rs.getLong(1);
-					LargeObject object = ((org.postgresql.PGConnection)connection)
-							.getLargeObjectAPI().open(objectID, LargeObjectManager.READ);
-					byte[] chunk = new byte[object.size()];
-					object.read(chunk, 0, object.size());
-					object.close();
-					os.write(chunk);
-				}
-				rs.close();
-			} else {
-				throw new CustomSamplersException("The rows with hash=" + hashKey + " not found in LOB_CHUNK!");
-			}
-			ps.close();
-			connection.setAutoCommit(true);
-			result = os.toByteArray();
-		} catch (SQLException e) {
-			throw new CustomSamplersException("SQLException occured during read attempt: " + e.toString()
-					+ " ---- " + e.getSQLState()
-					+ " ---- " + e.getErrorCode()
-					+ " -----" + e.getLocalizedMessage());
-		} catch (IOException e) {
-			throw new CustomSamplersException("IOException occured during stream write attempt: " + e.toString());
-		}
-		return result;
-	}
-	
-	@Override
 	public void writeIov(HashMap<String, String> keyAndMetaMap)
 			throws CustomSamplersException {
 		try {
@@ -392,7 +284,6 @@ public class PostgreQueryHandler implements QueryHandler {
 		}
 	}
 
-	@Override
 	public String readIov(HashMap<String, String> keyMap)
 			throws CustomSamplersException {
 		String result = null;
@@ -431,7 +322,6 @@ public class PostgreQueryHandler implements QueryHandler {
 		return result;
 	}
 
-	@Override
 	public void writeTag(HashMap<String, String> metaMap)
 			throws CustomSamplersException {
 		try {
@@ -445,7 +335,7 @@ public class PostgreQueryHandler implements QueryHandler {
 			ps.setString(4, metaMap.get("comment"));
 			ps.setInt(5, Integer.parseInt(metaMap.get("time_type")));
 			ps.setString(6, metaMap.get("object_type"));
-			ps.setInt(7, Integer.parseInt(metaMap.get("last_validated_time")));
+			ps.setInt(7, Integer.parseInt(metaMap.get("last_validated")));
 			ps.setInt(8, Integer.parseInt(metaMap.get("end_of_validity")));
 			ps.setInt(9, Integer.parseInt(metaMap.get("last_since")));
 			ps.setInt(10, Integer.parseInt(metaMap.get("last_since_pid")));
@@ -455,7 +345,6 @@ public class PostgreQueryHandler implements QueryHandler {
 		}
 	}
 
-	@Override
 	public HashMap<String, Object> readTag(String tagKey)
 			throws CustomSamplersException {
 		HashMap<String, Object> result = new HashMap<String, Object>();
@@ -500,6 +389,5 @@ public class PostgreQueryHandler implements QueryHandler {
 		}
 		return result;
 	}
-
 
 }
