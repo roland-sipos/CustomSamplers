@@ -2,19 +2,21 @@ package utils;
 
 import java.util.HashMap;
 
-
 public interface QueryHandler {
 
-	@Deprecated
-	public void writeBinary(String binaryID, String chunkID, String hash,
-			byte[] fileContent, boolean isSpecial) throws CustomSamplersException;
-
-	@Deprecated
-	public byte[] readBinary(String binaryID, String chunkID, String hash, boolean isSpecial)
+	public byte[] getData(String tagName, long since)
+			throws CustomSamplersException;
+	
+	public void putData(HashMap<String, String> metaInfo, byte[] payload, byte[] streamerInfo)
 			throws CustomSamplersException;
 
+	public byte[] getChunks(String tagName, long since)
+			throws CustomSamplersException;
 
-	// The implemented function writes a PAYLOAD to the DB based on all it's meta and key.
+	public void putChunk(HashMap<String, String> metaInfo, String chunkID, byte[] chunk)
+			throws CustomSamplersException;
+
+	/*// The implemented function writes a PAYLOAD to the DB based on all it's meta and key.
 	public void writePayload(HashMap<String, String> metaInfo,
 			byte[] payload, byte[] streamerInfo, boolean isSpecial)
 					throws CustomSamplersException;
@@ -50,7 +52,7 @@ public interface QueryHandler {
 
 	// The implemented function reads a TAG based on the NAME key.
 	public HashMap<String, Object> readTag(String tagKey)
-			throws CustomSamplersException;
+			throws CustomSamplersException;*/
 
 }
 

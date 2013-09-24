@@ -45,18 +45,14 @@ public class CustomSamplerUtils {
 			meta = binaryInfo.getAssignedMeta(1);
 		}
 		try {
-			res.sampleStart();
-			String hash = queryHandler.readIov(meta);
 			byte[] result = null;
-			res.samplePause();
-
 			Boolean chunkMode = options.get("useChunks");
 			if (chunkMode) {
-				res.sampleResume();
-				result = queryHandler.readChunks(hash, options.get("isSpecial"));
+				res.sampleStart();
+				result = queryHandler.getChunks(meta.get("tag_name"), Long.parseLong(meta.get("since")));
 			} else {
-				res.sampleResume();
-				result = queryHandler.readPayload(hash, options.get("isSpecial"));
+				res.sampleStart();
+				result = queryHandler.getData(meta.get("tag_name"), Long.parseLong(meta.get("since")));
 			}
 			res.samplePause();
 
@@ -109,19 +105,18 @@ public class CustomSamplerUtils {
 			TreeMap<String, String> chunkPathList = binaryInfo.getChunkPathList().get(binaryID);
 			try {
 				res.sampleStart();
-				queryHandler.writePayload(binaryMeta, null, streamerInfo, options.get("isSpecial"));
+				queryHandler.putData(binaryMeta, null, streamerInfo);
 				res.samplePause();
 				for (Map.Entry<String, String> it : chunkPathList.entrySet()) {
 					byte[] chunk = binaryInfo.read(it.getValue());
 					SampleResult subres = getInitialSampleResult(binaryID + " - " + it.getKey());
 					subres.sampleStart();
-					queryHandler.writeChunk(binaryMeta, it.getKey(), chunk, options.get("isSpecial"));
+					queryHandler.putChunk(binaryMeta, it.getKey(), chunk);
 					finalizeResponse(subres, true, "200", "Chunk write: " + it.getKey() + " Successfull!");
 					subres.sampleEnd();
 					res.storeSubResult(subres);
 				}
 				res.sampleResume();
-				queryHandler.writeIov(binaryMeta);
 				finalizeResponse(res, true, "200", "Payload (chunk) write: " + binaryID + " Successfull!");
 			} catch (CustomSamplersException ex) {
 				finalizeResponse(res, false, "500", ex.toString());
@@ -133,8 +128,7 @@ public class CustomSamplerUtils {
 			byte[] payload = binaryInfo.read(binaryFullPath);
 			try {
 				res.sampleStart();
-				queryHandler.writePayload(binaryMeta, payload, streamerInfo, options.get("isSpecial"));
-				queryHandler.writeIov(binaryMeta);
+				queryHandler.putData(binaryMeta, payload, streamerInfo);
 				finalizeResponse(res, true, "200", "Payload write: " + binaryID + " Successfull!");
 			} catch (CustomSamplersException ex) {
 				finalizeResponse(res, false, "500", ex.toString());

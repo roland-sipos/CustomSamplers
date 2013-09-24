@@ -15,13 +15,11 @@ import java.util.TreeMap;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 public class BinaryFileInfo {
 
@@ -245,11 +243,6 @@ public class BinaryFileInfo {
 						totalBytesRead = totalBytesRead + bytesRead;
 					}
 				}
-				/*
-				 * the above style is a bit tricky: it places bytes into the 'result' array; 
-				 * 'result' is an output parameter;
-				 * the while loop usually has a single iteration only.
-				 */
 			}
 			finally {
 				input.close();
