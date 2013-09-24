@@ -44,7 +44,7 @@ public class MysqlSampler extends AbstractSampler implements TestBean {
 			binaryInfo = BinaryConfigElement.getBinaryFileInfo(getBinaryInfo());
 			queryHandler = new MysqlQueryHandler(getDatabase());
 		} catch (Exception e) {
-			log.error("Failed to create a MysqlQueryHandler instance for the " + 
+			log.error("Failed to create a MysqlSampler prerequisites for the " + 
 					Thread.currentThread().getName() + " sampler. Details:" + e.toString());
 		}
 
@@ -67,7 +67,6 @@ public class MysqlSampler extends AbstractSampler implements TestBean {
 		options.put("useChunks", Boolean.parseBoolean(getUseChunks()));
 		options.put("isRandom", Boolean.parseBoolean(getUseRandomAccess()));
 		options.put("isCheckRead", Boolean.parseBoolean(getCheckRead()));
-		options.put("isSpecial", false);
 		options.put("isAssigned", Boolean.parseBoolean(getAssignedWrite()));
 		return options;
 	}
