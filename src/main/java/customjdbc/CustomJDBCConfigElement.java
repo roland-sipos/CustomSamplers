@@ -28,6 +28,7 @@ implements ConfigElement, TestStateListener, TestBean {
 	public final static String PORT = "CustomJDBCConfigElement.port";
 	public final static String DATABASE = "CustomJDBCConfigElement.database";
 	public final static String SID = "CustomJDBCConfigElement.sid";
+	public final static String AUTOCOMMIT = "CustomJDBCConfigElement.autocommit";
 	public final static String USERNAME = "CustomJDBCConfigElement.username";
 	public final static String PASSWORD = "CustomJDBCConfigElement.password";
 
@@ -94,11 +95,12 @@ implements ConfigElement, TestStateListener, TestBean {
 				log.debug(this.getName() + " Connection established for: " + connectionStr);
 			}
 
-			/*try {
-				connection.setAutoCommit(false);
+			try {
+				connection.setAutoCommit(Boolean.parseBoolean(getAutocommit()));
 			} catch (SQLException e) {
 				log.error("Failed to change autoCommit to false: " + e.toString());
-			}*/
+			}
+
 			getThreadContext().getVariables().putObject(getDatabase(), connection);
 		}
 	}
@@ -165,6 +167,14 @@ implements ConfigElement, TestStateListener, TestBean {
 
 	public void setSid(String sid) {
 		setProperty(SID, sid);
+	}
+
+	public String getAutocommit() {
+		return getPropertyAsString(AUTOCOMMIT);
+	}
+	
+	public void setAutocommit(String autocommit) {
+		setProperty(AUTOCOMMIT, autocommit);
 	}
 
 	public String getUsername() {
