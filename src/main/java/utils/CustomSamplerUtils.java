@@ -1,10 +1,17 @@
 package utils;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.jmeter.samplers.SampleResult;
+
 
 public class CustomSamplerUtils {
 
@@ -36,31 +43,52 @@ public class CustomSamplerUtils {
 		res.setResponseData(responseStr.getBytes());
 	}
 
+	private static byte[] mergeByteArrayList(List<ByteArrayOutputStream> list)
+			throws CustomSamplersException {
+		ByteArrayOutputStream resOs = new ByteArrayOutputStream();
+		
+		try {
+			Iterator<ByteArrayOutputStream> lIt = list.iterator(); 
+			while (lIt.hasNext()) {
+				ByteArrayOutputStream ba = lIt.next();
+				resOs.write(ba.toByteArray());
+			}
+		} catch (IOException e){
+			throw new CustomSamplersException("IOException occured during array merge: " + e.toString());
+		}	
+		return resOs.toByteArray();
+	}
+	
 	public static void readWith(QueryHandler queryHandler, BinaryFileInfo binaryInfo,
 			SampleResult res, HashMap<String, Boolean> options) {
 		HashMap<String, String> meta = new HashMap<String, String>();
 		if (options.get("isRandom")) {
 			meta = binaryInfo.getRandomMeta();
 		} else {
-			meta = binaryInfo.getAssignedMeta(1);
+			meta = binaryInfo.getAssignedMeta();
 		}
 		try {
 			byte[] result = null;
 			Boolean chunkMode = options.get("useChunks");
 			if (chunkMode) {
+				List<ByteArrayOutputStream> data = new ArrayList<ByteArrayOutputStream>();
 				res.sampleStart();
-				result = queryHandler.getChunks(meta.get("tag_name"), Long.parseLong(meta.get("since")));
+				data = queryHandler.getChunks(meta.get("tag_name"), Long.parseLong(meta.get("since")));
+				res.samplePause();
+				result = mergeByteArrayList(data);
 			} else {
+				ByteArrayOutputStream data = new ByteArrayOutputStream();
 				res.sampleStart();
-				result = queryHandler.getData(meta.get("tag_name"), Long.parseLong(meta.get("since")));
+				data = queryHandler.getData(meta.get("tag_name"), Long.parseLong(meta.get("since")));
+				res.samplePause();
+				result = data.toByteArray();
 			}
-			res.samplePause();
 
 			if (result == null) {
 				finalizeResponse(res, false, "500", "The result is empty for " + meta.get("id") + " !");
 			} else {
 				if (options.get("isCheckRead")) {
-					if (checkMatch(result, binaryInfo, meta)) {
+					if (!checkMatch(result, binaryInfo, meta)) {
 						finalizeResponse(res, false, "600", "Payload content for: " + meta.get("id")
 								+ " differs from the original! (Chunks?:" + chunkMode.toString() + ")");
 					} else {
@@ -84,7 +112,7 @@ public class CustomSamplerUtils {
 			HashMap<String, String> meta) {
 		String binaryFullPath = binaryInfo.getFilePathList().get(meta.get("id"));
 		byte[] payload = binaryInfo.read(binaryFullPath);
-		return result.equals(payload);
+		return Arrays.equals(result, payload);
 	}
 
 	public static void writeWith(QueryHandler queryHandler, BinaryFileInfo binaryInfo,
@@ -105,13 +133,15 @@ public class CustomSamplerUtils {
 			TreeMap<String, String> chunkPathList = binaryInfo.getChunkPathList().get(binaryID);
 			try {
 				res.sampleStart();
-				queryHandler.putData(binaryMeta, null, streamerInfo);
+				queryHandler.putData(binaryMeta, new byte[0], streamerInfo);
 				res.samplePause();
 				for (Map.Entry<String, String> it : chunkPathList.entrySet()) {
 					byte[] chunk = binaryInfo.read(it.getValue());
 					SampleResult subres = getInitialSampleResult(binaryID + " - " + it.getKey());
+					Integer cId = binaryInfo.getIDForChunk(binaryID, it.getKey());
+					
 					subres.sampleStart();
-					queryHandler.putChunk(binaryMeta, it.getKey(), chunk);
+					queryHandler.putChunk(binaryMeta, cId, chunk);
 					finalizeResponse(subres, true, "200", "Chunk write: " + it.getKey() + " Successfull!");
 					subres.sampleEnd();
 					res.storeSubResult(subres);
