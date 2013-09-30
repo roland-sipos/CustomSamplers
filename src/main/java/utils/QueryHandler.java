@@ -1,20 +1,28 @@
 package utils;
 
+import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public interface QueryHandler {
 
-	public byte[] getData(String tagName, long since)
+	public ByteArrayOutputStream getData(String tagName, long since)
 			throws CustomSamplersException;
 	
-	public void putData(HashMap<String, String> metaInfo, byte[] payload, byte[] streamerInfo)
+	public void putData(HashMap<String, String> metaInfo,
+			ByteArrayOutputStream payload, ByteArrayOutputStream streamerInfo)
+					throws CustomSamplersException;
+
+	public Map<Integer, ByteArrayOutputStream> getChunks(String tagName, long since)
 			throws CustomSamplersException;
 
-	public byte[] getChunks(String tagName, long since)
+	public void putChunks(HashMap<String, String> metaInfo, List<ByteArrayOutputStream> chunks)
 			throws CustomSamplersException;
-
-	public void putChunk(HashMap<String, String> metaInfo, String chunkID, byte[] chunk)
-			throws CustomSamplersException;
+	
+	/*public void putChunk(HashMap<String, String> metaInfo, Integer chunkID,
+			ByteArrayOutputStream chunk)
+					throws CustomSamplersException;*/
 
 	/*// The implemented function writes a PAYLOAD to the DB based on all it's meta and key.
 	public void writePayload(HashMap<String, String> metaInfo,

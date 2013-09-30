@@ -10,3 +10,4 @@ public class NotFoundInDBException extends Exception {
 		super(etc_not_found);
 	}
 }
+

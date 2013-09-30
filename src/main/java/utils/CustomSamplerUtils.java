@@ -43,20 +43,33 @@ public class CustomSamplerUtils {
 		res.setResponseData(responseStr.getBytes());
 	}
 
-	private static byte[] mergeByteArrayList(List<ByteArrayOutputStream> list)
-			throws CustomSamplersException {
+	private static ByteArrayOutputStream mergeToByteArrayOStream(
+			Map<Integer, ByteArrayOutputStream> map)
+					throws CustomSamplersException {
 		ByteArrayOutputStream resOs = new ByteArrayOutputStream();
-		
 		try {
-			Iterator<ByteArrayOutputStream> lIt = list.iterator(); 
+			List<ByteArrayOutputStream> listRes = new ArrayList<ByteArrayOutputStream>();
+			for (int i = 0; i < map.entrySet().size(); ++i) {
+				listRes.add(i, null);
+			}
+			
+			Iterator<Map.Entry<Integer, ByteArrayOutputStream> > mIt = map.entrySet().iterator(); 
+			while (mIt.hasNext()) {
+				Map.Entry<Integer, ByteArrayOutputStream> entry = mIt.next();
+				ByteArrayOutputStream ba = entry.getValue();
+				listRes.set(entry.getKey()-1, entry.getValue());
+			}
+			
+			Iterator<ByteArrayOutputStream> lIt = listRes.iterator(); 
 			while (lIt.hasNext()) {
 				ByteArrayOutputStream ba = lIt.next();
 				resOs.write(ba.toByteArray());
 			}
+
 		} catch (IOException e){
 			throw new CustomSamplersException("IOException occured during array merge: " + e.toString());
 		}	
-		return resOs.toByteArray();
+		return resOs;
 	}
 	
 	public static void readWith(QueryHandler queryHandler, BinaryFileInfo binaryInfo,
@@ -67,21 +80,20 @@ public class CustomSamplerUtils {
 		} else {
 			meta = binaryInfo.getAssignedMeta();
 		}
+		res.setRequestHeaders(meta.toString());
 		try {
-			byte[] result = null;
+			ByteArrayOutputStream result = null;
 			Boolean chunkMode = options.get("useChunks");
 			if (chunkMode) {
-				List<ByteArrayOutputStream> data = new ArrayList<ByteArrayOutputStream>();
+				Map<Integer, ByteArrayOutputStream> data = new HashMap<Integer, ByteArrayOutputStream>();
 				res.sampleStart();
 				data = queryHandler.getChunks(meta.get("tag_name"), Long.parseLong(meta.get("since")));
 				res.samplePause();
-				result = mergeByteArrayList(data);
+				result = mergeToByteArrayOStream(data);
 			} else {
-				ByteArrayOutputStream data = new ByteArrayOutputStream();
 				res.sampleStart();
-				data = queryHandler.getData(meta.get("tag_name"), Long.parseLong(meta.get("since")));
+				result = queryHandler.getData(meta.get("tag_name"), Long.parseLong(meta.get("since")));
 				res.samplePause();
-				result = data.toByteArray();
 			}
 
 			if (result == null) {
@@ -108,11 +120,11 @@ public class CustomSamplerUtils {
 		}
 	}
 
-	private static boolean checkMatch(byte[] result, BinaryFileInfo binaryInfo, 
+	private static boolean checkMatch(ByteArrayOutputStream result, BinaryFileInfo binaryInfo, 
 			HashMap<String, String> meta) {
 		String binaryFullPath = binaryInfo.getFilePathList().get(meta.get("id"));
-		byte[] payload = binaryInfo.read(binaryFullPath);
-		return Arrays.equals(result, payload);
+		ByteArrayOutputStream payload = binaryInfo.read(binaryFullPath);
+		return Arrays.equals(result.toByteArray(), payload.toByteArray());
 	}
 
 	public static void writeWith(QueryHandler queryHandler, BinaryFileInfo binaryInfo,
@@ -127,16 +139,17 @@ public class CustomSamplerUtils {
 			// TODO: String binaryID = BinaryInfo.getAssignedIDForThread(threadID);
 		}
 		String streamerInfoFullPath = binaryInfo.getPathForStreamerInfo(binaryID);
-		byte[] streamerInfo = binaryInfo.read(streamerInfoFullPath);
+		ByteArrayOutputStream streamerInfo = binaryInfo.read(streamerInfoFullPath);
 
 		if (options.get("useChunks")) { // Write the chunks, not the big file.
-			TreeMap<String, String> chunkPathList = binaryInfo.getChunkPathList().get(binaryID);
+			//TreeMap<String, String> chunkPathList = binaryInfo.getChunkPathList().get(binaryID);
 			try {
 				res.sampleStart();
-				queryHandler.putData(binaryMeta, new byte[0], streamerInfo);
-				res.samplePause();
-				for (Map.Entry<String, String> it : chunkPathList.entrySet()) {
-					byte[] chunk = binaryInfo.read(it.getValue());
+				queryHandler.putChunks(binaryMeta, binaryInfo.readChunksFor(binaryID));
+				//queryHandler.putData(binaryMeta, null, streamerInfo);
+				//res.samplePause();
+				/*for (Map.Entry<String, String> it : chunkPathList.entrySet()) {
+					ByteArrayOutputStream chunk = binaryInfo.read(it.getValue());
 					SampleResult subres = getInitialSampleResult(binaryID + " - " + it.getKey());
 					Integer cId = binaryInfo.getIDForChunk(binaryID, it.getKey());
 					
@@ -145,8 +158,8 @@ public class CustomSamplerUtils {
 					finalizeResponse(subres, true, "200", "Chunk write: " + it.getKey() + " Successfull!");
 					subres.sampleEnd();
 					res.storeSubResult(subres);
-				}
-				res.sampleResume();
+				}*/
+				//res.sampleResume();
 				finalizeResponse(res, true, "200", "Payload (chunk) write: " + binaryID + " Successfull!");
 			} catch (CustomSamplersException ex) {
 				finalizeResponse(res, false, "500", ex.toString());
@@ -155,7 +168,7 @@ public class CustomSamplerUtils {
 			}
 		} else { // Write the big file, not it's chunks.
 			String binaryFullPath = binaryInfo.getFilePathList().get(binaryID);
-			byte[] payload = binaryInfo.read(binaryFullPath);
+			ByteArrayOutputStream payload = binaryInfo.read(binaryFullPath);
 			try {
 				res.sampleStart();
 				queryHandler.putData(binaryMeta, payload, streamerInfo);

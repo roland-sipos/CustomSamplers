@@ -2,6 +2,7 @@ package utils;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -9,7 +10,10 @@ import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
 
@@ -33,6 +37,7 @@ public class BinaryFileInfo {
 	private static TreeMap<String, HashMap<String, String> > metaInfo;
 	private static TreeMap<String, String> filePathList;
 	private static TreeMap<String, TreeMap<String, String> > chunkPathList;
+	private static TreeMap<String, TreeMap<String, Integer> > chunkIDList;
 
 	public String getInputLocation() {
 		return location;
@@ -62,12 +67,20 @@ public class BinaryFileInfo {
 		return chunkPathList;
 	}
 
+	public TreeMap<String, TreeMap<String, Integer> > getChunkIDList() {
+		return chunkIDList;
+	}
+
 	public String getAbsolutePathFor(String fileName) {
 		return filePathList.get(fileName);
 	}
 
 	public String getAbsolutePathForChunk(String fileName, String chunkName) {
 		return chunkPathList.get(fileName).get(chunkName);
+	}
+
+	public Integer getIDForChunk(String fileName, String chunkName) {
+		return chunkIDList.get(fileName).get(chunkName);
 	}
 
 	public String getPathForStreamerInfo(String fileName) {
@@ -94,6 +107,7 @@ public class BinaryFileInfo {
 		numOfFiles = 0;
 		filePathList = new TreeMap<String, String>();
 		chunkPathList = new TreeMap<String, TreeMap<String, String> >();
+		chunkIDList = new TreeMap<String, TreeMap<String, Integer> >();
 		metaInfo = new TreeMap<String, HashMap<String, String> >();
 
 		File[] locFolder = new File(location).listFiles();
@@ -196,12 +210,16 @@ public class BinaryFileInfo {
 		return chunkFiles;
 	}
 	private void readChunkPathList(String binaryName, File dir) {
-		TreeMap<String, String> list = new TreeMap<String, String>();
+		TreeMap<String, String> namelist = new TreeMap<String, String>();
+		TreeMap<String, Integer> idlist = new TreeMap<String, Integer>();
 		File[] chunks = getChunkFiles(dir);
 		for (int i = 0; i < chunks.length; ++i) {
-			list.put(chunks[i].getName(), chunks[i].getAbsolutePath());
+			String chunkName = chunks[i].getName();
+			namelist.put(chunkName, chunks[i].getAbsolutePath());
+			idlist.put(chunkName, Integer.parseInt(chunkName.replaceAll("[\\D]", "")));
 		}
-		chunkPathList.put(binaryName, list);
+		chunkPathList.put(binaryName, namelist);
+		chunkIDList.put(binaryName, idlist);
 	}
 
 
@@ -214,7 +232,7 @@ public class BinaryFileInfo {
 		return getMetaInfo().get(binaryID);
 	}
 
-	public HashMap<String, String> getAssignedMeta(int type) {
+	public HashMap<String, String> getAssignedMeta() {
 		//TODO: Get an assigned meta information based on input file or thread group
 		return null;
 	}
@@ -224,11 +242,25 @@ public class BinaryFileInfo {
 		return (String) fileNameArray[x-1];
 	}
 
+	public List<ByteArrayOutputStream> readChunksFor(String binaryName) {
+		TreeMap<String, String> cPathList = chunkPathList.get(binaryName);
+		int size = cPathList.entrySet().size();
+		
+		List<ByteArrayOutputStream> res = new ArrayList<ByteArrayOutputStream>(size);
+		for (int i = 0; i < size; ++i) {
+			res.add(i, null);
+		}
+		for (Map.Entry<String, String> it : cPathList.entrySet()) {
+			int id = Integer.parseInt(it.getKey().replaceAll("[\\D]", ""));
+			res.set(id-1, read(it.getValue()));
+		}
+		return res;
+	}
+	
 	/** Read the given binary file, and return its contents as a byte array.*/ 
-	public byte[] read(String aInputFileName) {
-		//System.out.println("Reading in binary file named : " + aInputFileName);
+	public ByteArrayOutputStream read(String aInputFileName) {
+		ByteArrayOutputStream bosr = new ByteArrayOutputStream();
 		File file = new File(aInputFileName);
-		//System.out.println("File size: " + file.length());
 		byte[] result = new byte[(int)file.length()];
 		try {
 			InputStream input = null;
@@ -243,6 +275,7 @@ public class BinaryFileInfo {
 						totalBytesRead = totalBytesRead + bytesRead;
 					}
 				}
+				bosr.write(result);
 			}
 			finally {
 				input.close();
@@ -254,7 +287,7 @@ public class BinaryFileInfo {
 		catch (IOException ex) {
 			System.out.println(ex.toString());
 		}
-		return result;
+		return bosr;
 	}
 
 }
