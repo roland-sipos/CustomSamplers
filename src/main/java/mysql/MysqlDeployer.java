@@ -94,6 +94,7 @@ public class MysqlDeployer {
 			String createChunkQuery = "CREATE TABLE IF NOT EXISTS `CHUNK` ("
 					+ " `PAYLOAD_HASH` VARCHAR(40) NOT NULL,"
 					+ " `CHUNK_HASH` VARCHAR(40) NOT NULL,"
+					+ " `ID` TINYINT NOT NULL,"
 					+ " `DATA` LONGBLOB NULL,"
 					+ " PRIMARY KEY (`PAYLOAD_HASH`, `CHUNK_HASH`) )"
 					+ " ENGINE = " + whichEngine;

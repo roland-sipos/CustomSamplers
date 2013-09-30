@@ -10,6 +10,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.postgresql.largeobject.LargeObject;
 import org.postgresql.largeobject.LargeObjectManager;
@@ -32,10 +34,11 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 	}
 
 	@Override
-	public byte[] getData(String tagName, long since)
+	public ByteArrayOutputStream getData(String tagName, long since)
 			throws CustomSamplersException {
-		byte[] result = null;
+		ByteArrayOutputStream result = new ByteArrayOutputStream();
 		try {
+			connection.setAutoCommit(false);
 			PreparedStatement ps = connection.prepareStatement("SELECT data FROM LOB_PAYLOAD p, "
 					+ "(SELECT payload_hash FROM IOV WHERE tag_name=? AND since=?) iov "
 					+ "WHERE p.hash = iov.payload_hash");
@@ -49,8 +52,9 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 					long objectID = rs.getLong(1);
 					LargeObject object = ((org.postgresql.PGConnection)connection)
 							.getLargeObjectAPI().open(objectID, LargeObjectManager.READ);
-					result = new byte[object.size()];
-					object.read(result, 0, object.size());
+					byte[] pl = new byte[object.size()];
+					object.read(pl, 0, object.size());
+					result.write(pl);
 					object.close();
 					counter++;
 				}
@@ -59,39 +63,40 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 							+ "TAG=" + tagName + " SINCE=" + since +" !");
 				}
 				rs.close();
-
 			} else {
 
 				throw new CustomSamplersException("Payload not found for "
 						+ "TAG=" + tagName + " SINCE=" + since +" !");
 			}
-
 			ps.close();
+			connection.setAutoCommit(true);
 		} catch (SQLException e) {
+			throw new CustomSamplersException("SQLException occured during read attempt: " + e.toString());
+		} catch (IOException e) {
 			throw new CustomSamplersException("SQLException occured during read attempt: " + e.toString());
 		}
 		return result;
 	}
 
 	@Override
-	public void putData(HashMap<String, String> metaInfo, byte[] payload,
-			byte[] streamerInfo) throws CustomSamplersException {
-		writeLOBPayload(metaInfo, payload, streamerInfo);
+	public void putData(HashMap<String, String> metaInfo, ByteArrayOutputStream payload,
+			ByteArrayOutputStream streamerInfo) throws CustomSamplersException {
+		writeLOBPayload(metaInfo, payload.toByteArray(), streamerInfo.toByteArray());
 		writeIov(metaInfo);
 	}
 
 	@Override
-	public byte[] getChunks(String tagName, long since)
+	public Map<Integer, ByteArrayOutputStream> getChunks(String tagName, long since)
 			throws CustomSamplersException {
-		byte[] result = null;
+		Map<Integer, ByteArrayOutputStream> result = new HashMap<Integer, ByteArrayOutputStream>();
 		try {
-			PreparedStatement ps = connection.prepareStatement("SELECT data "
+			connection.setAutoCommit(false);
+			PreparedStatement ps = connection.prepareStatement("SELECT id, data "
 					+ "FROM LOB_CHUNK c, (SELECT payload_hash FROM IOV WHERE tag_name=? AND since=?) iov "
 					+ "WHERE c.payload_hash = iov.payload_hash");
 			ps.setString(1, tagName);
 			ps.setLong(2, since);
 			ResultSet rs = ps.executeQuery();
-			ByteArrayOutputStream os = new ByteArrayOutputStream();
 			if (rs != null) {
 				while(rs.next()) {
 					long objectID = rs.getLong(1);
@@ -100,7 +105,11 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 					byte[] chunk = new byte[object.size()];
 					object.read(chunk, 0, object.size());
 					object.close();
+					
+					ByteArrayOutputStream os = new ByteArrayOutputStream();
 					os.write(chunk);
+					os.close();
+					result.put(rs.getInt("id"), os);
 				}
 				rs.close();
 			} else {
@@ -108,7 +117,7 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 						+ "TAG=" + tagName + " SINCE=" + since +" ! (via chunk read)");
 			}
 			ps.close();
-			result = os.toByteArray();
+			connection.setAutoCommit(true);
 		} catch (SQLException e) {
 			throw new CustomSamplersException("SQLException occured during read attempt: " + e.toString());
 		} catch (IOException e) {
@@ -118,21 +127,39 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 	}
 
 	@Override
-	public void putChunk(HashMap<String, String> metaInfo, String chunkID,
-			byte[] chunk) throws CustomSamplersException {
+	public void putChunks(HashMap<String, String> metaInfo,
+			List<ByteArrayOutputStream> chunks) throws CustomSamplersException {
 		try {
-			PreparedStatement ps = connection.prepareStatement("INSERT INTO LOB_CHUNK"
-					+ " (PAYLOAD_HASH, CHUNK_HASH, DATA) VALUES (?, ?, ?)");
-			ps.setString(1, metaInfo.get("payload_hash"));
-			ps.setString(2, metaInfo.get(chunkID));
-			ps.setBinaryStream(3, new ByteArrayInputStream(chunk), chunk.length);
-			ps.execute();
-			ps.close();
+			writeLOBPayload(metaInfo, new byte[0], new byte[0]);
+			writeIov(metaInfo);
+			
+			connection.setAutoCommit(false);
+			LargeObjectManager lobManager = 
+					((org.postgresql.PGConnection)connection).getLargeObjectAPI();
+
+			for (int i = 0; i < chunks.size(); ++i) {
+				long objectId = lobManager.createLO(LargeObjectManager.READWRITE);
+				LargeObject object = lobManager.open(objectId, LargeObjectManager.WRITE);
+				object.write(chunks.get(i).toByteArray());
+				object.close();
+
+				PreparedStatement ps = connection.prepareStatement("INSERT INTO LOB_CHUNK"
+						+ " (PAYLOAD_HASH, CHUNK_HASH, ID, DATA) VALUES (?, ?, ?, ?)");
+				ps.setString(1, metaInfo.get("payload_hash"));
+				Integer id = i + 1;
+				ps.setString(2, metaInfo.get(id.toString()));
+				ps.setInt(3, id);
+				ps.setLong(4, objectId);
+				ps.execute();
+				ps.close();
+			}
+			
+			connection.commit();
+			connection.setAutoCommit(true);
 		} catch (SQLException se) {
 			throw new CustomSamplersException("SQLException occured during write attempt: " + se.toString());
 		}
 	}
-
 
 	private void writeLOBPayload(HashMap<String, String> metaInfo, byte[] payload, byte[] streamerInfo)
 			throws CustomSamplersException {
@@ -142,11 +169,7 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 					((org.postgresql.PGConnection)connection).getLargeObjectAPI();
 			long objectId = lobManager.createLO(LargeObjectManager.READWRITE);
 			LargeObject object = lobManager.open(objectId, LargeObjectManager.WRITE);
-			if (payload != null) {
-				object.write(payload);
-			} else {
-				object.write(new byte[0]);
-			}
+			object.write(payload);
 			object.close();
 
 			PreparedStatement ps = connection.prepareStatement("INSERT INTO LOB_PAYLOAD"
@@ -326,5 +349,4 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 			throw new CustomSamplersException("SQLException occured during write attempt: " + se.toString());
 		}
 	}
-
 }

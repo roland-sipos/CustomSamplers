@@ -9,16 +9,13 @@ import java.sql.Timestamp;
 
 import utils.TestEnvironmentDeployer;
 
-public class PostgreDeployer {
+public class PostgreLOBDeployer {
 
-	/**
-	 * This class is the extended TestEnvironmentDeployer for PostgreSQL.
-	 * */
-	private static class PostgreTestEnvironmentDeployer extends TestEnvironmentDeployer {
+	private static class PostgreLOBTestEnvironmentDeployer extends TestEnvironmentDeployer {
 
 		private Connection connection = null;
 
-		public PostgreTestEnvironmentDeployer(String host, String port,
+		public PostgreLOBTestEnvironmentDeployer(String host, String port,
 				String databaseName, String username, String password) {
 			super(host, port, databaseName, username, password);
 		}
@@ -29,9 +26,9 @@ public class PostgreDeployer {
 				Class.forName("org.postgresql.Driver");
 			} catch (ClassNotFoundException e) {
 				System.out.println(" initialize() -> Where is your PostgreSQL JDBC Driver? "
-					+ "Include in your library path!");
-			e.printStackTrace();
-			return;
+						+ "Include in your library path!");
+				e.printStackTrace();
+				return;
 			}*/
 			System.out.println(" initialize() -> PostgreSQL JDBC Driver Registered!");
 
@@ -74,28 +71,34 @@ public class PostgreDeployer {
 					+ " LAST_SINCE_PID INT default NULL,"
 					+ " CREATION_TIME TIMESTAMP default NULL,"
 					+ " PRIMARY KEY (NAME) )";
-
-			String createPayloadQuery = "CREATE TABLE PAYLOAD ("
+			
+			String createLOBPayloadQuery = "CREATE TABLE LOB_PAYLOAD ("
 					+ " HASH VARCHAR(40) NOT NULL ,"
 					+ " OBJECT_TYPE VARCHAR(100) default NULL ,"
-					+ " DATA BYTEA default NULL ,"
+					+ " DATA OID default NULL ,"
 					+ " STREAMER_INFO BYTEA default NULL ,"
 					+ " VERSION VARCHAR(20) default NULL ,"
 					+ " CREATION_TIME TIMESTAMP default NULL ,"
 					+ " CMSSW_RELEASE VARCHAR(45) default NULL ,"
 					+ " PRIMARY KEY (HASH) )";
-			String createChunkQuery = "CREATE TABLE CHUNK ("
+			String createLOBChunkQuery = "CREATE TABLE LOB_CHUNK ("
 					+ " PAYLOAD_HASH VARCHAR(40) NOT NULL,"
 					+ " CHUNK_HASH VARCHAR(40) NOT NULL,"
 					+ " ID SMALLINT NOT NULL,"
-					+ " DATA BYTEA default NULL,"
+					+ " DATA OID default NULL,"
 					+ " PRIMARY KEY (PAYLOAD_HASH, CHUNK_HASH) )";
-
-			String createChunkIdxQuery = "CREATE INDEX PAYLOAD_HASH_FK_IDX ON CHUNK (PAYLOAD_HASH)";
-
-			String alterChunkHashFK = "ALTER TABLE CHUNK ADD CONSTRAINT PAYLOAD_HASH_FK_IDX "
-					+ " FOREIGN KEY (PAYLOAD_HASH) REFERENCES PAYLOAD(HASH)";
-
+			
+			/*String LOBTriggerPayload = "CREATE TRIGGER t_lo_payload BEFORE " 
+				+ " UPDATE OR DELETE ON LOB_PAYLOAD"
+				+ " FOR EACH ROW EXECUTE PROCEDURE lo_manage(LOB_PAYLOAD)";
+			String LOBTriggerChunk = "CREATE TRIGGER  t_lo_chunk BEFORE "
+				+ " UPDATE OR DELETE ON LOB_CHUNK"
+				+ " FOR EACH ROW EXECUTE PROCEDURE lo_manage(LOB_CHUNK)";*/
+			
+			String createLOBChunkIdxQuery = "CREATE INDEX PAYLOAD_HASH_FK_IDX ON LOB_CHUNK (PAYLOAD_HASH)";
+			String alterLOBChunkHashFK = "ALTER TABLE LOB_CHUNK ADD CONSTRAINT PAYLOAD_HASH_FK_IDX "
+					+ " FOREIGN KEY (PAYLOAD_HASH) REFERENCES LOB_PAYLOAD(HASH)";
+			
 			String createIOVQuery = "CREATE TABLE IOV ("
 					+ " TAG_NAME VARCHAR(100) NOT NULL,"
 					+ " SINCE BIGINT NOT NULL,"
@@ -107,10 +110,9 @@ public class PostgreDeployer {
 
 			String alterIovTagFK = "ALTER TABLE IOV ADD CONSTRAINT TAG_FK_IDX "
 					+ " FOREIGN KEY (TAG_NAME) REFERENCES TAG(NAME)";
-			String alterIovPayloadFK = "ALTER TABLE IOV ADD CONSTRAINT PAYLOAD_FK_IDX "
-					+ " FOREIGN KEY (PAYLOAD_HASH) REFERENCES PAYLOAD(HASH)";
-			
-
+			String alterIovLOBPayloadFK = "ALTER TABLE IOV ADD CONSTRAINT PAYLOAD_FK_IDX "
+					+ " FOREIGN KEY (PAYLOAD_HASH) REFERENCES LOB_PAYLOAD(HASH)";
+		
 			PreparedStatement create = null;
 			String prefix = " setupEnvironment() -> ";
 			try {
@@ -129,23 +131,28 @@ public class PostgreDeployer {
 				create = connection.prepareStatement(alterIovTagFK);
 				failed = create.execute();
 				checkAndNotify(failed, alterIovTagFK, prefix);
-
-				PreparedStatement createL = connection.prepareStatement(createPayloadQuery);
-				failed = createL.execute();
-				checkAndNotify(failed, createPayloadQuery, prefix);
-				createL = connection.prepareStatement(createChunkQuery);
-				failed = createL.execute();
-				checkAndNotify(failed, createChunkQuery, prefix);
-				createL = connection.prepareStatement(createChunkIdxQuery);
-				failed = createL.execute();
-				checkAndNotify(failed, createChunkIdxQuery, prefix);
-				createL = connection.prepareStatement(alterChunkHashFK);
-				failed = createL.execute();
-				checkAndNotify(failed, alterChunkHashFK, prefix);
-				createL = connection.prepareStatement(alterIovPayloadFK);
-				failed = createL.execute();
-				checkAndNotify(failed, alterIovPayloadFK, prefix);
-				createL.close();
+			
+				create = connection.prepareStatement(createLOBPayloadQuery);
+				failed = create.execute();
+				checkAndNotify(failed, createLOBPayloadQuery, prefix);
+				create = connection.prepareStatement(createLOBChunkQuery);
+				failed = create.execute();
+				checkAndNotify(failed, createLOBChunkQuery, prefix);
+				/*create = connection.prepareStatement(LOBTriggerPayload);
+				failed = create.execute();
+				checkAndNotify(failed, LOBTriggerPayload, prefix);
+				create = connection.prepareStatement(LOBTriggerChunk);
+				failed = create.execute();
+				checkAndNotify(failed, LOBTriggerChunk, prefix);*/
+				create = connection.prepareStatement(createLOBChunkIdxQuery);
+				failed = create.execute();
+				checkAndNotify(failed, createLOBChunkIdxQuery, prefix);
+				create = connection.prepareStatement(alterLOBChunkHashFK);
+				failed = create.execute();
+				checkAndNotify(failed, alterLOBChunkHashFK, prefix);
+				create = connection.prepareStatement(alterIovLOBPayloadFK);
+				failed = create.execute();
+				checkAndNotify(failed, alterIovLOBPayloadFK, prefix);
 
 				create.close();
 
@@ -181,7 +188,10 @@ public class PostgreDeployer {
 			String deleteChunkQuery = "DROP TABLE IF EXISTS CHUNK";
 			String deletePayloadQuery = "DROP TABLE IF EXISTS PAYLOAD";
 			String deleteIOVQuery = "DROP TABLE IF EXISTS IOV";
-
+			/*String truncateLOBChunkQuery = "DELETE * FROM LOB_CHUNK";
+			String truncateLOBPayloadQuery = "DELETE * FROM LOB_PAYLOAD";*/
+			String deleteLOBChunkQuery = "DROP TABLE IF EXISTS LOB_CHUNK";
+			String deleteLOBPayloadQuery = "DROP TABLE IF EXISTS LOB_PAYLOAD";
 			PreparedStatement delete = null;
 			String prefix = " destroyEnvironment() -> ";
 			try {
@@ -198,6 +208,19 @@ public class PostgreDeployer {
 				failed = delete.execute();
 				checkAndNotify(failed, deleteTagQuery, prefix);
 
+				/*delete = connection.prepareStatement(truncateLOBChunkQuery);
+				failed = delete.execute();
+				checkAndNotify(failed, truncateLOBChunkQuery, prefix);
+				delete = connection.prepareStatement(truncateLOBPayloadQuery);
+				failed = delete.execute();
+				checkAndNotify(failed, truncateLOBPayloadQuery, prefix);*/
+				delete = connection.prepareStatement(deleteLOBChunkQuery);
+				failed = delete.execute();
+				checkAndNotify(failed, deleteLOBChunkQuery, prefix);
+				delete = connection.prepareStatement(deleteLOBPayloadQuery);
+				failed = delete.execute();
+				checkAndNotify(failed, deleteLOBPayloadQuery, prefix);
+
 				delete.close();
 				
 				connection.commit();
@@ -206,15 +229,15 @@ public class PostgreDeployer {
 				System.out.println(" destroyEnvironment() -> SQLException occured. Details: " + e.toString());
 			}
 			System.out.println(" destroyEnvironment() -> The environment has been destroyed.\n");
-		}		
+		}
 	}
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		PostgreTestEnvironmentDeployer deployer =
-				new PostgreTestEnvironmentDeployer("testdb-pc.cern.ch", "5432", 
+		PostgreLOBTestEnvironmentDeployer deployer =
+				new PostgreLOBTestEnvironmentDeployer("testdb-pc.cern.ch", "5432", 
 						"testdb", "postgres", "testPass");
 
 		//System.out.println("-------- PostgreSQL environment setup ------------");

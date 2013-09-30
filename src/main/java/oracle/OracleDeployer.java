@@ -91,6 +91,7 @@ public class OracleDeployer {
 			String createChunkQuery = "CREATE TABLE CHUNK ("
 					+ " PAYLOAD_HASH VARCHAR(40) NOT NULL,"
 					+ " CHUNK_HASH VARCHAR(40) NOT NULL,"
+					+ " ID SMALLINT NOT NULL,"
 					+ " DATA BLOB NULL,"
 					+ " PRIMARY KEY (PAYLOAD_HASH, CHUNK_HASH) )";
 			String createChunkIdxQuery = "CREATE INDEX PAYLOAD_HASH_FK_IDX ON CHUNK (PAYLOAD_HASH ASC)";
