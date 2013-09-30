@@ -13,6 +13,7 @@ import binaryconfig.BinaryConfigElement;
 
 import utils.BinaryFileInfo;
 import utils.CustomSamplerUtils;
+import utils.QueryHandler;
 
 public class RiakSampler extends AbstractSampler implements TestBean {
 
@@ -23,6 +24,7 @@ public class RiakSampler extends AbstractSampler implements TestBean {
 	public final static String BINARYINFO = "RiakSampler.binaryInfo";
 	public final static String USECHUNKS = "RiakSampler.useChunks";
 	public final static String KRYO_METHOD = "RiakSampler.kryoMethod";
+	public final static String USELINKS = "RiakSampler.useLinks";
 	public final static String DOREAD = "RiakSampler.doRead";
 	public final static String USERANDOMACCESS = "RiakSampler.useRandomAccess";
 	public final static String CHECKREAD = "RiakSampler.checkRead";
@@ -36,11 +38,17 @@ public class RiakSampler extends AbstractSampler implements TestBean {
 
 		// Get BinaryInfo and QueryHandler instances.
 		BinaryFileInfo binaryInfo = null;
-		RiakQueryHandler queryHandler = null;
+		QueryHandler queryHandler = null;
 		try {
 			binaryInfo = BinaryConfigElement.getBinaryFileInfo(getBinaryInfo());
 			// TODO: IF KRYO METHOD, KRYO QueryHandler!!!!!
-			queryHandler = new RiakQueryHandler(getCluster());
+			if (Boolean.parseBoolean(getKryoMethod())) {
+				//queryHandler = new RiakKryoQueryHandler(getCluster());
+			} else if (Boolean.parseBoolean(getUseLinks())) {
+				queryHandler = new RiakLinkQueryHandler(getCluster());
+			} else {
+				queryHandler = new RiakQueryHandler(getCluster());
+			}
 		} catch (Exception e) {
 			log.error("Failed to create a RiakSampler prerequisites for the " + 
 					Thread.currentThread().getName() + " sampler. Details:" + e.toString());
@@ -95,7 +103,7 @@ public class RiakSampler extends AbstractSampler implements TestBean {
 	public String getUseChunks() {
 		return getPropertyAsString(USECHUNKS);
 	}
-	public void setInputLocation(String useChunks) {
+	public void setUseChunks(String useChunks) {
 		setProperty(USECHUNKS, useChunks);
 	}
 	public String getKryoMethod() {
@@ -103,6 +111,12 @@ public class RiakSampler extends AbstractSampler implements TestBean {
 	}
 	public void setKryoMethod(String kryoMethod) {
 		setProperty(KRYO_METHOD, kryoMethod);
+	}
+	public String getUseLinks() {
+		return getPropertyAsString(USELINKS);
+	}
+	public void setUseLinks(String useLinks) {
+		setProperty(USELINKS, useLinks);
 	}
 	public String getUseRandomAccess() {
 		return getPropertyAsString(USERANDOMACCESS);

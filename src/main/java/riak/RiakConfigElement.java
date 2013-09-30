@@ -35,6 +35,8 @@ implements ConfigElement, TestStateListener, TestBean {
 	public final static String MAX_CONNECTION = "RiakConfigElement.maxConnection";
 	public final static String TIMEOUT = "RiakConfigElement.timeout";
 
+	public static String protocolName;
+	
 	@Override
 	public void testEnded() {
 		IRiakClient riak = null;
@@ -72,6 +74,8 @@ implements ConfigElement, TestStateListener, TestBean {
 		if (log.isDebugEnabled()) {
 			log.debug(this.getName() + " testStarted()");
 		}
+
+		protocolName = getProtocol();
 
 		String[] hosts = getHost().split(":");
 		IRiakClient riakClient = null;
@@ -155,6 +159,11 @@ implements ConfigElement, TestStateListener, TestBean {
 	public boolean expectsModification() {
 		return false;
 	}
+
+	public static String getProtocolName() {
+		return protocolName;
+	}
+
 
 	public String getHost() {
 		return getPropertyAsString(HOST);

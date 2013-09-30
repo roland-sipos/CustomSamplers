@@ -1,32 +1,18 @@
 package riak;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-
-import pojo.Payload;
-import pojo.Tag;
+import java.util.Map;
 
 import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.IRiakObject;
-import com.basho.riak.client.RiakException;
-import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.RiakRetryFailedException;
 import com.basho.riak.client.bucket.Bucket;
-import com.basho.riak.client.cap.Quora;
 import com.basho.riak.client.cap.UnresolvedConflictException;
 import com.basho.riak.client.convert.ConversionException;
-import com.basho.riak.client.operations.FetchObject;
 import com.basho.riak.client.operations.StoreObject;
-import com.basho.riak.client.query.WalkResult;
 
 import utils.CustomSamplersException;
 import utils.NotFoundInDBException;
@@ -69,133 +55,16 @@ public class RiakQueryHandler implements QueryHandler {
 	}
 
 	@Override
-	public byte[] getData(String tagName, long since)
+	public ByteArrayOutputStream getData(String tagName, long since)
 			throws CustomSamplersException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void putData(HashMap<String, String> metaInfo, byte[] payload, byte[] streamerInfo)
-			throws CustomSamplersException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public byte[] getChunks(String tagName, long since)
-			throws CustomSamplersException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
-	@Override
-	public void putChunk(HashMap<String, String> metaInfo, String chunkID, byte[] chunk)
-			throws CustomSamplersException {
-		
-	}
-	
-
-
-	/*@Override
-	public void writePayload(HashMap<String, String> metaInfo, byte[] payload,
-			byte[] streamerInfo, boolean isSpecial)
-					throws CustomSamplersException {
+		ByteArrayOutputStream result = new ByteArrayOutputStream();
 		try {
-			Bucket plBucket = riakClient.fetchBucket("PAYLOAD").execute();
-			if (payload == null) {
-				Payload pl = new Payload();
-				pl.hash = metaInfo.get("payload_hash");
-				pl.objectType = metaInfo.get("object_type");
-				pl.data = new byte[0];
-				pl.streamerInfo = streamerInfo;
-				pl.version = metaInfo.get("version");
-				pl.creationTime = System.currentTimeMillis();
-				pl.cmsswRelease = metaInfo.get("cmssw_release");
-			} else {
-				IRiakObject pl = plBucket.store(metaInfo.get("payload_hash"), payload).execute();
-				pl.addUsermeta("object_type", metaInfo.get("object_type"));
-				pl.addUsermeta("streamer_info", streamerInfo.toString());
-				pl.addUsermeta("version", metaInfo.get("version"));
-				pl.addUsermeta("creation_time", String.valueOf(System.currentTimeMillis()));
-				pl.addUsermeta("cmssw_release", metaInfo.get("cmssw_release"));
-			}
-		} catch (RiakRetryFailedException e) {
-			throw new CustomSamplersException("RiakRetryFailedException occured. Details: " + e.toString());
-		} catch (UnresolvedConflictException e) {
-			throw new CustomSamplersException("UnresolvedConflictException occured. Details: " + e.toString());
-		} catch (ConversionException e) {
-			throw new CustomSamplersException("ConversionException occured. Details: " + e.toString());
-		}
-	}
+			Bucket tB = riakClient.fetchBucket("TAG").execute();
+			IRiakObject tObj = tB.fetch(tagName + "_" + String.valueOf(since)).execute();
+			Bucket pB = riakClient.fetchBucket("PAYLOAD").execute();
+			IRiakObject pObj = pB.fetch(tObj.getValueAsString()).execute();
+			result.write(pObj.getValue());
 
-	@Override
-	public byte[] readPayload(String hashKey, boolean isSpecial)
-			throws CustomSamplersException {
-		try {
-			Bucket plBucket = riakClient.fetchBucket("PAYLOAD").execute();
-			IRiakObject obj = plBucket.fetch(hashKey).execute();
-			return obj.getValue();
-		} catch (RiakRetryFailedException e) {
-			throw new CustomSamplersException("RiakRetryFailedException occured. Details: " + e.toString());
-		} catch (UnresolvedConflictException e) {
-			throw new CustomSamplersException("UnresolvedConflictException occured. Details: " + e.toString());
-		} catch (ConversionException e) {
-			throw new CustomSamplersException("ConversionException occured. Details: " + e.toString());
-		}
-	}
-
-	@Override
-	public void writeChunk(HashMap<String, String> metaInfo, String chunkID,
-			byte[] chunk, Boolean isSpecial) throws CustomSamplersException {
-		try {
-			Bucket b = riakClient.fetchBucket("CHUNK").execute();
-			b.store(metaInfo.get(chunkID), chunk).execute();
-			// Create LINK from Parent PL to CH.
-			b = riakClient.fetchBucket("PAYLOAD").execute();
-			IRiakObject plObj = b.fetch(metaInfo.get("payload_hash")).execute();
-			plObj.addLink(new RiakLink("CHUNK", metaInfo.get(chunkID), chunkID));
-			b.store(plObj).execute();
-		} catch (RiakRetryFailedException e) {
-			throw new CustomSamplersException("RiakRetryFailedException occured. Details: " + e.toString());
-		} catch (UnresolvedConflictException e) {
-			throw new CustomSamplersException("UnresolvedConflictException occured. Details: " + e.toString());
-		} catch (ConversionException e) {
-			throw new CustomSamplersException("ConversionException occured. Details: " + e.toString());
-		}
-	}
-
-	@Override
-	public byte[] readChunk(String hashKey, String chunkHashKey,
-			boolean isSpecial) throws CustomSamplersException {
-		try {
-			Bucket plBucket = riakClient.fetchBucket("CHUNK").execute();
-			IRiakObject obj = plBucket.fetch(chunkHashKey).execute();
-			return obj.getValue();
-		} catch (RiakRetryFailedException e) {
-			throw new CustomSamplersException("RiakRetryFailedException occured. Details: " + e.toString());
-		} catch (UnresolvedConflictException e) {
-			throw new CustomSamplersException("UnresolvedConflictException occured. Details: " + e.toString());
-		} catch (ConversionException e) {
-			throw new CustomSamplersException("ConversionException occured. Details: " + e.toString());
-		}
-	}
-
-	@Override
-	public byte[] readChunks(String hashKey, boolean isSpecial)
-			throws CustomSamplersException {
-		try {
-			Bucket plBucket = riakClient.fetchBucket("PAYLOAD").execute();
-			IRiakObject obj = plBucket.fetch(hashKey).execute();
-			ByteArrayOutputStream os = new ByteArrayOutputStream();
-			for (RiakLink link : obj.getLinks())
-			{
-				System.out.println(link.getBucket() + " " + link.getKey() + " " + link.getTag());
-				IRiakObject chunk = riakClient.fetchBucket("CHUNK").execute()
-											  .fetch(link.getKey()).execute();
-				os.write(chunk.getValue());
-			}
-			return os.toByteArray();
 		} catch (RiakRetryFailedException e) {
 			throw new CustomSamplersException("RiakRetryFailedException occured. Details: " + e.toString());
 		} catch (UnresolvedConflictException e) {
@@ -205,17 +74,32 @@ public class RiakQueryHandler implements QueryHandler {
 		} catch (IOException e) {
 			throw new CustomSamplersException("IOException occured. Details: " + e.toString());
 		}
+		return result;
 	}
 
 	@Override
-	public void writeIov(HashMap<String, String> keyAndMetaMap)
-			throws CustomSamplersException {
+	public void putData(HashMap<String, String> metaInfo,
+			ByteArrayOutputStream payload, ByteArrayOutputStream streamerInfo)
+					throws CustomSamplersException {
 		try {
-			Bucket b = riakClient.fetchBucket("TAG").execute();
-			IRiakObject tObj = b.fetch(keyAndMetaMap.get("tag_name")).execute();
-			tObj.addLink(new RiakLink("PAYLOAD", 
-					keyAndMetaMap.get("payload_hash"), keyAndMetaMap.get("since")));
-			b.store(tObj).execute();
+			// In the TAG bucket we store TAG_NAME + SINCE composite keys, value is a hash.
+			Bucket tagB = riakClient.fetchBucket("TAG").execute();
+			StoreObject<IRiakObject> sObj = tagB.store(
+					metaInfo.get("tag_name") + "_" + metaInfo.get("since"),
+					metaInfo.get("payload_hash"));
+			// Also holds the PL's metadata, to avoid frequent fetching of binary body.
+			IRiakObject obj = sObj.returnBody(true).execute();
+			obj.addUsermeta("object_type", metaInfo.get("object_type"));
+			obj.addUsermeta("streamer_info", "streamer_info");
+			obj.addUsermeta("version", metaInfo.get("version"));
+			obj.addUsermeta("creation_time", String.valueOf(System.currentTimeMillis()));
+			obj.addUsermeta("cmssw_release", metaInfo.get("cmssw_release"));
+			tagB.store(obj);
+
+			// In payload, we have HASH -> Value pairs, with zero metadata.
+			Bucket plB = riakClient.fetchBucket("PAYLOAD").execute();
+			plB.store(metaInfo.get("payload_hash"), payload.toByteArray()).execute();
+
 		} catch (RiakRetryFailedException e) {
 			throw new CustomSamplersException("RiakRetryFailedException occured. Details: " + e.toString());
 		} catch (UnresolvedConflictException e) {
@@ -225,28 +109,21 @@ public class RiakQueryHandler implements QueryHandler {
 		}
 	}
 
-
 	@Override
-	public String readIov(HashMap<String, String> keyMap)
+	public Map<Integer, ByteArrayOutputStream> getChunks(String tagName, long since)
 			throws CustomSamplersException {
-		// WARNING: USE THIS WITH CARE!!!!!!!!!!!!!
-		System.out.println("WARNING!!! USE THIS FUNCTION WITH CARE!");
-		String result = null;
+		Map<Integer, ByteArrayOutputStream> result = new HashMap<Integer, ByteArrayOutputStream>();
 		try {
-			Bucket b = riakClient.fetchBucket("TAG").execute();
-			IRiakObject tObj = b.fetch(keyMap.get("tag_name")).execute();
-			WalkResult wr = riakClient.walk(tObj).addStep("TAG", keyMap.get("since")).execute();
-			Iterator<Collection<IRiakObject> > i = wr.iterator();
-			int count = 0;
-			while (i.hasNext())
-			{
-				count++;
-				Collection<IRiakObject> c = i.next();
-				for (IRiakObject o : c)
-				{
-					System.out.println(count + " " + o.getValueAsString());
-					result = o.getKey();
-				}
+			Bucket tB = riakClient.fetchBucket("TAG").execute();
+			IRiakObject tObj = tB.fetch(tagName + "_" + String.valueOf(since)).execute();
+			Bucket pB = riakClient.fetchBucket("PAYLOAD").execute();
+			IRiakObject pObj = pB.fetch(tObj.getValueAsString()).execute();
+			String[] hashes = pObj.getValueAsString().split("\\_");
+			Bucket cBuck = riakClient.fetchBucket("CHUNK").execute();
+			for (int j = 0; j < hashes.length; ++j) {
+				ByteArrayOutputStream cS = new ByteArrayOutputStream();
+				cS.write(cBuck.fetch(hashes[j]).execute().getValue());
+				result.put(j+1, cS);
 			}
 		} catch (RiakRetryFailedException e) {
 			throw new CustomSamplersException("RiakRetryFailedException occured. Details: " + e.toString());
@@ -254,56 +131,52 @@ public class RiakQueryHandler implements QueryHandler {
 			throw new CustomSamplersException("UnresolvedConflictException occured. Details: " + e.toString());
 		} catch (ConversionException e) {
 			throw new CustomSamplersException("ConversionException occured. Details: " + e.toString());
-		} catch (RiakException e) {
-			throw new CustomSamplersException("RiakException occured. Details: " + e.toString());
+		} catch (IOException e) {
+			throw new CustomSamplersException("IOException occured. Details: " + e.toString());
 		}
 		return result;
 	}
 
 	@Override
-	public void writeTag(HashMap<String, String> metaMap)
-			throws CustomSamplersException {
-		Tag tagPojo = new Tag();
-		tagPojo.name = metaMap.get("name");
-		tagPojo.revision = Integer.parseInt(metaMap.get("revision"));
-		tagPojo.revisionTime = Long.parseLong(metaMap.get("revision_time"));
-		tagPojo.comment = metaMap.get("comment");
-		tagPojo.timeType = Integer.parseInt(metaMap.get("time_type"));
-		tagPojo.objectType = metaMap.get("object_type");
-		tagPojo.lastValidated = Integer.parseInt(metaMap.get("last_validated"));
-		tagPojo.endOfValidity = Integer.parseInt(metaMap.get("end_of_validity"));
-		tagPojo.lastSince = Integer.parseInt(metaMap.get("last_since"));
-		tagPojo.lastSincePid = Integer.parseInt(metaMap.get("last_since_pid"));
-		tagPojo.creationTime = System.currentTimeMillis();
+	public void putChunks(HashMap<String, String> metaInfo,
+			List<ByteArrayOutputStream> chunks) throws CustomSamplersException {
 		try {
-			Bucket tagBucket = riakClient.fetchBucket("TAG").execute();
-			tagBucket.store(metaMap.get("name"), tagPojo).execute();
-		} catch (RiakException se) {
-			throw new CustomSamplersException("SQLException occured during write attempt: " + se.toString());
-		}
-	}
+			// In the TAG bucket we store TAG_NAME + SINCE composite keys, value is a hash.
+			Bucket tagB = riakClient.fetchBucket("TAG").execute();
+			StoreObject<IRiakObject> sObj = tagB.store(
+					metaInfo.get("tag_name") + "_" + metaInfo.get("since"),
+					metaInfo.get("payload_hash"));
+			sObj.returnBody(false).execute();
 
-	@Override
-	public HashMap<String, Object> readTag(String tagKey)
-			throws CustomSamplersException {
-		HashMap<String, Object> result = new HashMap<String, Object>();
-		try {
-			Bucket tagBucket = riakClient.fetchBucket("TAG").execute();
-			Tag tagPojo = tagBucket.fetch(tagKey, Tag.class).execute();
-			result.put("revision", tagPojo.revision);
-			result.put("revision_time", tagPojo.revisionTime);
-			result.put("comment", tagPojo.comment);
-			result.put("time_type", tagPojo.timeType);
-			result.put("object_type", tagPojo.objectType);
-			result.put("last_validated", tagPojo.lastValidated);
-			result.put("end_of_validity", tagPojo.endOfValidity);
-			result.put("last_since", tagPojo.lastSince);
-			result.put("last_since_pid", tagPojo.lastSincePid);
-			result.put("creation_time", tagPojo.creationTime);
-		} catch (RiakException se) {
-			throw new CustomSamplersException("SQLException occured during write attempt: " + se.toString());
+			// Store chunks in advance, and create hash chain.
+			String hashChain = "";
+			Bucket cB = riakClient.fetchBucket("CHUNK").execute();
+			for (int i = 0; i < chunks.size(); ++i) {
+				String hash = metaInfo.get(String.valueOf(i+1));
+				hashChain = hashChain.concat(hash).concat("_");
+				cB.store(hash, chunks.get(i).toByteArray()).execute();
+			}
+
+			System.out.println(hashChain);
+			// In payload, we have HASH -> Value pairs, with some metadata.
+			Bucket plB = riakClient.fetchBucket("PAYLOAD").execute();
+			IRiakObject plObj = plB.store(metaInfo.get("payload_hash"), hashChain)
+					.returnBody(true).execute();
+			plObj.addUsermeta("object_type", metaInfo.get("object_type"));
+			plObj.addUsermeta("streamer_info", "streamer_info");
+			plObj.addUsermeta("version", metaInfo.get("version"));
+			plObj.addUsermeta("creation_time", String.valueOf(System.currentTimeMillis()));
+			plObj.addUsermeta("cmssw_release", metaInfo.get("cmssw_release"));
+			plB.store(plObj).execute();
+
+		} catch (RiakRetryFailedException e) {
+			throw new CustomSamplersException("RiakRetryFailedException occured. Details: " + e.toString());
+		} catch (UnresolvedConflictException e) {
+			throw new CustomSamplersException("UnresolvedConflictException occured. Details: " + e.toString());
+		} catch (ConversionException e) {
+			throw new CustomSamplersException("ConversionException occured. Details: " + e.toString());
 		}
-		return result;
-	}*/
+		
+	}
 
 }

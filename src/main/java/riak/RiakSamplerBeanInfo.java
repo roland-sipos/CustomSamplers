@@ -14,7 +14,7 @@ public class RiakSamplerBeanInfo extends BeanInfoSupport {
 		super(RiakSampler.class);
 
 		createPropertyGroup("riak", new String[] {"cluster"});
-		createPropertyGroup("sampler", new String[] {"binaryInfo", "useChunks", "kryoMethod"});
+		createPropertyGroup("sampler", new String[] {"binaryInfo", "useChunks", "kryoMethod", "useLinks"});
 		createPropertyGroup("reading", new String[] {"doRead", "useRandomAccess", "checkRead"});
 		createPropertyGroup("writing", new String[] {"doWrite", "assignedWrite"});
 
@@ -29,6 +29,9 @@ public class RiakSamplerBeanInfo extends BeanInfoSupport {
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, Boolean.FALSE);
 		p = property("kryoMethod");
+		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
+		p.setValue(DEFAULT, Boolean.FALSE);
+		p = property("useLinks");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, Boolean.FALSE);
 
