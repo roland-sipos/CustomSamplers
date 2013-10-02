@@ -50,7 +50,7 @@ public class RiakSampler extends AbstractSampler implements TestBean {
 				queryHandler = new RiakQueryHandler(getCluster());
 			}
 		} catch (Exception e) {
-			log.error("Failed to create a RiakSampler prerequisites for the " + 
+			log.error("Failed to create RiakSampler prerequisites for the " + 
 					Thread.currentThread().getName() + " sampler. Details:" + e.toString());
 		}
 

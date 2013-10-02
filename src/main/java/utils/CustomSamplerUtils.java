@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import org.apache.jmeter.samplers.SampleResult;
 
@@ -56,7 +55,6 @@ public class CustomSamplerUtils {
 			Iterator<Map.Entry<Integer, ByteArrayOutputStream> > mIt = map.entrySet().iterator(); 
 			while (mIt.hasNext()) {
 				Map.Entry<Integer, ByteArrayOutputStream> entry = mIt.next();
-				ByteArrayOutputStream ba = entry.getValue();
 				listRes.set(entry.getKey()-1, entry.getValue());
 			}
 			
@@ -74,6 +72,11 @@ public class CustomSamplerUtils {
 	
 	public static void readWith(QueryHandler queryHandler, BinaryFileInfo binaryInfo,
 			SampleResult res, HashMap<String, Boolean> options) {
+		/*if (options.get("isSpecial")) {
+			//PASS EVERYTHING TO THE QUERYHANDLER!!!
+			queryHandler.readWith(binaryInfo, res, options);
+		}*/
+
 		HashMap<String, String> meta = new HashMap<String, String>();
 		if (options.get("isRandom")) {
 			meta = binaryInfo.getRandomMeta();
@@ -129,6 +132,10 @@ public class CustomSamplerUtils {
 
 	public static void writeWith(QueryHandler queryHandler, BinaryFileInfo binaryInfo,
 			SampleResult res, HashMap<String, Boolean> options) {
+		/*if (options.get("isSpecial")) {
+			queryHandler.writeWith();
+		}*/
+		
 		String binaryID = null;
 		HashMap<String, String> binaryMeta = null;
 		if (!options.get("isAssigned")) { // Then binaryID is based on ThreadID.

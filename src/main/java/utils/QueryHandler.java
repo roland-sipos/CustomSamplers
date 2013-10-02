@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.jmeter.samplers.SampleResult;
+
 public interface QueryHandler {
 
 	public ByteArrayOutputStream getData(String tagName, long since)
@@ -19,6 +21,9 @@ public interface QueryHandler {
 
 	public void putChunks(HashMap<String, String> metaInfo, List<ByteArrayOutputStream> chunks)
 			throws CustomSamplersException;
+
+	/*public void readWith(BinaryFileInfo binaryInfo, SampleResult res,
+			HashMap<String, Boolean> options);*/
 	
 	/*public void putChunk(HashMap<String, String> metaInfo, Integer chunkID,
 			ByteArrayOutputStream chunk)
