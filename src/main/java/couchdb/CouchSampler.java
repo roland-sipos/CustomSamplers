@@ -1,5 +1,7 @@
 package couchdb;
 
+import java.util.HashMap;
+
 import org.apache.jmeter.samplers.AbstractSampler;
 import org.apache.jmeter.samplers.Entry;
 import org.apache.jmeter.samplers.SampleResult;
@@ -11,6 +13,7 @@ import binaryconfig.BinaryConfigElement;
 
 import utils.BinaryFileInfo;
 import utils.CustomSamplerUtils;
+import utils.QueryHandler;
 
 public class CouchSampler extends AbstractSampler implements TestBean {
 
@@ -19,6 +22,7 @@ public class CouchSampler extends AbstractSampler implements TestBean {
 	
 	public final static String DATABASE = "CouchSampler.database";
 	public final static String BINARYINFO = "CouchSampler.binaryInfo";
+	public final static String USECHUNKS = "CouchSampler.useChunks";
 	public final static String ATTACHMENT_MODE = "CouchSampler.attachmentMode";
 	public final static String DOREAD = "CouchSampler.doRead";
 	public final static String USERANDOMACCESS = "CouchSampler.useRandomAccess";
@@ -38,26 +42,43 @@ public class CouchSampler extends AbstractSampler implements TestBean {
 
 		// Get BinaryInfo and QueryHandler instances.
 		BinaryFileInfo binaryInfo = null;
-		CouchQueryHandler queryHandler = null;
+		QueryHandler queryHandler = null;
 		try {
 			binaryInfo = BinaryConfigElement.getBinaryFileInfo(getBinaryInfo());
-			queryHandler = new CouchQueryHandler(getDatabase(), "");
+			// TODO: IF KRYO METHOD, KRYO QueryHandler!!!!!
+			if (Boolean.parseBoolean(getAttachmentMode())) {
+				queryHandler = new CouchAttachmentQueryHandler(getDatabase());
+			} else {
+				queryHandler = new CouchQueryHandler(getDatabase());
+			}
 		} catch (Exception e) {
-			log.error("Failed to create a CouchQueryHandler instance for the " + 
-					  Thread.currentThread().getName() + " sampler. Details:" + e.toString());
+			log.error("Failed to create CouchSampler prerequisites for the " + 
+					Thread.currentThread().getName() + " sampler. Details:" + e.toString());
 		}
-		
-		// Get an initial SampleResult.
+
+		// Get an initial SampleResult and parse options.
 		SampleResult res = CustomSamplerUtils.getInitialSampleResult(getTitle());
-	
-		if(Boolean.parseBoolean(getDoRead())) // DO THE READ
-			CustomSamplerUtils.doReadWith(queryHandler, binaryInfo, res, 
-					Boolean.parseBoolean(getCheckRead()), Boolean.parseBoolean(getAttachmentMode()));
-		else if (Boolean.parseBoolean(getDoWrite())) // DO THE WRITE
-			CustomSamplerUtils.doWriteWith(queryHandler, binaryInfo, res, 
-					Boolean.parseBoolean(getAssignedWrite()), Boolean.parseBoolean(getAttachmentMode()));
-		
+		HashMap<String, Boolean> options = prepareOptions();
+
+		if (options.get("doRead")) { // DO THE READ
+			CustomSamplerUtils.readWith(queryHandler, binaryInfo, res, options);
+		} else if (options.get("doWrite")) { // DO THE WRITE
+			CustomSamplerUtils.writeWith(queryHandler, binaryInfo, res, options);
+		}
+
 		return res;
+	}
+
+	private HashMap<String, Boolean> prepareOptions() {
+		HashMap<String, Boolean> options = new HashMap<String, Boolean>();
+		options.put("doRead", Boolean.parseBoolean(getDoRead()));
+		options.put("doWrite", Boolean.parseBoolean(getDoWrite()));
+		options.put("useChunks", Boolean.parseBoolean(getUseChunks()));
+		options.put("isRandom", Boolean.parseBoolean(getUseRandomAccess()));
+		options.put("isCheckRead", Boolean.parseBoolean(getCheckRead()));
+		options.put("isSpecial", Boolean.parseBoolean(getAttachmentMode()));
+		options.put("isAssigned", Boolean.parseBoolean(getAssignedWrite()));
+		return options;
 	}
 
 	private void trace(String s) {
@@ -79,6 +100,12 @@ public class CouchSampler extends AbstractSampler implements TestBean {
 	}
 	public void setBinaryInfo(String binaryInfo) {
 		setProperty(BINARYINFO, binaryInfo);
+	}
+	public String getUseChunks() {
+		return getPropertyAsString(USECHUNKS);
+	}
+	public void setUseChunks(String useChunks) {
+		setProperty(USECHUNKS, useChunks);
 	}
 	public String getAttachmentMode() {
 		return getPropertyAsString(ATTACHMENT_MODE);
