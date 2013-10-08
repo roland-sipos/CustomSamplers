@@ -25,7 +25,6 @@ public class CouchConfigElement
 	private static final long serialVersionUID = -6669728766687401677L;
 	private static final Logger log = LoggingManager.getLoggerForClass();
 
-	public final static String API = "CouchConfigElement.api";
 	public final static String HOST = "CouchConfigElement.host";
 	public final static String PORT = "CouchConfigElement.port";
 	public final static String DATABASE = "CouchConfigElement.database";
@@ -76,12 +75,15 @@ public class CouchConfigElement
 			}
 
 			try {
-				HttpClient authHttpClient = new StdHttpClient.Builder()
+				/*HttpClient authHttpClient = new StdHttpClient.Builder()
 						.url(getHost().concat(":").concat(getPort()))
 						.username(getUsername())
 						.password(getPassword())
+						.build();*/
+				HttpClient httpClient = new StdHttpClient.Builder()
+						.url(getHost().concat(":").concat(getPort()))
 						.build();
-				StdCouchDbInstance dbInstance = new StdCouchDbInstance(authHttpClient);
+				StdCouchDbInstance dbInstance = new StdCouchDbInstance(httpClient);
 				CouchDbConnector couchDB = dbInstance.createConnector(
 						getDatabase(), Boolean.parseBoolean(getCreateIfNotExists()));
 				getThreadContext().getVariables().putObject(getDatabase(), couchDB);
@@ -112,14 +114,6 @@ public class CouchConfigElement
 
 	public String getTitle() {
 		return this.getName();
-	}
-
-	public String getApi() {
-		return getPropertyAsString(API);
-	}
-
-	public void setApi(String api) {
-		setProperty(API, api);
 	}
 
 	public String getHost() {

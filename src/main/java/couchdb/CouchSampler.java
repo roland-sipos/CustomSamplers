@@ -40,6 +40,10 @@ public class CouchSampler extends AbstractSampler implements TestBean {
 		int threadID = CustomSamplerUtils.getThreadID(Thread.currentThread().getName());
 		trace("sample() ThreadID: " + threadID);
 
+		// Get an initial SampleResult and parse options.
+		SampleResult res = CustomSamplerUtils.getInitialSampleResult(getTitle());
+		HashMap<String, Boolean> options = prepareOptions();
+
 		// Get BinaryInfo and QueryHandler instances.
 		BinaryFileInfo binaryInfo = null;
 		QueryHandler queryHandler = null;
@@ -55,10 +59,6 @@ public class CouchSampler extends AbstractSampler implements TestBean {
 			log.error("Failed to create CouchSampler prerequisites for the " + 
 					Thread.currentThread().getName() + " sampler. Details:" + e.toString());
 		}
-
-		// Get an initial SampleResult and parse options.
-		SampleResult res = CustomSamplerUtils.getInitialSampleResult(getTitle());
-		HashMap<String, Boolean> options = prepareOptions();
 
 		if (options.get("doRead")) { // DO THE READ
 			CustomSamplerUtils.readWith(queryHandler, binaryInfo, res, options);

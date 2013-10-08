@@ -14,14 +14,11 @@ public class CouchConfigElementBeanInfo extends BeanInfoSupport {
 		super(CouchConfigElement.class);
 
 		createPropertyGroup("couch", new String[] {
-				"api", "host", "port", "database", "username", "password"});
+				"host", "port", "database", "username", "password"});
 		createPropertyGroup("options", new String[] {
 				"createIfNotExists"});
 
-		PropertyDescriptor p = property("api");
-		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, "jcouchdb");
-		p = property("host");
+		PropertyDescriptor p = property("host");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "http://testdb-pc.cern.ch");
 		p = property("port");
