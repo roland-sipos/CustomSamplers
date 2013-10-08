@@ -1,10 +1,10 @@
 CustomSamplers
 ==============
 
-The CustomSamplers project is a fairly big extension to JMeter that 
-contains custom configuration and sampler elements for different databases 
-in order to measure performance characteristics of BLOB data handling for
-given scenarios.
+The CustomSamplers project is a fairly big extension to the JMeter tool that 
+contains custom configuration and sampler elements for different relational and
+non-relation databases, in order to measure performance characteristics of binary
+data handling for given workloads.
 
 Currently the following databases are supported by configuration and sampler elements:
 NoSQL:
@@ -14,19 +14,19 @@ NoSQL:
  + MongoDB
  + CouchDB
  + Voldemort
- - Accumulo
- - HBase
+ - Accumulo (Pending)
+ - HBase (Pending)
  
 NewSQL:
 -------
  + Drizzle
- - TokuDB
+ - TokuDB (Pending)
 
 Relational:
 -----------
  + PostgreSQL
  + MySQL
- - Oracle 11g
+ + Oracle 11g
 
 
 Known issues:
@@ -36,13 +36,8 @@ http://stackoverflow.com/questions/1074869/find-oracle-jdbc-driver-in-maven-repo
 
 TODO:
 -----
- - Cassandra: Check Quorum write and read, and unify the numbers for all the tests.
- - RIAK: Same as for Cassandra. Quorum writen, ONE read probably the best.
- - Extend MongoDB with Morphia POJO mapping. (??? Probably not a good idea...)
- - CouchDB - Base64 encoding flaw? What cause it?
+ - RIAK, Cassandra: Make Quorum CRUD operations optional.
+ - Base64 Reader in the BinaryFileInfo.
  - Switchable storage engines where it's available: RIAK, MySQL
  - Add missing DB samplers.
- - Unify QuryHandling.
- - Unify test databases and clusters
-   -> testdb deyploers to be implemented. See DrizzleDeployer.
-   (Plan: )
+ - Add missing TestPlans for databases.
