@@ -28,10 +28,11 @@
       <hashTree>
         <couchdb.CouchConfigElement guiclass="TestBeanGUI" testclass="couchdb.CouchConfigElement" testname="Custom - CouchDB Connection Configuration" enabled="true">
           <stringProp name="database">test</stringProp>
-          <stringProp name="host">testdb-pc.cern.ch</stringProp>
+          <stringProp name="host">http://testdb-pc.cern.ch</stringProp>
           <stringProp name="password">testPass</stringProp>
           <stringProp name="port">5984</stringProp>
           <stringProp name="username">testUser</stringProp>
+          <stringProp name="createIfNotExists">False</stringProp>
         </couchdb.CouchConfigElement>
         <hashTree/>
         <binaryconfig.BinaryConfigElement guiclass="TestBeanGUI" testclass="binaryconfig.BinaryConfigElement" testname="Custom - BinaryFileInfo Configuration" enabled="true">
