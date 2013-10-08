@@ -14,31 +14,28 @@ public class CassandraSamplerBeanInfo extends BeanInfoSupport {
 		super(CassandraSampler.class);
 
 		createPropertyGroup("cassandra", new String[] {"cluster"});
-		createPropertyGroup("sampler", new String[] {"binaryInfo", "bulkInsert", "useChunks"});
+		createPropertyGroup("sampler", new String[] {"binaryInfo", "useChunks"});
 		createPropertyGroup("reading", new String[] {"doRead", "useRandomAccess", "checkRead"});
 		createPropertyGroup("writing", new String[] {"doWrite", "assignedWrite"});
 
-		PropertyDescriptor p = property("database");
+		PropertyDescriptor p = property("cluster");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "TestCondCass");
-		p = property("keyspace");
-		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, "WriteTestKS");
-		p = property("columnFamily");
-		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, "TestCF");
-
 
 		p = property("binaryInfo");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "binInfo");
+		p = property("useChunks");
+		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
+		p.setValue(TAGS, new String[] {"true", "false", "bulk"});
+		p.setValue(DEFAULT, "false");
 
 		p = property("doRead");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, Boolean.TRUE);
+		p.setValue(DEFAULT, Boolean.FALSE);
 		p = property("useRandomAccess");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, "True");
+		p.setValue(DEFAULT, Boolean.FALSE);
 		p = property("checkRead");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, Boolean.FALSE);

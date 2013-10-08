@@ -1,7 +1,6 @@
 package cassandra;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,28 +8,24 @@ import java.util.Map;
 import utils.CustomSamplersException;
 import utils.NotFoundInDBException;
 import utils.QueryHandler;
-import me.prettyprint.cassandra.serializers.BytesArraySerializer;
 import me.prettyprint.cassandra.serializers.CompositeSerializer;
 import me.prettyprint.cassandra.serializers.StringSerializer;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.beans.Composite;
-import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.ddl.KeyspaceDefinition;
 import me.prettyprint.hector.api.exceptions.HectorException;
 import me.prettyprint.hector.api.factory.HFactory;
 import me.prettyprint.hector.api.mutation.Mutator;
-import me.prettyprint.hector.api.query.ColumnQuery;
-import me.prettyprint.hector.api.query.QueryResult;
 
-public class CassandraQueryHandler implements QueryHandler {
+public class CassandraBulkQueryHandler implements QueryHandler {
 
 	private static Cluster cluster;
 	private static Keyspace keyspace;
 	private final static String iovCFName = "IOV";
 	private final static String payloadCFName = "PAYLOAD";
 
-	public CassandraQueryHandler(String clusterName) 
+	public CassandraBulkQueryHandler(String clusterName) 
 			throws CustomSamplersException, NotFoundInDBException {
 		cluster = CassandraConfigElement.getCassandraCluster(clusterName);
 		KeyspaceDefinition ksDef = cluster.describeKeyspace("testKS");
@@ -47,53 +42,14 @@ public class CassandraQueryHandler implements QueryHandler {
 	@Override
 	public ByteArrayOutputStream getData(String tagName, long since)
 			throws CustomSamplersException {
-		ByteArrayOutputStream result = new ByteArrayOutputStream();
-		try {
-			StringSerializer ss = StringSerializer.get();
-
-			Composite key = new Composite();
-			key.addComponent(tagName, ss);
-			key.addComponent(String.valueOf(since), ss);
-
-			ColumnQuery<Composite, String, String> iovQuery =
-					HFactory.createColumnQuery(keyspace, CompositeSerializer.get(), ss, ss);
-			iovQuery.setColumnFamily(iovCFName).setKey(key).setName("hash");
-			QueryResult<HColumn<String, String> > iovResult = iovQuery.execute();
-			String hash = iovResult.get().getValue();
-			
-			ColumnQuery<String, String, byte[]> plQuery = 
-					HFactory.createColumnQuery(keyspace, ss, ss, BytesArraySerializer.get());
-			plQuery.setColumnFamily(payloadCFName).setKey(hash).setName("data");
-			QueryResult<HColumn<String, byte[]> > plResult = plQuery.execute();
-			result.write(plResult.get().getValue());
-		} catch (HectorException he) {
-			throw new CustomSamplersException("HectorException occured during write attempt:" + he.toString());
-		} catch (IOException e) {
-			throw new CustomSamplersException("IOException occured during write attempt:" + e.toString());
-		}
-		return result;
+		// NOT SUPPORTED: The framework will never reach this point.
+		return null;
 	}
 
 	@Override
 	public void putData(HashMap<String, String> metaInfo, ByteArrayOutputStream payload,
 			ByteArrayOutputStream streamerInfo) throws CustomSamplersException {
-		try {
-			Composite key = new Composite();
-			key.addComponent(metaInfo.get("tag_name"), StringSerializer.get());
-			key.addComponent(metaInfo.get("since"), StringSerializer.get());
-
-			String hash = metaInfo.get("payload_hash");
-			Mutator<Composite> compMutator = HFactory.createMutator(keyspace, CompositeSerializer.get());
-			compMutator.addInsertion(key, iovCFName, HFactory.createColumn("hash", hash));
-			compMutator.execute();
-
-			Mutator<String> strMutator = HFactory.createMutator(keyspace, StringSerializer.get());
-			strMutator.addInsertion(hash, payloadCFName,
-					HFactory.createColumn("data", payload.toByteArray()));
-			strMutator.execute();
-		} catch (HectorException he) {
-			throw new CustomSamplersException("Hector exception occured:" + he.toString());
-		}
+		// NOT SUPPORTED: The framework will never reach this point.
 	}
 
 	@Override

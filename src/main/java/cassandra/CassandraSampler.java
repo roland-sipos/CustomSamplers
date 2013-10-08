@@ -3,6 +3,8 @@
  */
 package cassandra;
 
+import java.util.HashMap;
+
 import org.apache.jmeter.samplers.AbstractSampler;
 import org.apache.jmeter.samplers.Entry;
 import org.apache.jmeter.samplers.SampleResult;
@@ -14,6 +16,7 @@ import binaryconfig.BinaryConfigElement;
 
 import utils.BinaryFileInfo;
 import utils.CustomSamplerUtils;
+import utils.QueryHandler;
 
 /**
  * @author cb
@@ -26,7 +29,6 @@ public class CassandraSampler extends AbstractSampler implements TestBean {
 
 	public final static String CLUSTER = "CassandraSampler.cluster";
 	public final static String BINARYINFO = "CassandraSampler.binaryInfo";
-	public final static String BULKINSERT = "CassandraSampler.bulkInsert";
 	public final static String USECHUNKS = "RiakSampler.useChunks";
 	public final static String DOREAD = "CassandraSampler.doRead";
 	public final static String USERANDOMACCESS = "CassandraSampler.useRandomAccess";
@@ -45,33 +47,50 @@ public class CassandraSampler extends AbstractSampler implements TestBean {
 
 		// Get BinaryInfo and QueryHandler instances.
 		BinaryFileInfo binaryInfo = null;
-		CassandraQueryHandler queryHandler = null;
+		QueryHandler queryHandler = null;
 		try {
 			binaryInfo = BinaryConfigElement.getBinaryFileInfo(getBinaryInfo());
-			queryHandler = new CassandraQueryHandler(getCluster());
+			if (getUseChunks().equals("bulk")) {
+				queryHandler = new CassandraBulkQueryHandler(getCluster());
+			} else {
+				queryHandler = new CassandraQueryHandler(getCluster());
+			}
 		} catch (Exception e) {
-			log.error("Failed to create a CassandraQueryHandler instance for the " + 
+			log.error("Failed to create CassandraSampler prerequisites for the " + 
 					Thread.currentThread().getName() + " sampler. Details:" + e.toString());
 		}
 
-		// Get an initial SampleResult and start it.
+		// Get an initial SampleResult and parse options.
 		SampleResult res = CustomSamplerUtils.getInitialSampleResult(getTitle());
+		HashMap<String, Boolean> options = prepareOptions();
 
-		if(Boolean.parseBoolean(getDoRead())) // DO THE READ
-			CustomSamplerUtils.doReadWith(queryHandler, binaryInfo, res, 
-					Boolean.parseBoolean(getCheckRead()), false);
-		else if (Boolean.parseBoolean(getDoWrite())) // DO THE WRITE
-			CustomSamplerUtils.doWriteWith(queryHandler, binaryInfo, res, 
-					Boolean.parseBoolean(getAssignedWrite()), false);
+		if (options.get("doRead")) { // DO THE READ
+			CustomSamplerUtils.readWith(queryHandler, binaryInfo, res, options);
+		} else if (options.get("doWrite")) { // DO THE WRITE
+			CustomSamplerUtils.writeWith(queryHandler, binaryInfo, res, options);
+		}
 
 		return res;
-
 	}
 
+	private HashMap<String, Boolean> prepareOptions() {
+		HashMap<String, Boolean> options = new HashMap<String, Boolean>();
+		options.put("doRead", Boolean.parseBoolean(getDoRead()));
+		options.put("doWrite", Boolean.parseBoolean(getDoWrite()));
+
+		String cProp = getUseChunks();
+		Boolean useChunks = cProp.equals(String.valueOf(Boolean.TRUE)) || cProp.equals("bulk");
+		options.put("useChunks", useChunks);
+		
+		options.put("isRandom", Boolean.parseBoolean(getUseRandomAccess()));
+		options.put("isCheckRead", Boolean.parseBoolean(getCheckRead()));
+		options.put("isAssigned", Boolean.parseBoolean(getAssignedWrite()));
+		return options;
+	}
+	
 	private void trace(String s) {
-		if(log.isDebugEnabled()) {
+		if(log.isDebugEnabled())
 			log.debug(Thread.currentThread().getName() + " (" + getTitle() + " " + s + " " + this.toString());
-		}
 	}
 
 	public String getTitle() {
