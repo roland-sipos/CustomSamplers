@@ -16,9 +16,8 @@ import org.apache.log.Logger;
 import utils.CustomSamplersException;
 
 
-public class CassandraConfigElement
-	extends AbstractTestElement
-		implements ConfigElement, TestStateListener, TestBean {
+public class CassandraConfigElement extends AbstractTestElement
+implements ConfigElement, TestStateListener, TestBean {
 
 	private static final long serialVersionUID = 100179183283120561L;
 	private static final Logger log = LoggingManager.getLoggerForClass();
@@ -34,8 +33,8 @@ public class CassandraConfigElement
 	public final static String LOAD_BALANCING_POLICY = "CassandraConfigElement.loadBalancingPolicy"; //def: LeastActiveBalancing
 	public final static String SET_AUTO_DISCOVER_HOSTS = "CassandraConfigElement.setAutoDiscoverHosts"; //def: true
 	public final static String SET_HOST_TIMEOUT_COUNTER = "CassandraConfigElement.setHostTimeoutCounter"; //def: 20
-	
-	
+
+
 	public static Cluster getCassandraCluster(String cluster) throws CustomSamplersException {
 		Object cassandra = JMeterContextService.getContext().getVariables().getObject(cluster);
 		if (cassandra == null) {
@@ -50,29 +49,29 @@ public class CassandraConfigElement
 			}
 		}
 	}
-	
+
 	@Override
 	public void testStarted() {
 		if (log.isDebugEnabled()) {
 			log.debug(getTitle() + " test started...");
 		}
 		String fullHost = new String(getHost() + ":" + getPort());
-		
+
 		CassandraHostConfigurator conf = new CassandraHostConfigurator(fullHost);
 		conf.setCassandraThriftSocketTimeout(Integer.parseInt(getThriftSocketTimeout()));
 		conf.setRetryDownedHostsDelayInSeconds(Integer.parseInt(getRetryDownedHostDelaySec()));
 		conf.setRetryDownedHostsQueueSize(Integer.parseInt(getRetryDownedHostQueueSize()));
 		conf.setMaxWaitTimeWhenExhausted(Integer.parseInt(getMaxWaitTimeIfExhausted()));
 		conf.setRetryDownedHosts(Boolean.parseBoolean(getRetryDownedHosts()));
-		
+
 		conf.setLoadBalancingPolicy(new LeastActiveBalancingPolicy());
 		conf.setAutoDiscoverHosts(Boolean.parseBoolean(getSetAutoDiscoverHosts()));
 		conf.setHostTimeoutCounter(Integer.parseInt(getSetHostTimeoutCounter()));
-		
+
 		if (log.isDebugEnabled()) {
 			log.debug("Cassandra host config: " + conf.toString());
 		}
-		
+
 		if (getThreadContext().getVariables().getObject(getCluster()) != null) {
 			if (log.isWarnEnabled()) {
 				log.warn(getCluster() + " has already been defined!");
@@ -87,14 +86,14 @@ public class CassandraConfigElement
 			// Cluster confedCluster = HFactory.getOrCreateCluster(getCluster(), conf);
 			getThreadContext().getVariables().putObject(getCluster(), cluster);
 		}
-		
+
 	}
 
 	@Override
 	public void testStarted(String arg0) {
 		testStarted();
 	}
-	
+
 	@Override
 	public void testEnded() {
 		if (log.isDebugEnabled()) {
@@ -110,18 +109,18 @@ public class CassandraConfigElement
 
 	@Override
 	public void addConfigElement(ConfigElement arg0) {
-		
+
 	}
 
 	@Override
 	public boolean expectsModification() {
 		return false;
 	}
-	
+
 	public String getTitle() {
 		return this.getName();
 	}
-	
+
 	public String getHost() {
 		return getPropertyAsString(HOST);
 	}
@@ -129,7 +128,7 @@ public class CassandraConfigElement
 	public String getPort() {
 		return getPropertyAsString(PORT);
 	}
-	
+
 	public String getCluster() {
 		return getPropertyAsString(CLUSTER);
 	}
@@ -209,5 +208,5 @@ public class CassandraConfigElement
 	public void setSetHostTimeoutCounter(String setHostTimeoutCounter) {
 		setProperty(SET_HOST_TIMEOUT_COUNTER, setHostTimeoutCounter);
 	}
-	
+
 }

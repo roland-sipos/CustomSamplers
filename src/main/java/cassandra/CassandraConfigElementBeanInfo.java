@@ -7,28 +7,28 @@ import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
 public class CassandraConfigElementBeanInfo 
-	extends BeanInfoSupport {
+extends BeanInfoSupport {
 
 	private static final Logger log = LoggingManager.getLoggerForClass();
-	
+
 	public CassandraConfigElementBeanInfo() {
 		super(CassandraConfigElement.class);
-		
+
 		createPropertyGroup("cassandra", new String[] { 
-			"host",
-			"port",
-			"cluster"});
-		
+				"host",
+				"port",
+		"cluster"});
+
 		createPropertyGroup("hostconfig", new String[] {
-			"thriftSocketTimeout",
-			"retryDownedHostDelaySec",
-			"retryDownedHostQueueSize",
-			"maxWaitTimeIfExhausted",
-			"retryDownedHosts",
-			"loadBalancingPolicy",
-			"setAutoDiscoverHosts",
-			"setHostTimeoutCounter"});
-		
+				"thriftSocketTimeout",
+				"retryDownedHostDelaySec",
+				"retryDownedHostQueueSize",
+				"maxWaitTimeIfExhausted",
+				"retryDownedHosts",
+				"loadBalancingPolicy",
+				"setAutoDiscoverHosts",
+		"setHostTimeoutCounter"});
+
 		PropertyDescriptor p = property("host");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "188.184.23.11");
@@ -38,7 +38,7 @@ public class CassandraConfigElementBeanInfo
 		p = property("cluster");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "TestCondCass");
-		
+
 		p = property("thriftSocketTimeout");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "10000");
@@ -63,14 +63,14 @@ public class CassandraConfigElementBeanInfo
 		p = property("setHostTimeoutCounter");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "20");
-		
+
 		if(log.isDebugEnabled()) {
-            for (PropertyDescriptor pd : getPropertyDescriptors()) {
-                log.debug(pd.getName());
-                log.debug(pd.getDisplayName());
-            }
-        }
-		
+			for (PropertyDescriptor pd : getPropertyDescriptors()) {
+				log.debug(pd.getName());
+				log.debug(pd.getDisplayName());
+			}
+		}
+
 	}
 
 }
