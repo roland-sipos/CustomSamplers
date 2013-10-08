@@ -13,15 +13,22 @@ public class BinaryConfigElementBeanInfo extends BeanInfoSupport {
 	public BinaryConfigElementBeanInfo() {
 		super(BinaryConfigElement.class);
 
-		createPropertyGroup("binary", new String[] { "inputLocation", "binaryInfo"});
+		createPropertyGroup("binary", new String[] {"inputLocation", "binaryInfo"});
+		createPropertyGroup("options", new String[] {"encoding"});
 		createPropertyGroup("assignment", new String[] {"assignmentFile"});
 
 		PropertyDescriptor p = property("inputLocation");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "/home/cb/INPUT");
+
 		p = property("binaryInfo");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "binInfo");
+
+		p = property("encoding");
+		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
+		p.setValue(DEFAULT, "NO");
+
 		p = property("assignmentFile");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "");
