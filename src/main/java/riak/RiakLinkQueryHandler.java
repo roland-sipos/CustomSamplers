@@ -27,7 +27,6 @@ public class RiakLinkQueryHandler implements QueryHandler {
 
 	private static IRiakClient riakClient;
 
-	@SuppressWarnings("Check LinkWalking capabilities for the HTTP Client.")
 	public RiakLinkQueryHandler(String clusterName) 
 			throws CustomSamplersException, NotFoundInDBException {
 		if (RiakConfigElement.getProtocolName().equals("HTTP")) {

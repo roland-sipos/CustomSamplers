@@ -1,24 +1,16 @@
 package riak;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import com.basho.riak.client.DefaultRiakObject;
 import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.IRiakObject;
-import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.RiakException;
 import com.basho.riak.client.RiakFactory;
-import com.basho.riak.client.RiakLink;
-import com.basho.riak.client.RiakRetryFailedException;
 import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.cap.Quora;
-import com.basho.riak.client.operations.StoreObject;
-import com.basho.riak.client.query.LinkWalkStep.Accumulate;
-import com.basho.riak.client.query.WalkResult;
 import com.basho.riak.client.raw.http.HTTPClientConfig;
 import com.basho.riak.client.raw.http.HTTPClusterConfig;
 import com.basho.riak.client.raw.pbc.PBClientConfig;
@@ -112,6 +104,7 @@ public class RiakDeployer {
 			}
 		}
 
+		@SuppressWarnings("deprecation")
 		@Override
 		protected void setupEnvironment() {
 			try {
@@ -151,6 +144,7 @@ public class RiakDeployer {
 			}
 		}
 
+		@SuppressWarnings("deprecation")
 		@Override
 		protected void destroyEnvironment() {
 			try {
