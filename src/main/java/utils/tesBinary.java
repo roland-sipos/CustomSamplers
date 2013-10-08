@@ -35,24 +35,23 @@ public class tesBinary {
 		BinaryFileInfo binaryInfo = BinaryFileInfo.getInstance(
 				"/home/cb/CMS/Projects/PaGeS/fb6fd61e48a708d56383/out",
 				"/home/cb/EclipseWorkspace/customsamplers/resources/assignments/basic.xml");
-		System.out.println(binaryInfo.getChunkIDList().toString());
-		
-		System.out.println(binaryInfo.getChunkPathList().toString());
-		
-		
-		TreeMap<String, String> chunkList = binaryInfo.getChunkPathList().get("rbinary-1.bin");
-		for (Map.Entry<String, String> it : chunkList.entrySet()) {
-			System.out.println("KEY:" + it.getKey() + " - Value:" + it.getValue());
-		}
-		
-		List<ByteArrayOutputStream> res = binaryInfo.readChunksFor("rbinary-1.bin");
-		System.out.println(res.size());
-		ByteArrayOutputStream resOs = mergeByteArrayList(res);
+
+		System.out.println("------");
 		ByteArrayOutputStream original = binaryInfo.read(binaryInfo.getAbsolutePathFor("rbinary-1.bin"));
-		System.out.println(Arrays.equals(resOs.toByteArray(), original.toByteArray()));
-		
-		
-		
+		ByteArrayOutputStream base64 = binaryInfo.readAsBase64(binaryInfo.getAbsolutePathFor("rbinary-1.bin"));
+		for (int i = 0; i < 10; ++i) {
+			System.out.print(original.toByteArray()[i] + " ");
+			//System.out.println(base64.toByteArray()[i] + " ");
+		}
+		System.out.println();
+		System.out.println("------");
+		for (int i = 0; i < 10; ++i) {
+			//System.out.print(original.toByteArray()[i] + " ");
+			System.out.print(base64.toByteArray()[i] + " ");
+		}
+		System.out.println();
+		System.out.println("------");
+		/*
 		
 		String woof = "chunk-150.bin";
 		Integer woofInt = Integer.parseInt(woof.replaceAll("[\\D]", ""));
@@ -69,7 +68,7 @@ public class tesBinary {
 		String testStr = "a_b_c_d_efdfsdfs_dsfsdfsd_fsdfsdgsd_ASAFS";
 		String[] need = testStr.split("\\_");
 		System.out.println(Arrays.toString(need));
-		
+		*/
 		
 	}
 

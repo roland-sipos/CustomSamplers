@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.jmeter.samplers.SampleResult;
-
 public interface QueryHandler {
 
 	public ByteArrayOutputStream getData(String tagName, long since)

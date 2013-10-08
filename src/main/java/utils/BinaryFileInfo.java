@@ -10,6 +10,7 @@ import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +21,7 @@ import java.util.TreeMap;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.commons.codec.binary.Base64OutputStream;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -288,6 +290,41 @@ public class BinaryFileInfo {
 			System.out.println(ex.toString());
 		}
 		return bosr;
+	}
+
+	/** Read the given binary file, and return its contents as a byte array.*/ 
+	public ByteArrayOutputStream readAsBase64(String inputFileName) {
+		/*int BUFFER_SIZE = 4096;
+	byte[] buffer = new byte[BUFFER_SIZE];
+	InputStream input = new FileInputStream(args[0]);
+	OutputStream output = new Base64OutputStream(new FileOutputStream(args[1]));
+	int n = input.read(buffer, 0, BUFFER_SIZE);
+	while (n >= 0) {
+	    output.write(buffer, 0, n);
+	    n = input.read(buffer, 0, BUFFER_SIZE);
+	}
+	input.close();
+	output.close();*/
+		ByteArrayOutputStream res = null;
+		try {
+			int BUFFER_SIZE = 4096;
+			byte[] buffer = new byte[BUFFER_SIZE];
+			InputStream input = new FileInputStream(inputFileName);
+
+			res = new ByteArrayOutputStream();
+			OutputStream output = new Base64OutputStream(res);
+			//a.writeTo(result);
+			int n = input.read(buffer, 0, BUFFER_SIZE);
+			while (n >= 0) {
+				output.write(buffer, 0, n);
+				n = input.read(buffer, 0, BUFFER_SIZE);
+			}
+			input.close();
+			output.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return res;
 	}
 
 }
