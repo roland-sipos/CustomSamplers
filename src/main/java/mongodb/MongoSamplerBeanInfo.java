@@ -12,26 +12,22 @@ public class MongoSamplerBeanInfo extends BeanInfoSupport {
 
 	public MongoSamplerBeanInfo() {
 		super(MongoSampler.class);
-	
-		createPropertyGroup("mongo", new String[] {"database", "collection"});
-		createPropertyGroup("sampler", new String[] {"inputLocation", "gridFsMethod"});
 
-		createPropertyGroup("reading", new String[] {
-				"doRead",
-				"useRandomAccess",
-				"checkRead"});
-	
+		createPropertyGroup("mongo", new String[] {"database"});
+		createPropertyGroup("sampler", new String[] {"binaryInfo", "useChunks", "gridFsMethod"});
+		createPropertyGroup("reading", new String[] {"doRead", "useRandomAccess", "checkRead"});
 		createPropertyGroup("writing", new String[] {"doWrite", "assignedWrite"});
-	
+
 		PropertyDescriptor p = property("database");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "test");
-		p = property("collection");
+
+		p = property("binaryInfo");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, "binaries");
-		p = property("inputLocation");
+		p.setValue(DEFAULT, "binInfo");
+		p = property("useChunks");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, "/home/cb/INPUT");
+		p.setValue(DEFAULT, Boolean.FALSE);
 		p = property("gridFsMethod");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, Boolean.FALSE);
