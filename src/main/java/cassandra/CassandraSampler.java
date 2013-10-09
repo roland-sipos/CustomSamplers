@@ -79,8 +79,7 @@ public class CassandraSampler extends AbstractSampler implements TestBean {
 		options.put("doWrite", Boolean.parseBoolean(getDoWrite()));
 
 		String cProp = getUseChunks();
-		Boolean useChunks = cProp.equals(String.valueOf(Boolean.TRUE)) || cProp.equals("bulk");
-		options.put("useChunks", useChunks);
+		options.put("useChunks", cProp.equals(String.valueOf(Boolean.TRUE)) || cProp.equals("bulk"));
 		
 		options.put("isRandom", Boolean.parseBoolean(getUseRandomAccess()));
 		options.put("isCheckRead", Boolean.parseBoolean(getCheckRead()));
