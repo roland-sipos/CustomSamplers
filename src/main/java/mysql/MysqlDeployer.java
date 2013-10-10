@@ -17,12 +17,15 @@ public class MysqlDeployer {
 	private static class MysqlTestEnvironmentDeployer extends TestEnvironmentDeployer {
 
 		private Connection connection = null;
+		private String fork = null;
 		private String whichEngine = null;
 
 		public MysqlTestEnvironmentDeployer(String host, String port, String databaseName,
-				String username, String password, String whichEngine) {
+				String username, String password, String whichEngine, String fork) {
 			super(host, port, databaseName, username, password);
 			this.whichEngine = whichEngine;
+			this.fork = fork;
+			
 		}
 
 		@Override
@@ -35,12 +38,20 @@ public class MysqlDeployer {
 				e.printStackTrace();
 				return;
 			}*/
-
 			System.out.println(" initialize() -> MySQL JDBC Driver Registered!");
+
 			try {
-				connection = DriverManager.getConnection("jdbc:mysql://" + getHost() + ":" + getPort() 
-						+ "/" + getDatabase(), getUsername(), getPassword());
-				connection.setAutoCommit(false);
+				if (fork.equals("MariaDB")) {
+					connection = DriverManager.getConnection("jdbc:mariadb://" + getHost() + ":" + getPort()
+							+ "/" + getDatabase(), getUsername(), getPassword());
+				} else if (fork.equals("Mysql")) {
+					connection = DriverManager.getConnection("jdbc:mysql://" + getHost() + ":" + getPort() 
+							+ "/" + getDatabase(), getUsername(), getPassword());
+				} else {
+					System.out.println(" initialize -> Connection cannot be established! "
+							+ "Unrecognized fork: " + fork);
+					return;
+				}
 			} catch (SQLException e) {
 				System.out.println(" initialize() -> Connection Failed! Some parameter is not correct!");
 				e.printStackTrace();
@@ -77,8 +88,7 @@ public class MysqlDeployer {
 					+ " `LAST_SINCE` BIGINT NULL,"
 					+ " `LAST_SINCE_PID` INT NULL,"
 					+ " `CREATION_TIME` TIMESTAMP NULL,"
-					+ " PRIMARY KEY (`NAME`) )"
-					+ " ENGINE = " + whichEngine;
+					+ " PRIMARY KEY (`NAME`) )";
 
 			String createPayloadQuery = "CREATE  TABLE IF NOT EXISTS `PAYLOAD` ("
 					+ " `HASH` VARCHAR(40) NOT NULL ,"
@@ -88,16 +98,14 @@ public class MysqlDeployer {
 					+ " `VERSION` VARCHAR(20) NULL ,"
 					+ " `CREATION_TIME` TIMESTAMP NULL ,"
 					+ " `CMSSW_RELEASE` VARCHAR(45) NULL ,"
-					+ " PRIMARY KEY (`HASH`) )"
-					+ " ENGINE = " + whichEngine;
+					+ " PRIMARY KEY (`HASH`) )";
 
 			String createChunkQuery = "CREATE TABLE IF NOT EXISTS `CHUNK` ("
 					+ " `PAYLOAD_HASH` VARCHAR(40) NOT NULL,"
 					+ " `CHUNK_HASH` VARCHAR(40) NOT NULL,"
 					+ " `ID` TINYINT NOT NULL,"
 					+ " `DATA` LONGBLOB NULL,"
-					+ " PRIMARY KEY (`PAYLOAD_HASH`, `CHUNK_HASH`) )"
-					+ " ENGINE = " + whichEngine;
+					+ " PRIMARY KEY (`PAYLOAD_HASH`, `CHUNK_HASH`) )";
 			String createChunkIdxQuery = "CREATE INDEX `PAYLOAD_HASH_FK_IDX` ON `CHUNK` (`PAYLOAD_HASH` ASC)";
 			String alterChunkHashFK = "ALTER TABLE `CHUNK` ADD CONSTRAINT `PAYLOAD_HASH_FK_IDX` "
 					+ " FOREIGN KEY (`PAYLOAD_HASH`) REFERENCES `PAYLOAD`(`HASH`)";
@@ -110,9 +118,16 @@ public class MysqlDeployer {
 					+ " PRIMARY KEY (`TAG_NAME`, `SINCE`),"
 					+ "CONSTRAINT `TAG_FK_idx`"
 					+ " FOREIGN KEY (`TAG_NAME` ) REFERENCES `TAG` (`NAME` ),"
-					+ " FOREIGN KEY (`PAYLOAD_HASH`) REFERENCES `PAYLOAD` (`HASH`) )"
-					+ "ENGINE = " + whichEngine;
+					+ " FOREIGN KEY (`PAYLOAD_HASH`) REFERENCES `PAYLOAD` (`HASH`) )";
 
+			if (!whichEngine.isEmpty()) {
+				String engine = " ENGINE = " + whichEngine;
+				createTagQuery += engine;
+				createPayloadQuery += engine;
+				createChunkQuery += engine;
+				createIOVQuery += engine;
+			}
+			
 			String createTagIdxQuery = "CREATE INDEX `TAG_FK_idx` ON `IOV` (`TAG_NAME` ASC)";
 			String createPayloadIdxQuery = "CREATE INDEX `PAYLOAD_FK_idx` ON `IOV` (`PAYLOAD_HASH` ASC)";
 
@@ -162,8 +177,6 @@ public class MysqlDeployer {
 				checkAndNotify(failed, "INSERT INTO TAG statement", prefix);
 				insertTT.close();
 
-				connection.commit();
-
 			} catch (SQLException e) {
 				System.out.println(" setupEnvironment() -> SQLException occured. Details: " + e.toString());
 			}
@@ -194,8 +207,6 @@ public class MysqlDeployer {
 				checkAndNotify(failed, deleteTagQuery, prefix);
 				delete.close();
 
-				connection.commit();
-
 			} catch (SQLException e) {
 				System.out.println(" destroyEnvironment() -> SQLException occured. Details: " + e.toString());
 			}
@@ -208,8 +219,10 @@ public class MysqlDeployer {
 	 */
 	public static void main(String[] args) {
 		MysqlTestEnvironmentDeployer deployer =
-				new MysqlTestEnvironmentDeployer("testdb-pc.cern.ch", "3306", 
-						"testdb", "testUser", "testPass", "InnoDB");
+				/*new MysqlTestEnvironmentDeployer("testdb-pc.cern.ch", "3306", 
+						"testdb", "testUser", "testPass", "InnoDB", "Mysql");*/
+				new MysqlTestEnvironmentDeployer("testdb-pc2.cern.ch", "3306", 
+						"test", "testUser", "testPass", "", "MariaDB");
 
 		//System.out.println("-------- MySQL environment setup ------------");
 		//deployer.deployTestEnvironment();

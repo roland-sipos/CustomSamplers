@@ -168,7 +168,7 @@ public class MysqlQueryHandler implements QueryHandler {
 	public void writePayload(HashMap<String, String> metaMap, byte[] payload, byte[] streamerInfo)
 			throws CustomSamplersException {
 		try {
-			PreparedStatement ps = connection.prepareStatement("INSERT INTO `PAYLOAD`"
+			PreparedStatement ps = connection.prepareStatement("INSERT INTO PAYLOAD"
 					+ " (HASH, OBJECT_TYPE, DATA, STREAMER_INFO, VERSION, CREATION_TIME, CMSSW_RELEASE)"
 					+ " VALUES (?, ?, ?, ?, ?, ?, ?)");
 			ps.setString(1, metaMap.get("payload_hash"));
@@ -188,7 +188,7 @@ public class MysqlQueryHandler implements QueryHandler {
 	public void writeIov(HashMap<String, String> keyAndMetaMap)
 			throws CustomSamplersException {
 		try {
-			PreparedStatement ps = connection.prepareStatement("INSERT INTO `IOV`"
+			PreparedStatement ps = connection.prepareStatement("INSERT INTO IOV"
 					+ " (TAG_NAME, SINCE, PAYLOAD_HASH, INSERT_TIME) VALUES (?, ?, ?, ?)");
 			ps.setString(1, keyAndMetaMap.get("tag_name"));
 			ps.setLong(2, Long.parseLong(keyAndMetaMap.get("since")));
