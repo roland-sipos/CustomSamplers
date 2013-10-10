@@ -19,6 +19,7 @@ NoSQL:
  
 NewSQL:
 -------
+ + MariaDB
  + Drizzle
  - TokuDB (Pending)
 
