@@ -50,8 +50,8 @@
           <stringProp name="binaryInfo">binInfo</stringProp>
           <stringProp name="checkRead">True</stringProp>
           <stringProp name="database">test</stringProp>
-          <stringProp name="doRead">False</stringProp>
-          <stringProp name="doWrite">True</stringProp>
+          <stringProp name="doRead">True</stringProp>
+          <stringProp name="doWrite">False</stringProp>
           <stringProp name="useRandomAccess">True</stringProp>
           <stringProp name="useChunks">False</stringProp>
         </mysql.MysqlSampler>
