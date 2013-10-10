@@ -7,9 +7,9 @@ import org.apache.jmeter.testbeans.TestBean;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
-import utils.BinaryFileInfo; 
 import utils.CustomSamplerUtils;
 import binaryconfig.BinaryConfigElement;
+import binaryconfig.BinaryFileInfo;
 
 public class VoldemortSampler extends AbstractSampler implements TestBean {
 

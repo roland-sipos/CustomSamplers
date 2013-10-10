@@ -1,18 +1,20 @@
 package drizzle;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
-
-import customjdbc.CustomJDBCConfigElement;
+import java.util.List;
+import java.util.Map;
 
 import utils.CustomSamplersException;
 import utils.NotFoundInDBException;
 import utils.QueryHandler;
+import customjdbc.CustomJDBCConfigElement;
 
 public class DrizzleQueryHandler implements QueryHandler  {
 
@@ -27,7 +29,7 @@ public class DrizzleQueryHandler implements QueryHandler  {
 			throw new NotFoundInDBException("JDBCConnection instance with name: " + databaseName + " was not found in config!");
 	}
 
-	@Override
+	//@Override
 	public void writeBinary(String binaryID, String chunkID, String hash,
 			byte[] fileContent, boolean isSpecial) throws CustomSamplersException {
 		
@@ -51,7 +53,7 @@ public class DrizzleQueryHandler implements QueryHandler  {
 		
 	}
 
-	@Override
+	//@Override
 	public byte[] readBinary(String binaryID, String chunkID, String hash,
 			boolean isSpecial) throws CustomSamplersException {
 		
@@ -84,46 +86,39 @@ public class DrizzleQueryHandler implements QueryHandler  {
 	}
 
 	@Override
-	public void writePayload(HashMap<String, String> metaMap, byte[] payload,
-			byte[] streamerInfo, boolean isSpecial)
-			throws CustomSamplersException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public byte[] readPayload(HashMap<String, String> metaMap, boolean isSpecial)
+	public ByteArrayOutputStream getData(String tagName, long since)
 			throws CustomSamplersException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public void writeIov(HashMap<String, String> keyAndMetaMap)
-			throws CustomSamplersException {
+	public void putData(HashMap<String, String> metaInfo, ByteArrayOutputStream payload,
+			ByteArrayOutputStream streamerInfo) throws CustomSamplersException {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public String readIov(HashMap<String, String> keyMap)
+	public Map<Integer, ByteArrayOutputStream> getChunks(String tagName, long since)
 			throws CustomSamplersException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public void writeTag(HashMap<String, String> metaMap)
-			throws CustomSamplersException {
+	public void putChunks(HashMap<String, String> metaInfo,
+			List<ByteArrayOutputStream> chunks) throws CustomSamplersException {
 		// TODO Auto-generated method stub
 		
 	}
 
-	@Override
-	public HashMap<String, Object> readTag(String tagKey)
-			throws CustomSamplersException {
+	/*@Override
+	public void putChunk(HashMap<String, String> metaInfo, Integer chunkID,
+			ByteArrayOutputStream chunk) throws CustomSamplersException {
 		// TODO Auto-generated method stub
-		return null;
-	}
+		
+	}*/
+
 
 }

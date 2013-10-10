@@ -10,8 +10,8 @@ import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
 import binaryconfig.BinaryConfigElement;
+import binaryconfig.BinaryFileInfo;
 
-import utils.BinaryFileInfo;
 import utils.CustomSamplerUtils;
 
 public class MysqlSampler extends AbstractSampler implements TestBean {

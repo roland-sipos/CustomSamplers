@@ -11,6 +11,8 @@ import java.util.TreeMap;
 
 import org.apache.jmeter.samplers.SampleResult;
 
+import binaryconfig.BinaryFileInfo;
+
 public class tesBinary {
 	
 	private static ByteArrayOutputStream mergeByteArrayList(List<ByteArrayOutputStream> list) {
@@ -51,6 +53,11 @@ public class tesBinary {
 		}
 		System.out.println();
 		System.out.println("------");
+		
+		
+		String cProp = "false";
+		Boolean useChunks = cProp.equals(String.valueOf(Boolean.TRUE)) || cProp.equals("Bulk");
+		System.out.println(useChunks);
 		/*
 		
 		String woof = "chunk-150.bin";

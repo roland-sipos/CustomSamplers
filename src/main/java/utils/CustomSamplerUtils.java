@@ -11,6 +11,8 @@ import java.util.Map;
 
 import org.apache.jmeter.samplers.SampleResult;
 
+import binaryconfig.BinaryFileInfo;
+
 
 public class CustomSamplerUtils {
 

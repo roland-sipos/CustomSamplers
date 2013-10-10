@@ -1,6 +1,9 @@
 package voldemort;
 
+import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import utils.CustomSamplersException;
 import utils.NotFoundInDBException;
@@ -21,7 +24,7 @@ public class VoldemortQueryHandler implements QueryHandler {
 					                        + " store: " + store + " was not found in config!");
 	}
 
-	@Override
+	//@Override
 	public void writeBinary(String binaryID, String chunkID, String hash,
 			byte[] fileContent, boolean isSpecial)
 			throws CustomSamplersException {
@@ -29,7 +32,7 @@ public class VoldemortQueryHandler implements QueryHandler {
 		voldClient.put(hash, vValue);
 	}
 
-	@Override
+	//@Override
 	public byte[] readBinary(String binaryID, String chunkID, String hash,
 			boolean isSpecial) throws CustomSamplersException {
 		Versioned<byte[]> vValue = voldClient.get(hash);
@@ -37,46 +40,39 @@ public class VoldemortQueryHandler implements QueryHandler {
 	}
 
 	@Override
-	public void writePayload(HashMap<String, String> metaMap, byte[] payload,
-			byte[] streamerInfo, boolean isSpecial)
-			throws CustomSamplersException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public byte[] readPayload(HashMap<String, String> metaMap, boolean isSpecial)
+	public ByteArrayOutputStream getData(String tagName, long since)
 			throws CustomSamplersException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public void writeIov(HashMap<String, String> keyAndMetaMap)
-			throws CustomSamplersException {
+	public void putData(HashMap<String, String> metaInfo, ByteArrayOutputStream payload,
+			ByteArrayOutputStream streamerInfo) throws CustomSamplersException {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public String readIov(HashMap<String, String> keyMap)
+	public Map<Integer, ByteArrayOutputStream> getChunks(String tagName, long since)
 			throws CustomSamplersException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	/*@Override
+	public void putChunk(HashMap<String, String> metaInfo, Integer chunkID,
+			ByteArrayOutputStream chunk) throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		
+	}*/
+
 	@Override
-	public void writeTag(HashMap<String, String> metaMap)
-			throws CustomSamplersException {
+	public void putChunks(HashMap<String, String> metaInfo,
+			List<ByteArrayOutputStream> chunks) throws CustomSamplersException {
 		// TODO Auto-generated method stub
 		
 	}
 
-	@Override
-	public HashMap<String, Object> readTag(String tagKey)
-			throws CustomSamplersException {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 }

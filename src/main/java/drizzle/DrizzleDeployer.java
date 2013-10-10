@@ -17,8 +17,8 @@ public class DrizzleDeployer {
 		private Connection connection = null;
 		
 		public DrizzleTestEnvironmentDeployer(String host, String port,
-				String databaseName, String entityName, String username, String password) {
-			super(host, port, databaseName, entityName, username, password);
+				String databaseName, String username, String password) {
+			super(host, port, databaseName, username, password);
 		}
 
 		@Override
@@ -86,7 +86,7 @@ public class DrizzleDeployer {
 		@Override
 		protected void destroyEnvironment() {
 			System.out.println(" destroyEnvironment() -> Destroying environment...");
-			String deleteBinariesQuery = "DROP TABLE " + getEntity();
+			String deleteBinariesQuery = "DROP TABLE BINARIES";
 			PreparedStatement delete = null;
 			try {
 				delete = connection.prepareStatement(deleteBinariesQuery);
@@ -109,7 +109,7 @@ public class DrizzleDeployer {
 	public static void main(String[] args) {
 		DrizzleTestEnvironmentDeployer deployer = 
 				new DrizzleTestEnvironmentDeployer("testdb-pc.cern.ch", "4427", 
-						"testdb", "binaries", "testUser", "testPass");
+						"testdb", "testUser", "testPass");
 		
 		/*
 		 * Start the Drizzle server:

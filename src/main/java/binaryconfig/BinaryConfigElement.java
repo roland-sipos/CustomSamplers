@@ -8,7 +8,6 @@ import org.apache.jmeter.threads.JMeterContextService;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
-import utils.BinaryFileInfo;
 import utils.CustomSamplersException;
 
 public class BinaryConfigElement extends AbstractTestElement
