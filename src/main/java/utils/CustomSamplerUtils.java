@@ -26,6 +26,18 @@ public class CustomSamplerUtils {
 		return res;
 	}
 
+	public static SampleResult getExceptionSampleResult(Exception e) {
+		SampleResult res = new SampleResult();
+		res.setSampleLabel("ExceptionOccured");
+		res.setResponseCode("999");
+		res.setSuccessful(false);
+		res.setRequestHeaders(e.getMessage());
+		res.setResponseMessage(e.toString());
+		res.setDataType(SampleResult.TEXT);
+		res.setContentType("text/plain");
+		return res;
+	}
+
 	public static int getThreadID(String threadName) {
 		String[] elements = threadName.split("\\s+");
 		String gAndTIDStr = elements[elements.length - 1];
