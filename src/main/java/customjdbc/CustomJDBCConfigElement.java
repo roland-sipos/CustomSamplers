@@ -90,11 +90,10 @@ implements ConfigElement, TestStateListener, TestBean {
 				log.error("Failed to connect to: " + connectionStr
 						+ " Usr/pswd: " + getUsername() + "/" + getPassword()
 						+ " Exception: " + e.toString());
-			}	
+			}
 			if (connection != null) {
 				log.debug(this.getName() + " Connection established for: " + connectionStr);
 			}
-
 			try {
 				connection.setAutoCommit(Boolean.parseBoolean(getAutocommit()));
 			} catch (SQLException e) {
@@ -172,7 +171,7 @@ implements ConfigElement, TestStateListener, TestBean {
 	public String getAutocommit() {
 		return getPropertyAsString(AUTOCOMMIT);
 	}
-	
+
 	public void setAutocommit(String autocommit) {
 		setProperty(AUTOCOMMIT, autocommit);
 	}
