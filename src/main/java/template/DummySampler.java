@@ -9,6 +9,7 @@ import utils.CustomSamplerUtils;
 
 public class DummySampler extends AbstractSampler implements TestBean {
 
+	private static final long serialVersionUID = -337844041955076451L;
 	public final static String RESOURCENAME = "DummySampler.resourceName";
 
 	@Override
@@ -18,7 +19,7 @@ public class DummySampler extends AbstractSampler implements TestBean {
 		DummyResource resource = null;
 		DummyResourceHandler handler = null;
 		try {
-			resource = DummyResourceConfig.getResource(getResourceName());
+			resource = DummyResourceConfigElement.getResource(getResourceName());
 			handler = new DummyResourceHandler(resource);
 		} catch (Exception e) {
 			return CustomSamplerUtils.getExceptionSampleResult(e);
