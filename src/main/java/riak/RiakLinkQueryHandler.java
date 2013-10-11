@@ -20,7 +20,6 @@ import com.basho.riak.client.operations.StoreObject;
 import com.basho.riak.client.query.WalkResult;
 
 import utils.CustomSamplersException;
-import utils.NotFoundInDBException;
 import utils.QueryHandler;
 
 public class RiakLinkQueryHandler implements QueryHandler {
@@ -28,7 +27,7 @@ public class RiakLinkQueryHandler implements QueryHandler {
 	private static IRiakClient riakClient;
 
 	public RiakLinkQueryHandler(String clusterName) 
-			throws CustomSamplersException, NotFoundInDBException {
+			throws CustomSamplersException {
 		if (RiakConfigElement.getProtocolName().equals("HTTP")) {
 			riakClient = null;
 			throw new CustomSamplersException("IRiakClient instance with name: " + clusterName
@@ -38,7 +37,7 @@ public class RiakLinkQueryHandler implements QueryHandler {
 			riakClient = RiakConfigElement.getRiakClient(clusterName);
 		}
 		if (riakClient == null)
-			throw new NotFoundInDBException("IRiakClient instance with name: " + clusterName 
+			throw new CustomSamplersException("IRiakClient instance with name: " + clusterName 
 					+ " was not found in config!");
 	}
 

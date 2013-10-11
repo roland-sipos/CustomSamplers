@@ -11,7 +11,6 @@ import org.ektorp.AttachmentInputStream;
 import org.ektorp.CouchDbConnector;
 
 import utils.CustomSamplersException;
-import utils.NotFoundInDBException;
 import utils.QueryHandler;
 
 public class CouchAttachmentQueryHandler implements QueryHandler {
@@ -20,11 +19,11 @@ public class CouchAttachmentQueryHandler implements QueryHandler {
 	//private static SampleResult sampleResult;
 
 	public CouchAttachmentQueryHandler(String databaseName) 
-			throws CustomSamplersException, NotFoundInDBException {
+			throws CustomSamplersException {
 		couchDB = CouchConfigElement.getCouchDB(databaseName);
 		//sampleResult = res;
 		if (couchDB == null)
-			throw new NotFoundInDBException("CouchDB Database instance with name: " 
+			throw new CustomSamplersException("CouchDB Database instance with name: " 
 					+ databaseName + " was not found in config!");
 	}
 

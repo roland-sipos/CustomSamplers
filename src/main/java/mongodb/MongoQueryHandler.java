@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import utils.CustomSamplersException;
-import utils.NotFoundInDBException;
 import utils.QueryHandler;
 
 import com.mongodb.BasicDBObject;
@@ -23,15 +22,15 @@ public class MongoQueryHandler implements QueryHandler {
 	private static DBCollection payloadCollection;
 	
 	public MongoQueryHandler(String databaseName)
-			throws CustomSamplersException, NotFoundInDBException {
+			throws CustomSamplersException {
 		mongo = MongoConfigElement.getMongoDB(databaseName);
 		iovCollection = mongo.getCollection("IOV");
 		payloadCollection = mongo.getCollection("PAYLOAD");
 		if (mongo == null)
-			throw new NotFoundInDBException("MongoDB instance with name: " 
+			throw new CustomSamplersException("MongoDB instance with name: " 
 					+ databaseName + " was not found in config!");
 		if (iovCollection == null || payloadCollection == null)
-			throw new NotFoundInDBException("Some of the collections not found in the " 
+			throw new CustomSamplersException("Some of the collections not found in the " 
 					+ databaseName + " database!");
 	}
 

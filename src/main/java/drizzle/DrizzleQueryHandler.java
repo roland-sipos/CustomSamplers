@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 
 import utils.CustomSamplersException;
-import utils.NotFoundInDBException;
 import utils.QueryHandler;
 import customjdbc.CustomJDBCConfigElement;
 
@@ -22,11 +21,11 @@ public class DrizzleQueryHandler implements QueryHandler  {
 	private static String table;
 	
 	public DrizzleQueryHandler(String databaseName, String tableName) 
-			throws CustomSamplersException, NotFoundInDBException {
+			throws CustomSamplersException {
 		connection = CustomJDBCConfigElement.getJDBCConnection(databaseName);
 		table = tableName;
 		if (connection == null)
-			throw new NotFoundInDBException("JDBCConnection instance with name: " + databaseName + " was not found in config!");
+			throw new CustomSamplersException("JDBCConnection instance with name: " + databaseName + " was not found in config!");
 	}
 
 	//@Override

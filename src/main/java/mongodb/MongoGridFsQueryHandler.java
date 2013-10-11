@@ -15,7 +15,6 @@ import com.mongodb.gridfs.GridFSDBFile;
 import com.mongodb.gridfs.GridFSInputFile;
 
 import utils.CustomSamplersException;
-import utils.NotFoundInDBException;
 import utils.QueryHandler;
 
 public class MongoGridFsQueryHandler implements QueryHandler {
@@ -25,14 +24,14 @@ public class MongoGridFsQueryHandler implements QueryHandler {
 	private static GridFS payloadGridFS;
 	
 	public MongoGridFsQueryHandler(String databaseName) 
-			throws CustomSamplersException, NotFoundInDBException {
+			throws CustomSamplersException {
 		mongo = MongoConfigElement.getMongoDB(databaseName);
 		iovCollection = mongo.getCollection("IOV");
 		payloadGridFS = new GridFS(mongo, "PAYLOAD");
 		if (mongo == null)
-			throw new NotFoundInDBException("MongoDB instance with name: " + databaseName + " was not found in config!");
+			throw new CustomSamplersException("MongoDB instance with name: " + databaseName + " was not found in config!");
 		if (iovCollection == null)
-			throw new NotFoundInDBException("Collection IOV not found in the " + databaseName + " database!");
+			throw new CustomSamplersException("Collection IOV not found in the " + databaseName + " database!");
 	}
 
 	@Override

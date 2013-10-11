@@ -15,7 +15,6 @@ import com.basho.riak.client.convert.ConversionException;
 import com.basho.riak.client.operations.StoreObject;
 
 import utils.CustomSamplersException;
-import utils.NotFoundInDBException;
 import utils.QueryHandler;
 
 public class RiakQueryHandler implements QueryHandler {
@@ -47,10 +46,10 @@ public class RiakQueryHandler implements QueryHandler {
 	}*/
 
 	public RiakQueryHandler(String clusterName) 
-			throws CustomSamplersException, NotFoundInDBException {
+			throws CustomSamplersException {
 		riakClient = RiakConfigElement.getRiakClient(clusterName);
 		if (riakClient == null)
-			throw new NotFoundInDBException("IRiakClient instance with name: " + clusterName 
+			throw new CustomSamplersException("IRiakClient instance with name: " + clusterName 
 					+ " was not found in config!");
 	}
 

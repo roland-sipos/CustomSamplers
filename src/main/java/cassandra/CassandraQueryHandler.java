@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import utils.CustomSamplersException;
-import utils.NotFoundInDBException;
 import utils.QueryHandler;
 import me.prettyprint.cassandra.serializers.BytesArraySerializer;
 import me.prettyprint.cassandra.serializers.CompositeSerializer;
@@ -33,17 +32,17 @@ public class CassandraQueryHandler implements QueryHandler {
 	private final static String iovCFName = "IOV";
 	private final static String payloadCFName = "PAYLOAD";
 
-	public CassandraQueryHandler(String clusterName) 
-			throws CustomSamplersException, NotFoundInDBException {
+	public CassandraQueryHandler(String clusterName) throws CustomSamplersException {
 		cluster = CassandraConfigElement.getCassandraCluster(clusterName);
 		KeyspaceDefinition ksDef = cluster.describeKeyspace("testKS");
 		if (ksDef == null) {
-			throw new NotFoundInDBException("Keyspace testKS not found in the "
+			throw new CustomSamplersException("Keyspace testKS not found in the "
 					+ cluster.getName() + " cluster");
 		}
 		keyspace = HFactory.createKeyspace(ksDef.getName(), cluster);
 		if (keyspace == null) {
-			throw new NotFoundInDBException("Keyspace not found based on the definition: " + ksDef.getName());
+			throw new CustomSamplersException("Keyspace not found based on the definition: "
+					+ ksDef.getName());
 		}
 	}
 

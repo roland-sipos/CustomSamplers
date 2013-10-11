@@ -16,7 +16,6 @@ import java.util.Map;
 import customjdbc.CustomJDBCConfigElement;
 
 import utils.CustomSamplersException;
-import utils.NotFoundInDBException;
 import utils.QueryHandler;
 
 public class PostgreQueryHandler implements QueryHandler {
@@ -24,10 +23,10 @@ public class PostgreQueryHandler implements QueryHandler {
 	private static Connection connection;
 
 	public PostgreQueryHandler(String databaseName)
-			throws CustomSamplersException, NotFoundInDBException {
+			throws CustomSamplersException {
 		connection = CustomJDBCConfigElement.getJDBCConnection(databaseName);
 		if (connection == null)
-			throw new NotFoundInDBException("JDBCConnection instance with name: " + databaseName + " was not found in config!");
+			throw new CustomSamplersException("JDBCConnection instance with name: " + databaseName + " was not found in config!");
 	}
 
 	@Override

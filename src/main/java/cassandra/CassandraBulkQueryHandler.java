@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import utils.CustomSamplersException;
-import utils.NotFoundInDBException;
 import utils.QueryHandler;
 import me.prettyprint.cassandra.serializers.BytesArraySerializer;
 import me.prettyprint.cassandra.serializers.CompositeSerializer;
@@ -34,16 +33,17 @@ public class CassandraBulkQueryHandler implements QueryHandler {
 	private final static String payloadCFName = "PAYLOAD";
 
 	public CassandraBulkQueryHandler(String clusterName) 
-			throws CustomSamplersException, NotFoundInDBException {
+			throws CustomSamplersException {
 		cluster = CassandraConfigElement.getCassandraCluster(clusterName);
 		KeyspaceDefinition ksDef = cluster.describeKeyspace("testKS");
 		if (ksDef == null) {
-			throw new NotFoundInDBException("Keyspace testKS not found in the "
-					+ cluster.getName() + " cluster");
+			throw new CustomSamplersException("Keyspace testKS not found in the "
+					+ cluster.getName() + " cluster!");
 		}
 		keyspace = HFactory.createKeyspace(ksDef.getName(), cluster);
 		if (keyspace == null) {
-			throw new NotFoundInDBException("Keyspace not found based on the definition: " + ksDef.getName());
+			throw new CustomSamplersException("Keyspace not found based on the definition: "
+					+ ksDef.getName());
 		}
 	}
 
@@ -92,9 +92,9 @@ public class CassandraBulkQueryHandler implements QueryHandler {
 				result.put(Integer.valueOf(hashColumn.getName()), cBaos);
 			}
 		} catch (HectorException he) {
-			throw new CustomSamplersException("HectorException occured during write attempt:" + he.toString());
+			throw new CustomSamplersException("HectorException occured during write attempt -> ", he);
 		} catch (IOException e) {
-			throw new CustomSamplersException("IOException occured during write attempt:" + e.toString());
+			throw new CustomSamplersException("IOException occured during write attempt -> ", e);
 		}
 		return result;
 	}
@@ -119,7 +119,7 @@ public class CassandraBulkQueryHandler implements QueryHandler {
 			compMutator.execute();
 			strMutator.execute();
 		} catch (HectorException he) {
-			throw new CustomSamplersException("Hector exception occured:" + he.toString());
+			throw new CustomSamplersException("Hector exception occured -> ", he);
 		}
 	}
 

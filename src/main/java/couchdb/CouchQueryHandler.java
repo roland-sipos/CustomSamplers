@@ -9,7 +9,6 @@ import java.util.Map;
 import org.ektorp.CouchDbConnector;
 
 import utils.CustomSamplersException;
-import utils.NotFoundInDBException;
 import utils.QueryHandler;
 
 public class CouchQueryHandler implements QueryHandler {
@@ -17,10 +16,10 @@ public class CouchQueryHandler implements QueryHandler {
 	private static CouchDbConnector couchDB;
 
 	public CouchQueryHandler(String databaseName) 
-			throws CustomSamplersException, NotFoundInDBException {
+			throws CustomSamplersException {
 		couchDB = CouchConfigElement.getCouchDB(databaseName);
 		if (couchDB == null)
-			throw new NotFoundInDBException("CouchDB Database instance with name: " 
+			throw new CustomSamplersException("CouchDB Database instance with name: " 
 					+ databaseName + " was not found in config!");
 	}
 
