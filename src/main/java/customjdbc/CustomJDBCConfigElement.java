@@ -35,12 +35,28 @@ implements ConfigElement, TestStateListener, TestBean {
 
 	@Override
 	public void testEnded() {
-		// TODO Auto-generated method stub
-
+		Object connectionObject =
+				JMeterContextService.getContext().getVariables().getObject(getDatabase());
+		if (connectionObject == null) {
+			log.error("JDBC Connection object is null!");
+		}
+		else {
+			if (connectionObject instanceof Connection) {
+				Connection conn = (Connection)connectionObject;
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					log.error("Could not close the JDBC Connection!");
+				}
+			}
+			else {
+				log.error("Casting the object to (java.sql.Connection) failed!");
+			}
+		}
+		getThreadContext().getVariables().putObject(getDatabase(), null);
 	}
 	@Override
 	public void testEnded(String arg0) {
-		// TODO Auto-generated method stub
 		testEnded();
 	}
 
