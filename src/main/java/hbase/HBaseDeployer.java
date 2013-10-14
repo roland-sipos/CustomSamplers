@@ -74,6 +74,7 @@ public class HBaseDeployer {
 
 				HTableDescriptor iovDesc = new HTableDescriptor("IOV");
 				iovDesc.addFamily(new HColumnDescriptor("HASH".getBytes()));
+				iovDesc.addFamily(new HColumnDescriptor("META".getBytes()));
 				hbaseAdmin.createTable(iovDesc);
 				System.out.println(" setupEnvironment() -> IOV HTable created...");
 
