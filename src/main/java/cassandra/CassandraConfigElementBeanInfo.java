@@ -6,8 +6,7 @@ import org.apache.jmeter.testbeans.BeanInfoSupport;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
-public class CassandraConfigElementBeanInfo 
-extends BeanInfoSupport {
+public class CassandraConfigElementBeanInfo extends BeanInfoSupport {
 
 	private static final Logger log = LoggingManager.getLoggerForClass();
 

@@ -29,7 +29,7 @@ public class CassandraSampler extends AbstractSampler implements TestBean {
 
 	public final static String CLUSTER = "CassandraSampler.cluster";
 	public final static String BINARYINFO = "CassandraSampler.binaryInfo";
-	public final static String USECHUNKS = "RiakSampler.useChunks";
+	public final static String USECHUNKS = "CassandraSampler.useChunks";
 	public final static String DOREAD = "CassandraSampler.doRead";
 	public final static String USERANDOMACCESS = "CassandraSampler.useRandomAccess";
 	public final static String CHECKREAD = "CassandraSampler.checkRead";
