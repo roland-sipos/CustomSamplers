@@ -26,7 +26,8 @@
     </repository>
   </repositories>
 
-  <dependencies>
+<dependencies>
+
 <dependency>
 <groupId>log4j</groupId>
 <artifactId>log4j</artifactId>
@@ -102,6 +103,17 @@
       <groupId>voldemort</groupId>
       <artifactId>voldemort</artifactId>
       <version>0.96</version>
+    </dependency>
+
+    <dependency> <!--  Hadoop Java API-->
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-core</artifactId>
+      <version>1.2.0</version>
+    </dependency>
+    <dependency> <!--  HBase Java API -->
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase</artifactId>
+      <version>0.94.12</version>
     </dependency>
     
     <dependency> <!--  PostgreSQL Java API -->
