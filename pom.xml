@@ -115,7 +115,12 @@
       <artifactId>hbase</artifactId>
       <version>0.94.12</version>
     </dependency>
-    
+
+    <dependency> <!-- Thrift -->
+      <groupId>org.apache.thrift</groupId>
+      <artifactId>libthrift</artifactId>
+      <version>0.9.1</version>
+    </dependency>
     <dependency> <!--  Hypertable Java API -->
       <groupId>org.hypertable</groupId>
       <artifactId>hypertable</artifactId>
