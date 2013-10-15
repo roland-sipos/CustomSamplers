@@ -40,6 +40,7 @@
           <stringProp name="zookeeperClientPort">2181</stringProp>
           <stringProp name="zookeeperQuorum">hb-master-test.cern.ch</stringProp>
           <stringProp name="tableList">IOV, PAYLOAD</stringProp>
+          <stringProp name="maxKvSize">0</stringProp>
         </hbase.HBaseConfigElement>
         <hashTree/>
         <hbase.HBaseSampler guiclass="TestBeanGUI" testclass="hbase.HBaseSampler" testname="Custom - HBase Sampler" enabled="true">
@@ -49,7 +50,7 @@
           <stringProp name="cluster">TestHBase</stringProp>
           <stringProp name="doRead">False</stringProp>
           <stringProp name="doWrite">True</stringProp>
-          <stringProp name="useChunks">False</stringProp>
+          <stringProp name="useChunks">true</stringProp>
           <stringProp name="useRandomAccess">False</stringProp>
         </hbase.HBaseSampler>
         <hashTree/>

@@ -40,17 +40,18 @@
           <stringProp name="zookeeperClientPort">2181</stringProp>
           <stringProp name="zookeeperQuorum">hb-master-test.cern.ch</stringProp>
           <stringProp name="tableList">IOV, PAYLOAD</stringProp>
+          <stringProp name="maxKvSize">0</stringProp>
         </hbase.HBaseConfigElement>
         <hashTree/>
         <hbase.HBaseSampler guiclass="TestBeanGUI" testclass="hbase.HBaseSampler" testname="Custom - HBase Sampler" enabled="true">
           <stringProp name="assignedWrite">False</stringProp>
           <stringProp name="binaryInfo">binInfo</stringProp>
-          <stringProp name="checkRead">False</stringProp>
+          <stringProp name="checkRead">True</stringProp>
           <stringProp name="cluster">TestHBase</stringProp>
-          <stringProp name="doRead">False</stringProp>
-          <stringProp name="doWrite">True</stringProp>
-          <stringProp name="useChunks">False</stringProp>
-          <stringProp name="useRandomAccess">False</stringProp>
+          <stringProp name="doRead">True</stringProp>
+          <stringProp name="doWrite">False</stringProp>
+          <stringProp name="useChunks">True</stringProp>
+          <stringProp name="useRandomAccess">True</stringProp>
         </hbase.HBaseSampler>
         <hashTree/>
         <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
