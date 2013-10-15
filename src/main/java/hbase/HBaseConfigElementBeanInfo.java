@@ -13,15 +13,20 @@ public class HBaseConfigElementBeanInfo extends BeanInfoSupport {
 	public HBaseConfigElementBeanInfo() {
 		super(HBaseConfigElement.class);
 
-		createPropertyGroup("hbase", new String[] { "clusterId"});
+		createPropertyGroup("hbase", new String[] { "clusterId", "tableList" });
 
 		createPropertyGroup("hbaseConfig", new String[] {
 				"masterHost", "masterPort",
-				"zookeeperQuorum", "zookeeperClientPort" });
+				"zookeeperQuorum", "zookeeperClientPort",
+				"maxKvSize" });
 
 		PropertyDescriptor p = property("clusterId");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "TestHBase");
+
+		p = property("tableList");
+		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
+		p.setValue(DEFAULT, "IOV, PAYLOAD");
 
 		p = property("masterHost");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
@@ -36,6 +41,10 @@ public class HBaseConfigElementBeanInfo extends BeanInfoSupport {
 		p = property("zookeeperClientPort");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "2181");
+
+		p = property("maxKvSize");
+		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
+		p.setValue(DEFAULT, "0");
 
 		if(log.isDebugEnabled()) {
 			for (PropertyDescriptor pd : getPropertyDescriptors()) {

@@ -62,7 +62,6 @@ public class HBaseSampler extends AbstractSampler implements TestBean {
 			CustomSamplerUtils.writeWith(queryHandler, binaryInfo, res, options);
 		}
 
-		//queryHandler.tearDown();
 		return res;
 	}
 

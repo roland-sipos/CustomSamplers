@@ -2,13 +2,13 @@ package hbase;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
@@ -20,25 +20,14 @@ import utils.QueryHandler;
 
 public class HBaseQueryHandler implements QueryHandler {
 
-	private static Configuration hbaseConfig;
+	//private static Configuration hbaseConfig;
 	private static HTable iovTable;
 	private static HTable payloadTable;
 
 	public HBaseQueryHandler(String cluster) throws CustomSamplersException {
-		hbaseConfig = HBaseConfigElement.getHBaseConfiguration(cluster);
-		try {
-			iovTable = new HTable(hbaseConfig, "IOV");
-		} catch (IOException e) {
-			throw new CustomSamplersException("IOException occured while fetching the IOV HTable: "
-					+ " Details: " + e.toString());
-		}
-		try {
-			payloadTable = new HTable(hbaseConfig, "PAYLOAD");
-		} catch (IOException e) {
-			throw new CustomSamplersException("IOException occured while fetching the PAYLOAD HTable: "
-					+ " Details: " + e.toString());
-		}
-
+		//hbaseConfig = HBaseConfigElement.getHBaseConfiguration(cluster);
+		iovTable = HBaseConfigElement.getHTable(cluster, "IOV");
+		payloadTable = HBaseConfigElement.getHTable(cluster, "PAYLOAD");
 	}
 
 	public void tearDown() throws CustomSamplersException {
@@ -125,6 +114,10 @@ public class HBaseQueryHandler implements QueryHandler {
 
 	}
 
+	private Integer fromByteArray(byte[] bytes) {
+		return ByteBuffer.wrap(bytes).getInt();
+	}
+
 	@Override
 	public Map<Integer, ByteArrayOutputStream> getChunks(String tagName,
 			long since) throws CustomSamplersException {
@@ -134,20 +127,23 @@ public class HBaseQueryHandler implements QueryHandler {
 		Get iovGet = new Get(compositeIOVKey.getBytes());
 		iovGet.addFamily("HASH".getBytes());
 
-		byte[] plHash = null;
 		try {
-			Result rr = iovTable.get(iovGet);
-			NavigableMap<byte[], NavigableMap<byte[], byte[]> > rMap = rr.getNoVersionMap();
+			Result iovR = iovTable.get(iovGet);
+			byte[] plHashBytes = iovR.getValue("META".getBytes(), "payload_hash".getBytes());
 
-			NavigableMap<byte[], byte[]> columnMap = rr.getFamilyMap("HASH".getBytes());
-
+			Get plGet = new Get(plHashBytes);
+			plGet.addFamily("DATA".getBytes());
+			plGet.addFamily("META".getBytes());
+			Result plR = payloadTable.get(plGet);
+			NavigableMap<byte[], byte[]> columnMap = plR.getFamilyMap("DATA".getBytes());
 			for(Entry<byte[], byte[]> columnEntry : columnMap.entrySet())
 			{
-				columnEntry.getKey();
-				columnEntry.getValue();
+				ByteArrayOutputStream cBaos = new ByteArrayOutputStream();
+				cBaos.write(columnEntry.getValue());
+
+				result.put(fromByteArray(columnEntry.getKey()), cBaos);
 			}
 
-			plHash = rr.getValue("HASH".getBytes(), "payload_hash".getBytes());
 		} catch (IOException e) {
 			throw new CustomSamplersException("IOException occured on Get request in IOV HTable: "
 					+ " Get:" + iovGet.toString()
@@ -161,24 +157,24 @@ public class HBaseQueryHandler implements QueryHandler {
 	public void putChunks(HashMap<String, String> metaInfo,
 			List<ByteArrayOutputStream> chunks) throws CustomSamplersException {
 
-		String hash = metaInfo.get("payload_hash");
-		Put payloadPut = new Put(Bytes.toBytes(hash));
+		String plHash = metaInfo.get("payload_hash");
+		String compositeIOVKey = metaInfo.get("tag_name").concat("_").concat(metaInfo.get("since"));
+		Put iovPut = new Put(compositeIOVKey.getBytes());
+		iovPut.add("HASH".getBytes(), "payload_hash".getBytes(), plHash.getBytes());
+
+		Put payloadPut = new Put(Bytes.toBytes(plHash));
 		payloadPut.add("META".getBytes(),
 				"version".getBytes(), metaInfo.get("version").getBytes());
 		payloadPut.add("META".getBytes(),
 				"creation_time".getBytes(), Bytes.toBytes(System.currentTimeMillis()));
 		payloadPut.add("META".getBytes(),
 				"cmssw_release".getBytes(), metaInfo.get("cmssw_release").getBytes());
-
-		String compositeIOVKey = metaInfo.get("tag_name").concat("_").concat(metaInfo.get("since"));
-		Put iovPut = new Put(compositeIOVKey.getBytes());
-		iovPut.add("META".getBytes(), "payload_hash".getBytes(), hash.getBytes());
-
 		for (int i = 0; i < chunks.size(); ++i) {
 			byte[] chunkHashBytes = metaInfo.get(String.valueOf(i+1)).getBytes();
-			iovPut.add("HASH".getBytes(), Bytes.toBytes(i+1), chunkHashBytes);
-			payloadPut.add("DATA".getBytes(), chunkHashBytes, chunks.get(i).toByteArray());
+			payloadPut.add("DATA".getBytes(), Bytes.toBytes(i+1), chunks.get(i).toByteArray());
+			payloadPut.add("META".getBytes(), Bytes.toBytes(i+1), chunkHashBytes);
 		}
+
 		try {
 			iovTable.put(iovPut);
 		} catch (IOException e) {
