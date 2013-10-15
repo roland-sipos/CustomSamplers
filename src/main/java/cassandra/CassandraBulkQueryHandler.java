@@ -50,14 +50,16 @@ public class CassandraBulkQueryHandler implements QueryHandler {
 	@Override
 	public ByteArrayOutputStream getData(String tagName, long since)
 			throws CustomSamplersException {
-		// NOT SUPPORTED: The framework will never reach this point.
-		return null;
+		throw new CustomSamplersException("getData() method is not supported in the BulkQueryHandler!"
+				+ " You should never see this exception...");
 	}
 
 	@Override
 	public void putData(HashMap<String, String> metaInfo, ByteArrayOutputStream payload,
 			ByteArrayOutputStream streamerInfo) throws CustomSamplersException {
 		// NOT SUPPORTED: The framework will never reach this point.
+		throw new CustomSamplersException("putData() method is not supported in the BulkQueryHandler!"
+				+ " You should never see this exception...");
 	}
 
 	@Override

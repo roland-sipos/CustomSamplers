@@ -13,11 +13,7 @@ public class CassandraConfigElementBeanInfo extends BeanInfoSupport {
 	public CassandraConfigElementBeanInfo() {
 		super(CassandraConfigElement.class);
 
-		createPropertyGroup("cassandra", new String[] { 
-				"host",
-				"port",
-		"cluster"});
-
+		createPropertyGroup("cassandra", new String[] { "host", "port", "cluster" });
 		createPropertyGroup("hostconfig", new String[] {
 				"thriftSocketTimeout",
 				"retryDownedHostDelaySec",
@@ -26,7 +22,7 @@ public class CassandraConfigElementBeanInfo extends BeanInfoSupport {
 				"retryDownedHosts",
 				"loadBalancingPolicy",
 				"setAutoDiscoverHosts",
-		"setHostTimeoutCounter"});
+				"setHostTimeoutCounter"});
 
 		PropertyDescriptor p = property("host");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
