@@ -116,6 +116,12 @@
       <version>0.94.12</version>
     </dependency>
     
+    <dependency> <!--  Hypertable Java API -->
+      <groupId>org.hypertable</groupId>
+      <artifactId>hypertable</artifactId>
+      <version>0.9.7.12</version>
+    </dependency>
+    
     <dependency> <!--  PostgreSQL Java API -->
       <groupId>postgresql</groupId>
       <artifactId>postgresql</artifactId>
