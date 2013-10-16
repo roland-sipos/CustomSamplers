@@ -61,8 +61,7 @@ implements ConfigElement, TestStateListener, TestBean {
 		HashMap<String, HTable> hTableMap = null;
 		if (hTables == null) {
 			throw new CustomSamplersException("HBase HTables object is null!");
-		}
-		else {
+		} else {
 			if (hTables instanceof HashMap<?, ?>) {
 				hTableMap = (HashMap<String, HTable>)hTables;
 			}
