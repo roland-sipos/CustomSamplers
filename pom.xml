@@ -116,17 +116,17 @@
       <version>0.94.12</version>
     </dependency>
 
-    <dependency> <!-- Thrift -->
-      <groupId>org.apache.thrift</groupId>
-      <artifactId>libthrift</artifactId>
-      <version>0.9.1</version>
+    <dependency>
+        <groupId>org.apache.thrift</groupId>
+        <artifactId>libthrift</artifactId>
+        <version>1.0.0</version>
     </dependency>
-    <dependency> <!--  Hypertable Java API -->
-      <groupId>org.hypertable</groupId>
+    <dependency>
+        <groupId>org.hypertable</groupId>
       <artifactId>hypertable</artifactId>
       <version>0.9.7.12</version>
     </dependency>
-    
+
     <dependency> <!--  PostgreSQL Java API -->
       <groupId>postgresql</groupId>
       <artifactId>postgresql</artifactId>
@@ -163,6 +163,7 @@
               <directory>src/main/java</directory>
               <includes>
                   <include>**/*.properties</include>
+                  <include>**/*.xml</include>
               </includes>
           </resource>
       </resources>

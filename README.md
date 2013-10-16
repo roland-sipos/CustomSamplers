@@ -15,8 +15,9 @@ NoSQL:
  + CouchDB
  + Voldemort
  - Accumulo (Pending)
- - HBase (Pending)
- 
+ + HBase
+ + Hypertable
+
 NewSQL:
 -------
  + MariaDB
@@ -35,12 +36,15 @@ Known issues:
 1. In order to enable the Oracle JDBC driver in Maven's pom.xml, please take a look on the following link:
 http://stackoverflow.com/questions/1074869/find-oracle-jdbc-driver-in-maven-repository
 
-2. Like for 1., but a bit different: The Hypertable connectivity driver will be present in the 
-Hypertable directory, after the installation.
-With the basic setup it's located here: /opt/hypertable/*version*/lib/java/hyertable-*version*.jar
-To add it to you local Maven repository do:
-mvn install:install-file -Dfile=hypertable-0.9.7.12.jar -DgroupId=org.hypertable -DartifactId=hypertable -Dversion=0.9.7.12 -Dpaaging=jar
+2. Like for 1., but a little bit different: The Hypertable connectivity driver will be present in the 
+Hypertable directory, after the installation. The Thrift API is a dependency, so you need that too.
+With a basic installation these are located here:
 
+/opt/hypertable/*version*/lib/java/hyertable-*version*.jar  # and thrift-*version*.jar
+
+You need to add these JARs to your project's Java build path in order 
+to make the HypertableDeployer executable from your IDE.
+For the Maven build, you also need to manually add these artifacts to you local Maven repository. (See: 1.)
 
 TODO:
 -----
