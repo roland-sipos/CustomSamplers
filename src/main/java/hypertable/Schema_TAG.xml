@@ -1,0 +1,9 @@
+<Schema>
+  <AccessGroup name="default">
+    <ColumnFamily>
+      <Name>META</Name>
+      <Counter>false</Counter>
+      <deleted>false</deleted>
+    </ColumnFamily>
+  </AccessGroup>
+</Schema>
