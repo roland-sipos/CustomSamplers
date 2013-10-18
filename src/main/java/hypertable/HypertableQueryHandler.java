@@ -3,14 +3,12 @@ package hypertable;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.thrift.TException;
-import org.hypertable.thrift.SerializedCellsReader;
 import org.hypertable.thrift.ThriftClient;
 import org.hypertable.thriftgen.Cell;
 import org.hypertable.thriftgen.ClientException;
@@ -51,13 +49,13 @@ public class HypertableQueryHandler implements QueryHandler {
 		try {
 			ByteBuffer iovCell = hyperTClient.get_cell(hyperTNS, "IOV", iovRowKey, "HASH");
 			//String plHash = new String(iovCell.array(), Charset.forName("UTF-8"));
-			
+
 			byte[] good = Arrays.copyOfRange(iovCell.array(), iovCell.array().length-41, iovCell.array().length);
 			String plHash = new String(good, "UTF-8");
 			System.out.println("Found hash: ".concat(plHash));
-			
+
 			ByteBuffer plCell = hyperTClient.get_cell(hyperTNS, "PAYLOAD", plHash, "DATA");
-			
+
 			System.out.println("Lenght of the array: " + plCell.array().length);
 			result.write(plCell.array());
 

@@ -24,8 +24,8 @@ implements ConfigElement, TestStateListener, TestBean {
 
 	public final static String CLUSTERID = "HypertableConfigElement.clusterid";
 	public final static String NAMESPACE = "HypertableConfigElement.namespace";
-	public final static String HOST = "HypertableConfigElement.masterHost";
-	public final static String PORT = "HypertableConfigElement.masterPort";
+	public final static String HOST = "HypertableConfigElement.host";
+	public final static String PORT = "HypertableConfigElement.port";
 
 	public static ThriftClient getHypertableClient(String clusterId)
 			throws CustomSamplersException {

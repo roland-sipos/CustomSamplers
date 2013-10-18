@@ -44,6 +44,8 @@ public class HypertableSampler extends AbstractSampler implements TestBean {
 			binaryInfo = BinaryConfigElement.getBinaryFileInfo(getBinaryInfo());
 			if (getUseChunks().equals("bulk")) {
 				queryHandler = new HypertableBulkQueryHandler(getCluster());
+			} else if (getUseChunks().equals("bigtable")){
+				queryHandler = new HypertableBigtableQueryHandler(getCluster());
 			} else {
 				queryHandler = new HypertableQueryHandler(getCluster());
 			}
