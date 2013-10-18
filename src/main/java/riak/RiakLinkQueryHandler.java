@@ -210,4 +210,5 @@ public class RiakLinkQueryHandler implements QueryHandler {
 		}
 	}
 
+
 }
