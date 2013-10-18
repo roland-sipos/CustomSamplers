@@ -4,7 +4,7 @@ CustomSamplers
 The CustomSamplers project is a fairly big extension to the JMeter tool that 
 contains custom configuration and sampler elements for different relational and
 non-relation databases, in order to measure performance characteristics of binary
-data handling for given workloads.
+data handling for given workloads in the CMS Conditions environment.
 
 Currently the following databases are supported by configuration and sampler elements:
 NoSQL:
