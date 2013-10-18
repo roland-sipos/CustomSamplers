@@ -14,6 +14,10 @@ public class CustomSamplersException extends Exception {
 	public CustomSamplersException(String exStr) {
 		System.err.println(exStr);
 	}
-	
+
+	public CustomSamplersException(Exception e) {
+		super(e);
+	}
+
 }
 
