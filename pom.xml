@@ -116,16 +116,23 @@
       <version>0.94.12</version>
     </dependency>
 
-    <dependency>
+    <dependency> <!-- LibThrift -->
         <groupId>org.apache.thrift</groupId>
         <artifactId>libthrift</artifactId>
         <version>1.0.0</version>
     </dependency>
-    <dependency>
+    <dependency> <!-- Hypertable Java API -->
         <groupId>org.hypertable</groupId>
       <artifactId>hypertable</artifactId>
       <version>0.9.7.12</version>
     </dependency>
+
+    <dependency> <!-- Accumulo -->
+      <groupId>org.apache.accumulo</groupId>
+      <artifactId>accumulo-core</artifactId>
+      <version>1.4.4</version>
+    </dependency>
+            
 
     <dependency> <!--  PostgreSQL Java API -->
       <groupId>postgresql</groupId>

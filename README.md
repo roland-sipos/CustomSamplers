@@ -14,7 +14,7 @@ NoSQL:
  + MongoDB
  + CouchDB
  + Voldemort
- - Accumulo (Pending)
+ + Accumulo
  + HBase
  + Hypertable
 
