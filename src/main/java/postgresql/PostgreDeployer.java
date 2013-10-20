@@ -6,7 +6,10 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
+import utils.TagList;
 import utils.TestEnvironmentDeployer;
 
 public class PostgreDeployer {
@@ -17,10 +20,12 @@ public class PostgreDeployer {
 	private static class PostgreTestEnvironmentDeployer extends TestEnvironmentDeployer {
 
 		private Connection connection = null;
+		private List<String> tagList;
 
 		public PostgreTestEnvironmentDeployer(String host, String port,
-				String databaseName, String username, String password) {
+				String databaseName, String username, String password, List<String> tags) {
 			super(host, port, databaseName, username, password);
+			tagList = tags;
 		}
 
 		@Override
@@ -149,22 +154,24 @@ public class PostgreDeployer {
 
 				create.close();
 
-				PreparedStatement insertTT = connection.prepareStatement("INSERT INTO TAG "
-						+ " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-				insertTT.setString(1, "TEST_TAG");
-				insertTT.setInt(2, 1);
-				insertTT.setDate(3, new Date(System.currentTimeMillis()));
-				insertTT.setString(4, "This is the first and only tag for testing.");
-				insertTT.setInt(5, 1);
-				insertTT.setString(6, "any_obj_type");
-				insertTT.setInt(7, 111);
-				insertTT.setInt(8, 222);
-				insertTT.setInt(9, 333);
-				insertTT.setInt(10, 444);
-				insertTT.setTimestamp(11, new Timestamp(System.currentTimeMillis()));
-				failed = insertTT.execute();
-				checkAndNotify(failed, "INSERT INTO TAG statement", prefix);
-				insertTT.close();
+				for (int i = 0; i < tagList.size(); ++i) {
+					PreparedStatement insertTT = connection.prepareStatement("INSERT INTO TAG "
+							+ " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+					insertTT.setString(1, tagList.get(i));
+					insertTT.setInt(2, 1);
+					insertTT.setDate(3, new Date(System.currentTimeMillis()));
+					insertTT.setString(4, "This is the tag for " + tagList.get(i)+ ".");
+					insertTT.setInt(5, 1);
+					insertTT.setString(6, "any_obj_type");
+					insertTT.setInt(7, 111);
+					insertTT.setInt(8, 222);
+					insertTT.setInt(9, 333);
+					insertTT.setInt(10, 444);
+					insertTT.setTimestamp(11, new Timestamp(System.currentTimeMillis()));
+					failed = insertTT.execute();
+					checkAndNotify(failed, "INSERT INTO TAG statement - " + tagList.get(i), prefix);
+					insertTT.close();
+				}
 
 				connection.commit();
 
@@ -213,9 +220,11 @@ public class PostgreDeployer {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		List<String> tagList = TagList.getTags();
+
 		PostgreTestEnvironmentDeployer deployer =
 				new PostgreTestEnvironmentDeployer("testdb-pc.cern.ch", "5432", 
-						"testdb", "postgres", "testPass");
+						"testdb", "postgres", "testPass", tagList);
 
 		//System.out.println("-------- PostgreSQL environment setup ------------");
 		//deployer.deployTestEnvironment();

@@ -6,7 +6,9 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.List;
 
+import utils.TagList;
 import utils.TestEnvironmentDeployer;
 
 public class OracleDeployer {
@@ -17,10 +19,12 @@ public class OracleDeployer {
 	private static class OracleTestEnvironmentDeployer extends TestEnvironmentDeployer {
 
 		private Connection connection = null;
+		private List<String> tagList;
 
 		public OracleTestEnvironmentDeployer(String host, String port,
-				String databaseName, String username, String password) {
+				String databaseName, String username, String password, List<String> tags) {
 			super(host, port, databaseName, username, password);
+			tagList = tags;
 		}
 
 		@Override
@@ -59,7 +63,7 @@ public class OracleDeployer {
 				System.out.println(" tearDown() -> Connection closing failed: " + e.toString());
 			}
 		}
-
+		
 		@Override
 		protected void setupEnvironment() {
 			System.out.println(" setupEnvironment() -> Setting up the environment...");
@@ -146,22 +150,24 @@ public class OracleDeployer {
 				checkAndNotify(failed, alterIovPayloadFK, prefix);
 				create.close();
 
-				PreparedStatement insertTT = connection.prepareStatement("INSERT INTO TAG "
-						+ " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-				insertTT.setString(1, "TEST_TAG");
-				insertTT.setInt(2, 1);
-				insertTT.setDate(3, new Date(System.currentTimeMillis()));
-				insertTT.setString(4, "This is the first and only tag for testing.");
-				insertTT.setInt(5, 1);
-				insertTT.setString(6, "RANDOM");
-				insertTT.setInt(7, 111);
-				insertTT.setInt(8, 222);
-				insertTT.setInt(9, 333);
-				insertTT.setInt(10, 444);
-				insertTT.setTimestamp(11, new Timestamp(System.currentTimeMillis()));
-				failed = insertTT.execute();
-				checkAndNotify(failed, "INSERT INTO TAG statement", prefix);
-				insertTT.close();
+				for (int i = 0; i < tagList.size(); ++i) {
+					PreparedStatement insertTT = connection.prepareStatement("INSERT INTO TAG "
+							+ " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+					insertTT.setString(1, tagList.get(i));
+					insertTT.setInt(2, 1);
+					insertTT.setDate(3, new Date(System.currentTimeMillis()));
+					insertTT.setString(4, "This is the tag for " + tagList.get(i) + ".");
+					insertTT.setInt(5, 1);
+					insertTT.setString(6, "RANDOM");
+					insertTT.setInt(7, 111);
+					insertTT.setInt(8, 222);
+					insertTT.setInt(9, 333);
+					insertTT.setInt(10, 444);
+					insertTT.setTimestamp(11, new Timestamp(System.currentTimeMillis()));
+					failed = insertTT.execute();
+					checkAndNotify(failed, "INSERT INTO TAG statement - " + tagList.get(i), prefix);
+					insertTT.close();
+				}
 
 			} catch (SQLException e) {
 				System.out.println(" setupEnvironment() -> SQLException occured. Details: " + e.toString());
@@ -206,9 +212,10 @@ public class OracleDeployer {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		List<String> tagList = TagList.getTags();
 		OracleTestEnvironmentDeployer deployer =
 				new OracleTestEnvironmentDeployer("testdb-ora.cern.ch", "1521",
-						"test", "testUser", "testPass");
+						"test", "testUser", "testPass", tagList);
 
 		//System.out.println("-------- Oracle environment setup ------------");
 		//deployer.deployTestEnvironment();		

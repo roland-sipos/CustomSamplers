@@ -6,7 +6,9 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.List;
 
+import utils.TagList;
 import utils.TestEnvironmentDeployer;
 
 public class MysqlDeployer {
@@ -19,13 +21,14 @@ public class MysqlDeployer {
 		private Connection connection = null;
 		private String fork = null;
 		private String whichEngine = null;
+		private List<String> tagList;
 
 		public MysqlTestEnvironmentDeployer(String host, String port, String databaseName,
-				String username, String password, String whichEngine, String fork) {
+				String username, String password, String whichEngine, String fork, List<String> tags) {
 			super(host, port, databaseName, username, password);
 			this.whichEngine = whichEngine;
 			this.fork = fork;
-			
+			this.tagList = tags;
 		}
 
 		@Override
@@ -160,22 +163,24 @@ public class MysqlDeployer {
 				checkAndNotify(failed, createPayloadIdxQuery, prefix);
 				create.close();
 
-				PreparedStatement insertTT = connection.prepareStatement("INSERT INTO `TAG` "
-						+ " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-				insertTT.setString(1, "TEST_TAG");
-				insertTT.setInt(2, 1);
-				insertTT.setDate(3, new Date(System.currentTimeMillis()));
-				insertTT.setString(4, "This is the first and only tag for testing.");
-				insertTT.setInt(5, 1);
-				insertTT.setString(6, "RANDOM");
-				insertTT.setInt(7, 111);
-				insertTT.setInt(8, 222);
-				insertTT.setInt(9, 333);
-				insertTT.setInt(10, 444);
-				insertTT.setTimestamp(11, new Timestamp(System.currentTimeMillis()));
-				failed = insertTT.execute();
-				checkAndNotify(failed, "INSERT INTO TAG statement", prefix);
-				insertTT.close();
+				for (int i = 0; i < tagList.size(); ++i) {
+					PreparedStatement insertTT = connection.prepareStatement("INSERT INTO `TAG` "
+							+ " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+					insertTT.setString(1, tagList.get(i));
+					insertTT.setInt(2, 1);
+					insertTT.setDate(3, new Date(System.currentTimeMillis()));
+					insertTT.setString(4, "This is the tag for " + tagList.get(i) + ".");
+					insertTT.setInt(5, 1);
+					insertTT.setString(6, "RANDOM");
+					insertTT.setInt(7, 111);
+					insertTT.setInt(8, 222);
+					insertTT.setInt(9, 333);
+					insertTT.setInt(10, 444);
+					insertTT.setTimestamp(11, new Timestamp(System.currentTimeMillis()));
+					failed = insertTT.execute();
+					checkAndNotify(failed, "INSERT INTO TAG " + tagList.get(i), prefix);
+					insertTT.close();
+				}
 
 			} catch (SQLException e) {
 				System.out.println(" setupEnvironment() -> SQLException occured. Details: " + e.toString());
@@ -218,11 +223,12 @@ public class MysqlDeployer {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		List<String> tagList = TagList.getTags();
 		MysqlTestEnvironmentDeployer deployer =
 				/*new MysqlTestEnvironmentDeployer("testdb-pc.cern.ch", "3306", 
 						"testdb", "testUser", "testPass", "InnoDB", "Mysql");*/
 				new MysqlTestEnvironmentDeployer("testdb-pc2.cern.ch", "3306", 
-						"test", "testUser", "testPass", "", "MariaDB");
+						"test", "testUser", "testPass", "", "MariaDB", tagList);
 
 		//System.out.println("-------- MySQL environment setup ------------");
 		//deployer.deployTestEnvironment();

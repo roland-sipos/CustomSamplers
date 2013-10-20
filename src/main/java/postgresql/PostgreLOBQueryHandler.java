@@ -348,4 +348,5 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 			throw new CustomSamplersException("SQLException occured during write attempt: " + se.toString());
 		}
 	}
+
 }
