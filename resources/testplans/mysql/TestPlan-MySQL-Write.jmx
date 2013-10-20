@@ -53,7 +53,7 @@
           <stringProp name="doRead">False</stringProp>
           <stringProp name="doWrite">True</stringProp>
           <stringProp name="useRandomAccess">True</stringProp>
-          <stringProp name="useChunks">True</stringProp>
+          <stringProp name="useChunks">false</stringProp>
         </mysql.MysqlSampler>
         <hashTree/>
         <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer" enabled="true">

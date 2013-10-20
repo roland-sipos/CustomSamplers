@@ -50,10 +50,10 @@
           <stringProp name="binaryInfo">binInfo</stringProp>
           <stringProp name="checkRead">True</stringProp>
           <stringProp name="database">testdb</stringProp>
-          <stringProp name="doRead">False</stringProp>
-          <stringProp name="doWrite">True</stringProp>
+          <stringProp name="doRead">True</stringProp>
+          <stringProp name="doWrite">False</stringProp>
           <stringProp name="useRandomAccess">True</stringProp>
-          <stringProp name="useChunks">True</stringProp>
+          <stringProp name="useChunks">False</stringProp>
         </mysql.MysqlSampler>
         <hashTree/>
         <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer" enabled="true">
