@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jmeterTestPlan version="1.2" properties="2.4" jmeter="2.9 r1437961">
   <hashTree>
-    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="MySQL-Read" enabled="true">
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="MySQLCluster-Write" enabled="true">
       <stringProp name="TestPlan.comments"></stringProp>
       <boolProp name="TestPlan.functional_mode">false</boolProp>
       <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
@@ -15,10 +15,10 @@
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
           <boolProp name="LoopController.continue_forever">false</boolProp>
-          <stringProp name="LoopController.loops">300</stringProp>
+          <stringProp name="LoopController.loops">1</stringProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">1</stringProp>
-        <stringProp name="ThreadGroup.ramp_time">4</stringProp>
+        <stringProp name="ThreadGroup.num_threads">150</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1200</stringProp>
         <longProp name="ThreadGroup.start_time">1379427146000</longProp>
         <longProp name="ThreadGroup.end_time">1379427146000</longProp>
         <boolProp name="ThreadGroup.scheduler">false</boolProp>
@@ -29,7 +29,7 @@
         <customjdbc.CustomJDBCConfigElement guiclass="TestBeanGUI" testclass="customjdbc.CustomJDBCConfigElement" testname="Custom - JDBC Connection Configuration" enabled="true">
           <stringProp name="classname">com.mysql.jdbc.Driver</stringProp>
           <stringProp name="database">testdb</stringProp>
-          <stringProp name="host">testdb-pc.cern.ch</stringProp>
+          <stringProp name="host">mysqlclustermng.cern.ch</stringProp>
           <stringProp name="jdbcname">jdbc:mysql</stringProp>
           <stringProp name="password">testPass</stringProp>
           <stringProp name="port">3306</stringProp>
@@ -48,10 +48,10 @@
         <mysql.MysqlSampler guiclass="TestBeanGUI" testclass="mysql.MysqlSampler" testname="Custom - MySQL Sampler" enabled="true">
           <stringProp name="assignedWrite">False</stringProp>
           <stringProp name="binaryInfo">binInfo</stringProp>
-          <stringProp name="checkRead">False</stringProp>
+          <stringProp name="checkRead">True</stringProp>
           <stringProp name="database">testdb</stringProp>
-          <stringProp name="doRead">True</stringProp>
-          <stringProp name="doWrite">False</stringProp>
+          <stringProp name="doRead">False</stringProp>
+          <stringProp name="doWrite">True</stringProp>
           <stringProp name="useRandomAccess">True</stringProp>
           <stringProp name="useChunks">False</stringProp>
         </mysql.MysqlSampler>
@@ -85,7 +85,7 @@
               <bytes>true</bytes>
             </value>
           </objProp>
-          <stringProp name="filename">/testdata/MySQL-Read-Results-1-4-300.csv</stringProp>
+          <stringProp name="filename">/testdata/MySQLCluster-Write-Results-150-1200-1.csv</stringProp>
         </ResultCollector>
         <hashTree/>
       </hashTree>

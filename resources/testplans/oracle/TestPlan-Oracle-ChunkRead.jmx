@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jmeterTestPlan version="1.2" properties="2.4" jmeter="2.9 r1437961">
   <hashTree>
-    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Test Plan" enabled="true">
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Oracle-ChunkRead" enabled="true">
       <stringProp name="TestPlan.comments"></stringProp>
       <boolProp name="TestPlan.functional_mode">false</boolProp>
       <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
@@ -15,7 +15,7 @@
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
           <boolProp name="LoopController.continue_forever">false</boolProp>
-          <stringProp name="LoopController.loops">100</stringProp>
+          <stringProp name="LoopController.loops">300</stringProp>
         </elementProp>
         <stringProp name="ThreadGroup.num_threads">1</stringProp>
         <stringProp name="ThreadGroup.ramp_time">4</stringProp>
@@ -48,7 +48,7 @@
         <oracle.OracleSampler guiclass="TestBeanGUI" testclass="oracle.OracleSampler" testname="Custom - Oracle Sampler" enabled="true">
           <stringProp name="assignedWrite">False</stringProp>
           <stringProp name="binaryInfo">binInfo</stringProp>
-          <stringProp name="checkRead">True</stringProp>
+          <stringProp name="checkRead">False</stringProp>
           <stringProp name="database">testdb</stringProp>
           <stringProp name="doRead">True</stringProp>
           <stringProp name="doWrite">False</stringProp>
@@ -85,7 +85,7 @@
               <bytes>true</bytes>
             </value>
           </objProp>
-          <stringProp name="filename">/testdata/Oracle-ChunkRead-Results.jtl</stringProp>
+          <stringProp name="filename">/testdata/Oracle-ChunkRead-Results-1-4-300.csv</stringProp>
         </ResultCollector>
         <hashTree/>
       </hashTree>

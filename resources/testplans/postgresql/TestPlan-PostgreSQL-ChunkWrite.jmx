@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jmeterTestPlan version="1.2" properties="2.4" jmeter="2.9-SNAPSHOT.20130430">
+<jmeterTestPlan version="1.2" properties="2.4" jmeter="2.9 r1437961">
   <hashTree>
-    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Test Plan" enabled="true">
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="PostgreSQL-ChunkWrite" enabled="true">
       <stringProp name="TestPlan.comments"></stringProp>
       <boolProp name="TestPlan.functional_mode">false</boolProp>
       <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
@@ -17,8 +17,8 @@
           <boolProp name="LoopController.continue_forever">false</boolProp>
           <stringProp name="LoopController.loops">1</stringProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">10</stringProp>
-        <stringProp name="ThreadGroup.ramp_time">10</stringProp>
+        <stringProp name="ThreadGroup.num_threads">150</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1200</stringProp>
         <longProp name="ThreadGroup.start_time">1379427146000</longProp>
         <longProp name="ThreadGroup.end_time">1379427146000</longProp>
         <boolProp name="ThreadGroup.scheduler">false</boolProp>
@@ -42,6 +42,7 @@
           <stringProp name="binaryInfo">binInfo</stringProp>
           <stringProp name="inputLocation">/home/cb/CMS/Projects/PaGeS/fb6fd61e48a708d56383/out</stringProp>
           <stringProp name="assignmentFile"></stringProp>
+          <stringProp name="encoding">NO</stringProp>
         </binaryconfig.BinaryConfigElement>
         <hashTree/>
         <postgresql.PostgreSampler guiclass="TestBeanGUI" testclass="postgresql.PostgreSampler" testname="Custom - PostgeSQL Sampler" enabled="true">
@@ -56,7 +57,7 @@
           <stringProp name="useRandomAccess">True</stringProp>
         </postgresql.PostgreSampler>
         <hashTree/>
-        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+        <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer" enabled="true">
           <boolProp name="ResultCollector.error_logging">false</boolProp>
           <objProp>
             <name>saveConfig</name>
@@ -85,7 +86,7 @@
               <bytes>true</bytes>
             </value>
           </objProp>
-          <stringProp name="filename"></stringProp>
+          <stringProp name="filename">/testdata/PostgreSQL-ChunkWrite-Results-150-1200-1.csv</stringProp>
         </ResultCollector>
         <hashTree/>
       </hashTree>
