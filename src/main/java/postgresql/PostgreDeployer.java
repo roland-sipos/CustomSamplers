@@ -220,11 +220,9 @@ public class PostgreDeployer {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		List<String> tagList = TagList.getTags();
-
 		PostgreTestEnvironmentDeployer deployer =
 				new PostgreTestEnvironmentDeployer("testdb-pc.cern.ch", "5432", 
-						"testdb", "postgres", "testPass", tagList);
+						"testdb", "postgres", "testPass", TagList.getTags());
 
 		//System.out.println("-------- PostgreSQL environment setup ------------");
 		//deployer.deployTestEnvironment();

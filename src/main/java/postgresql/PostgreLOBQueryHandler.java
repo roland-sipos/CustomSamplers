@@ -24,10 +24,16 @@ import utils.QueryHandler;
 public class PostgreLOBQueryHandler implements QueryHandler {
 
 	private static Connection connection;
+	private static LargeObjectManager lobManager;
 
 	public PostgreLOBQueryHandler(String databaseName)
 			throws CustomSamplersException {
 		connection = CustomJDBCConfigElement.getJDBCConnection(databaseName);
+		try {
+			lobManager = ((org.postgresql.PGConnection)connection).getLargeObjectAPI();
+		} catch (SQLException e) {
+			throw new CustomSamplersException("SQLException occured! Details: " + e.toString());
+		}
 		if (connection == null)
 			throw new CustomSamplersException("JDBCConnection instance with name: " + databaseName + " was not found in config!");
 	}
@@ -99,12 +105,11 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 			if (rs != null) {
 				while(rs.next()) {
 					long objectID = rs.getLong(1);
-					LargeObject object = ((org.postgresql.PGConnection)connection)
-							.getLargeObjectAPI().open(objectID, LargeObjectManager.READ);
+					LargeObject object = lobManager.open(objectID, LargeObjectManager.READ);
 					byte[] chunk = new byte[object.size()];
 					object.read(chunk, 0, object.size());
 					object.close();
-					
+
 					ByteArrayOutputStream os = new ByteArrayOutputStream();
 					os.write(chunk);
 					os.close();
@@ -131,11 +136,8 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 		try {
 			writeLOBPayload(metaInfo, new byte[0], new byte[0]);
 			writeIov(metaInfo);
-			
-			connection.setAutoCommit(false);
-			LargeObjectManager lobManager = 
-					((org.postgresql.PGConnection)connection).getLargeObjectAPI();
 
+			connection.setAutoCommit(false);
 			for (int i = 0; i < chunks.size(); ++i) {
 				long objectId = lobManager.createLO(LargeObjectManager.READWRITE);
 				LargeObject object = lobManager.open(objectId, LargeObjectManager.WRITE);
@@ -164,8 +166,6 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 			throws CustomSamplersException {
 		try {
 			connection.setAutoCommit(false);
-			LargeObjectManager lobManager = 
-					((org.postgresql.PGConnection)connection).getLargeObjectAPI();
 			long objectId = lobManager.createLO(LargeObjectManager.READWRITE);
 			LargeObject object = lobManager.open(objectId, LargeObjectManager.WRITE);
 			object.write(payload);
@@ -203,8 +203,7 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 				int counter = 0;
 				while(rs.next()) {
 					long objectID = rs.getLong(1);
-					LargeObject object = ((org.postgresql.PGConnection)connection)
-							.getLargeObjectAPI().open(objectID, LargeObjectManager.READ);
+					LargeObject object = lobManager.open(objectID, LargeObjectManager.READ);
 					result = new byte[object.size()];
 					object.read(result, 0, object.size());
 					object.close();
@@ -232,8 +231,6 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 			throws CustomSamplersException {
 		try {
 			connection.setAutoCommit(false);
-			LargeObjectManager lobManager = 
-					((org.postgresql.PGConnection)connection).getLargeObjectAPI();
 			long objectId = lobManager.createLO(LargeObjectManager.READWRITE);
 			LargeObject object = lobManager.open(objectId, LargeObjectManager.WRITE);
 			object.write(chunk);
@@ -269,8 +266,7 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 				int counter = 0;
 				while(rs.next()) {
 					long objectID = rs.getLong(1);
-					LargeObject object = ((org.postgresql.PGConnection)connection)
-							.getLargeObjectAPI().open(objectID, LargeObjectManager.READ);
+					LargeObject object = lobManager.open(objectID, LargeObjectManager.READ);
 					result = new byte[object.size()];
 					object.read(result, 0, object.size());
 					object.close();
@@ -308,8 +304,7 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 			if (rs != null) {
 				while(rs.next()) {
 					long objectID = rs.getLong(1);
-					LargeObject object = ((org.postgresql.PGConnection)connection)
-							.getLargeObjectAPI().open(objectID, LargeObjectManager.READ);
+					LargeObject object = lobManager.open(objectID, LargeObjectManager.READ);
 					byte[] chunk = new byte[object.size()];
 					object.read(chunk, 0, object.size());
 					object.close();
