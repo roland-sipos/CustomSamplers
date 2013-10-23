@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jmeterTestPlan version="1.2" properties="2.4" jmeter="2.9-SNAPSHOT.20130430">
+<jmeterTestPlan version="1.2" properties="2.4" jmeter="2.9 r1437961">
   <hashTree>
-    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Test Plan" enabled="true">
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="CouchDB-AttachmentWrite" enabled="true">
       <stringProp name="TestPlan.comments"></stringProp>
       <boolProp name="TestPlan.functional_mode">false</boolProp>
       <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
@@ -11,14 +11,14 @@
       <stringProp name="TestPlan.user_define_classpath"></stringProp>
     </TestPlan>
     <hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group" enabled="true">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Remote Thread Group" enabled="true">
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
           <boolProp name="LoopController.continue_forever">false</boolProp>
           <stringProp name="LoopController.loops">1</stringProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">10</stringProp>
-        <stringProp name="ThreadGroup.ramp_time">10</stringProp>
+        <stringProp name="ThreadGroup.num_threads">150</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1200</stringProp>
         <longProp name="ThreadGroup.start_time">1380719248000</longProp>
         <longProp name="ThreadGroup.end_time">1380719248000</longProp>
         <boolProp name="ThreadGroup.scheduler">false</boolProp>
@@ -28,7 +28,7 @@
       <hashTree>
         <couchdb.CouchConfigElement guiclass="TestBeanGUI" testclass="couchdb.CouchConfigElement" testname="Custom - CouchDB Connection Configuration" enabled="true">
           <stringProp name="database">test</stringProp>
-          <stringProp name="host">http://testdb-pc.cern.ch</stringProp>
+          <stringProp name="host">http://test-couchdb.cern.ch</stringProp>
           <stringProp name="password">testPass</stringProp>
           <stringProp name="port">5984</stringProp>
           <stringProp name="username">testUser</stringProp>
@@ -39,7 +39,8 @@
         <binaryconfig.BinaryConfigElement guiclass="TestBeanGUI" testclass="binaryconfig.BinaryConfigElement" testname="Custom - BinaryFileInfo Configuration" enabled="true">
           <stringProp name="assignmentFile"></stringProp>
           <stringProp name="binaryInfo">binInfo</stringProp>
-          <stringProp name="inputLocation">/home/cb/CMS/Projects/PaGeS/fb6fd61e48a708d56383/out</stringProp>
+          <stringProp name="inputLocation">/testdata/out</stringProp>
+          <stringProp name="encoding">NO</stringProp>
         </binaryconfig.BinaryConfigElement>
         <hashTree/>
         <couchdb.CouchSampler guiclass="TestBeanGUI" testclass="couchdb.CouchSampler" testname="Custom - CouchDB Sampler" enabled="true">
@@ -54,7 +55,7 @@
           <stringProp name="useRandomAccess">True</stringProp>
         </couchdb.CouchSampler>
         <hashTree/>
-        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+        <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer" enabled="true">
           <boolProp name="ResultCollector.error_logging">false</boolProp>
           <objProp>
             <name>saveConfig</name>
@@ -83,7 +84,7 @@
               <bytes>true</bytes>
             </value>
           </objProp>
-          <stringProp name="filename"></stringProp>
+          <stringProp name="filename">/testdata/CouchDB-AttachmentWrite-Results-150-1200-1.csv</stringProp>
         </ResultCollector>
         <hashTree/>
       </hashTree>
