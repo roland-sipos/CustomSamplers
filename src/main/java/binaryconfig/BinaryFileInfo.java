@@ -13,19 +13,14 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.codec.binary.Base64OutputStream;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 public class BinaryFileInfo {
 
@@ -40,6 +35,8 @@ public class BinaryFileInfo {
 	private static TreeMap<String, String> filePathList;
 	private static TreeMap<String, TreeMap<String, String> > chunkPathList;
 	private static TreeMap<String, TreeMap<String, Integer> > chunkIDList;
+
+	private static HashMap<Integer, HashSet<String>> assignMap;
 
 	public String getInputLocation() {
 		return location;
@@ -100,7 +97,7 @@ public class BinaryFileInfo {
 		location = loc;
 		if (assignFile != "") {
 			assignmentFile = assignFile;
-			createAssignmentTable();
+			assignMap = AssignmentXMLParser.parse(assignmentFile);
 			isAssignAvailable = true;
 		} else {
 			assignmentFile = "";
@@ -133,50 +130,6 @@ public class BinaryFileInfo {
 				// IGNORE ANYTHING ELSE, dirs already processed.
 			}
 		}
-	}
-
-	private void createAssignmentTable() {
-		
-		try {
-			File asFile = new File(assignmentFile);
-
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-			Document doc = dBuilder.parse(asFile);
-			doc.getDocumentElement().normalize();
-			System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
-
-			NodeList nList = doc.getElementsByTagName("payload");
-			System.out.println("----------------------------");
-		 
-			for (int temp = 0; temp < nList.getLength(); temp++) {
-				Node nNode = nList.item(temp);
-				System.out.println("\nCurrent Element :" + nNode.getNodeName());
-				if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-					Element eElement = (Element) nNode;
-					System.out.println("Payload name : " + eElement.getAttribute("name"));
-					System.out.println("threadIDList : " + eElement.getElementsByTagName("threadIDList").item(0).getTextContent());
-					Element subE = (Element) eElement.getElementsByTagName("threadIDRange").item(0);
-					System.out.println("threadIDRange FROM: " + subE.getAttribute("from"));
-					System.out.println("threadIDRange TO: " + subE.getAttribute("to"));
-					//System.out.println("Nick Name : " + eElement.getElementsByTagName("nickname").item(0).getTextContent());
-					//System.out.println("Salary : " + eElement.getElementsByTagName("salary").item(0).getTextContent());
-		 
-				}
-			}
-			
-			/*BufferedReader in = new BufferedReader(new FileReader(asFile));
-			String line = "";
-			HashMap<String, String> metaMapForBinary = new HashMap<String, String>();
-			while ((line = in.readLine()) != null) {
-				String cols[] = line.split(" ");
-				metaMapForBinary.put(cols[0], cols[1]);
-			}
-			in.close();*/
-		} catch (Exception e) {
-			System.out.println(e.toString());
-		}
-		
 	}
 
 	/*private String getMetaFilePath(File folder) {
@@ -294,17 +247,6 @@ public class BinaryFileInfo {
 
 	/** Read the given binary file, and return its contents as a byte array.*/ 
 	public ByteArrayOutputStream readAsBase64(String inputFileName) {
-		/*int BUFFER_SIZE = 4096;
-	byte[] buffer = new byte[BUFFER_SIZE];
-	InputStream input = new FileInputStream(args[0]);
-	OutputStream output = new Base64OutputStream(new FileOutputStream(args[1]));
-	int n = input.read(buffer, 0, BUFFER_SIZE);
-	while (n >= 0) {
-	    output.write(buffer, 0, n);
-	    n = input.read(buffer, 0, BUFFER_SIZE);
-	}
-	input.close();
-	output.close();*/
 		ByteArrayOutputStream res = null;
 		try {
 			int BUFFER_SIZE = 4096;
