@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<assignment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="assignment.xsd">
+
+	<payload name="rbinary-100.bin">
+		<threadIDList> 1 2 40 50 </threadIDList>
+		<!-- Can be more: <threadIDList> 10 20 30 40 </threadIDList> -->
+	</payload>
+
+	<payload name="rbinary-101.bin">
+		<threadIDRange from="20" to="25" />
+	</payload>
+
+
+	<threads idList="1 2 3 4" idRange="6-10">
+		<payloadList>
+			rbinary-1.bin
+			rbinary-2.bin
+			rbinary-3.bin
+		</payloadList>
+	</threads>
+
+	<threads idList="1 5">
+		<payloadList> rbinary-10.bin </payloadList>
+	</threads>
+
+	<threads idRange="50-55">
+		<payloadList> rbinary-10.bin </payloadList>
+	</threads>
+
+</assignment>
+

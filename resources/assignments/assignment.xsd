@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	elementFormDefault="qualified" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<xs:import namespace="http://www.w3.org/2001/XMLSchema-instance"
+		schemaLocation="xsi.xsd" />
+
+	<xs:element name="assignment">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element maxOccurs="unbounded" ref="payload" />
+				<xs:element maxOccurs="unbounded" ref="threads" />
+			</xs:sequence>
+			<xs:attribute ref="xsi:noNamespaceSchemaLocation" use="required" />
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="payload">
+		<xs:complexType>
+			<xs:choice>
+				<xs:element ref="threadIDList" />
+				<xs:element ref="threadIDRange" />
+			</xs:choice>
+			<xs:attribute name="name" use="required" type="xs:string" />
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="threadIDList" type="xs:string" />
+
+	<xs:element name="threadIDRange">
+		<xs:complexType>
+			<xs:attribute name="from" use="required" type="xs:integer" />
+			<xs:attribute name="to" use="required" type="xs:integer" />
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="threads">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="payloadList" />
+			</xs:sequence>
+			<xs:attribute name="idList" />
+			<xs:attribute name="idRange" type="xs:string" />
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="payloadList" type="xs:string" />
+
+</xs:schema>
