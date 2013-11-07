@@ -3,7 +3,8 @@ package binaryconfig;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -15,19 +16,19 @@ import org.w3c.dom.NodeList;
 
 public class AssignmentXMLParser {
 
-	private static void addAssignment(Integer threadId, HashSet<String> payloadSet,
-			HashMap<Integer, HashSet<String> > assignMap) {
+	private static void addAssignment(Integer threadId, SortedSet<String> payloadSet,
+			HashMap<Integer, SortedSet<String> > assignMap) {
 		if (!assignMap.containsKey(threadId)) {
 			// Create as new.
-			assignMap.put(threadId, new HashSet<String>(payloadSet));
+			assignMap.put(threadId, new TreeSet<String>(payloadSet));
 		} else {
 			// Accumulate.
 			assignMap.get(threadId).addAll(payloadSet);
 		}
 	}
 
-	public static HashMap<Integer, HashSet<String> > parse(String assignmentFilePath) {
-		HashMap<Integer, HashSet<String> > result = new HashMap<Integer, HashSet<String>>();
+	public static HashMap<Integer, SortedSet<String> > parse(String assignmentFilePath) {
+		HashMap<Integer, SortedSet<String> > result = new HashMap<Integer, SortedSet<String>>();
 		try {
 			File asFile = new File(assignmentFilePath);
 
@@ -41,7 +42,7 @@ public class AssignmentXMLParser {
 				Node nNode = nList.item(temp);
 				if (nNode.getNodeType() == Node.ELEMENT_NODE) {
 					Element eElement = (Element) nNode;
-					HashSet<String> plSet = new HashSet<String>();
+					SortedSet<String> plSet = new TreeSet<String>();
 					plSet.add(eElement.getAttribute("name"));
 					NodeList nl = eElement.getElementsByTagName("threadIDList");
 					if (nl.getLength() != 0) {
@@ -67,7 +68,7 @@ public class AssignmentXMLParser {
 			nList = doc.getElementsByTagName("threads");
 			for (int temp = 0; temp < nList.getLength(); temp++) {
 				Element nEl = (Element) nList.item(temp);
-				HashSet<String> pls = new HashSet<String>();
+				SortedSet<String> pls = new TreeSet<String>();
 				NodeList plsNL = nEl.getElementsByTagName("payloadList");
 				for (int i = 0; i < plsNL.getLength(); ++i) {
 					pls.addAll(Arrays.asList(plsNL.item(i).getTextContent().trim().split("\\s+")));

@@ -13,12 +13,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.SortedSet;
 import java.util.TreeMap;
-
+import java.util.Iterator;
 
 import org.apache.commons.codec.binary.Base64OutputStream;
 
@@ -36,7 +36,7 @@ public class BinaryFileInfo {
 	private static TreeMap<String, TreeMap<String, String> > chunkPathList;
 	private static TreeMap<String, TreeMap<String, Integer> > chunkIDList;
 
-	private static HashMap<Integer, HashSet<String>> assignMap;
+	private static HashMap<Integer, SortedSet<String>> assignMap;
 
 	public String getInputLocation() {
 		return location;
@@ -187,9 +187,14 @@ public class BinaryFileInfo {
 		return getMetaInfo().get(binaryID);
 	}
 
-	public HashMap<String, String> getAssignedMeta() {
+	public ArrayList<HashMap<String, String> > getAssignedMeta(Integer threadID) {
 		//TODO: Get an assigned meta information based on input file or thread group
-		return null;
+		ArrayList<HashMap<String, String> > result = new ArrayList<HashMap<String, String> >();
+		SortedSet<String> fileSet = assignMap.get(threadID);
+		for (final Iterator<String> it = fileSet.iterator(); it.hasNext(); ) {
+			result.add(getMetaInfo().get(it.next()));
+		}
+		return result;
 	}
 
 	public String getXthFileName(int x) {
