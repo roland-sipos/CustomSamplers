@@ -1,5 +1,5 @@
 /**
- * This package contains the PostgreSQL database specific elements.
+ * The PostgreSQL module.
  * @author Roland Sipos
  */
 package postgresql;

@@ -1,5 +1,5 @@
 /**
- * This package contains the Oracle database specific elements.
+ * The Oracle module.
  * @author Roland Sipos
  */
 package oracle;

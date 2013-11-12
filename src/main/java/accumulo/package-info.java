@@ -1,7 +1,5 @@
 /**
- * This package contains the Sampler and Configuration for the Accumulo database. 
- * 
- * @author cb
- *
+ * The Accumulo module.
+ * @author Roland Sipos
  */
 package accumulo;

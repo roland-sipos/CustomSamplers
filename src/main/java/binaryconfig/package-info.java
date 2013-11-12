@@ -1,5 +1,5 @@
 /**
- * This package contains the CustomSamplers' specific binary reader embedding ConfigElement.
+ * The BinaryConfig and Assignments ConfigElement module.
  * @author Roland Sipos
  */
 package binaryconfig;

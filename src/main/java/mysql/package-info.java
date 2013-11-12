@@ -1,5 +1,5 @@
 /**
- * This package contains the MySQL database specific elements.
+ * The MySQL module.
  * @author Roland Sipos
  */
 package mysql;
