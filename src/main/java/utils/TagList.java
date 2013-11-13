@@ -11,6 +11,7 @@ public class TagList {
 		tagList.add("jm-slave2");
 		tagList.add("jm-slave3");
 		tagList.add("jm-slave4");
+		tagList.add("ghosthawk");
 		return tagList;
 	}
 
