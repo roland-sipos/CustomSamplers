@@ -9,8 +9,8 @@ import org.apache.jmeter.testbeans.TestBean;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
-import binaryconfig.BinaryConfigElement;
-import binaryconfig.BinaryFileInfo;
+import assignment.Assignment;
+import assignment.AssignmentConfigElement;
 
 import utils.CustomSamplerUtils;
 import utils.QueryHandler;
@@ -21,14 +21,12 @@ public class CouchSampler extends AbstractSampler implements TestBean {
 	private static final Logger log = LoggingManager.getLoggerForClass();
 	
 	public final static String DATABASE = "CouchSampler.database";
-	public final static String BINARYINFO = "CouchSampler.binaryInfo";
+	public final static String ASSIGNMENTINFO = "CouchSampler.binaryInfo";
 	public final static String USECHUNKS = "CouchSampler.useChunks";
 	public final static String ATTACHMENT_MODE = "CouchSampler.attachmentMode";
 	public final static String DOREAD = "CouchSampler.doRead";
-	public final static String USERANDOMACCESS = "CouchSampler.useRandomAccess";
 	public final static String CHECKREAD = "CouchSampler.checkRead";
 	public final static String DOWRITE = "CouchSampler.doWrite";
-	public final static String ASSIGNED_WRITE = "CouchSampler.assignedWrite";
 
 	
 	public CouchSampler() {
@@ -44,11 +42,11 @@ public class CouchSampler extends AbstractSampler implements TestBean {
 		SampleResult res = CustomSamplerUtils.getInitialSampleResult(getTitle());
 		HashMap<String, Boolean> options = prepareOptions();
 
-		// Get BinaryInfo and QueryHandler instances.
-		BinaryFileInfo binaryInfo = null;
+		// Get Assignment and QueryHandler instances.
+		Assignment assignment = null;
 		QueryHandler queryHandler = null;
 		try {
-			binaryInfo = BinaryConfigElement.getBinaryFileInfo(getBinaryInfo());
+			assignment = AssignmentConfigElement.getAssignments(getAssignmentInfo());
 			// TODO: IF KRYO METHOD, KRYO QueryHandler!!!!!
 			if (Boolean.parseBoolean(getAttachmentMode())) {
 				queryHandler = new CouchAttachmentQueryHandler(getDatabase());
@@ -61,9 +59,9 @@ public class CouchSampler extends AbstractSampler implements TestBean {
 		}
 
 		if (options.get("doRead")) { // DO THE READ
-			CustomSamplerUtils.readWith(queryHandler, binaryInfo, res, options);
+			CustomSamplerUtils.readWith(queryHandler, assignment, res, options);
 		} else if (options.get("doWrite")) { // DO THE WRITE
-			CustomSamplerUtils.writeWith(queryHandler, binaryInfo, res, options);
+			CustomSamplerUtils.writeWith(queryHandler, assignment, res, options);
 		}
 
 		return res;
@@ -74,10 +72,8 @@ public class CouchSampler extends AbstractSampler implements TestBean {
 		options.put("doRead", Boolean.parseBoolean(getDoRead()));
 		options.put("doWrite", Boolean.parseBoolean(getDoWrite()));
 		options.put("useChunks", Boolean.parseBoolean(getUseChunks()));
-		options.put("isRandom", Boolean.parseBoolean(getUseRandomAccess()));
 		options.put("isCheckRead", Boolean.parseBoolean(getCheckRead()));
 		options.put("isSpecial", Boolean.parseBoolean(getAttachmentMode()));
-		options.put("isAssigned", Boolean.parseBoolean(getAssignedWrite()));
 		return options;
 	}
 
@@ -95,11 +91,11 @@ public class CouchSampler extends AbstractSampler implements TestBean {
 	public void setDatabase(String database) {
 		setProperty(DATABASE, database);
 	}
-	public String getBinaryInfo() {
-		return getPropertyAsString(BINARYINFO);
+	public String getAssignmentInfo() {
+		return getPropertyAsString(ASSIGNMENTINFO);
 	}
-	public void setBinaryInfo(String binaryInfo) {
-		setProperty(BINARYINFO, binaryInfo);
+	public void setAssignmentInfo(String assignmentInfo) {
+		setProperty(ASSIGNMENTINFO, assignmentInfo);
 	}
 	public String getUseChunks() {
 		return getPropertyAsString(USECHUNKS);
@@ -112,12 +108,6 @@ public class CouchSampler extends AbstractSampler implements TestBean {
 	}
 	public void setAttachmentMode(String attachmentMode) {
 		setProperty(ATTACHMENT_MODE, attachmentMode);
-	}
-	public String getUseRandomAccess() {
-		return getPropertyAsString(USERANDOMACCESS);
-	}
-	public void setUseRandomAccess(String useRandomAccess) {
-		setProperty(USERANDOMACCESS, useRandomAccess);
 	}
 	public String getCheckRead() {
 		return getPropertyAsString(CHECKREAD);
@@ -136,12 +126,6 @@ public class CouchSampler extends AbstractSampler implements TestBean {
 	}
 	public void setDoWrite(String doWrite) {
 		setProperty(DOWRITE, doWrite);
-	}
-	public String getAssignedWrite() {
-		return getPropertyAsString(ASSIGNED_WRITE);
-	}
-	public void setAssignedWrite(String assignedWrite) {
-		setProperty(ASSIGNED_WRITE, assignedWrite);
 	}
 
 }

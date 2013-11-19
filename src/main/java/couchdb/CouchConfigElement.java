@@ -31,7 +31,6 @@ public class CouchConfigElement
 	public final static String USERNAME = "CouchConfigElement.username";
 	public final static String PASSWORD = "CouchConfigElement.password";
 	public final static String CREATEIFNOTEXISTS = "CouchConfigElement.createIfNotExists";
-	//public final static String 
 
 	@Override
 	public void testEnded() {

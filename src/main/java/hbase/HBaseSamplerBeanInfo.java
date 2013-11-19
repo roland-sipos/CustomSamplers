@@ -14,17 +14,17 @@ public class HBaseSamplerBeanInfo extends BeanInfoSupport {
 		super(HBaseSampler.class);
 
 		createPropertyGroup("hbase", new String[] {"cluster"});
-		createPropertyGroup("sampler", new String[] {"binaryInfo", "useChunks"});
-		createPropertyGroup("reading", new String[] {"doRead", "useRandomAccess", "checkRead"});
-		createPropertyGroup("writing", new String[] {"doWrite", "assignedWrite"});
+		createPropertyGroup("sampler", new String[] {"assignmentInfo", "useChunks"});
+		createPropertyGroup("reading", new String[] {"doRead", "checkRead"});
+		createPropertyGroup("writing", new String[] {"doWrite"});
 
 		PropertyDescriptor p = property("cluster");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "TestHBase");
 
-		p = property("binaryInfo");
+		p = property("assignmentInfo");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, "binInfo");
+		p.setValue(DEFAULT, "assignInfo");
 		p = property("useChunks");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(TAGS, new String[] {"true", "false", "bulk"});
@@ -33,17 +33,11 @@ public class HBaseSamplerBeanInfo extends BeanInfoSupport {
 		p = property("doRead");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, Boolean.FALSE);
-		p = property("useRandomAccess");
-		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, Boolean.FALSE);
 		p = property("checkRead");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, Boolean.FALSE);
 
 		p = property("doWrite");
-		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, Boolean.FALSE);
-		p = property("assignedWrite");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, Boolean.FALSE);
 

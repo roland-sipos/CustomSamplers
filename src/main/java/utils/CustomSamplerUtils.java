@@ -11,6 +11,7 @@ import java.util.Map;
 
 import org.apache.jmeter.samplers.SampleResult;
 
+import assignment.Assignment;
 import binaryconfig.BinaryFileInfo;
 
 /**
@@ -48,6 +49,16 @@ public class CustomSamplerUtils {
 		return res;
 	}
 
+	/**
+	 * This function can make a SampleResult, filled with the content of an Exception.
+	 * The main use case of this, is when the prerequisites are fetched or created for the
+	 * sampler. So in the case of bad setups (due to missing ConfigElements) will always
+	 * result with a SampleResult that has 999 error code, and the result data with the
+	 * Exception as a string.
+	 * 
+	 * @param  e  the Exception, why the exception result is requested
+	 * @return  SampleResult  the SampleResult that contains the exception and error code 999
+	 * */
 	public static SampleResult getExceptionSampleResult(Exception e) {
 		SampleResult res = new SampleResult();
 		res.setSampleLabel("ExceptionOccured");
@@ -132,27 +143,66 @@ public class CustomSamplerUtils {
 		return resOs;
 	}
 
-	public static void readWith(QueryHandler queryHandler, BinaryFileInfo binaryInfo,
+	/**
+	 * The function is making a fast check of the equality between the binary content that
+	 * is read from the database, and that is read from the original file. This function is called
+	 * only if a Sampler requests the check (with the checkRead option).
+	 * 
+	 * @param  result  the content that is read from the database
+	 * @param  assignment  the assignment object that was used for the operation
+	 * @param  meta  the meta data of the binary file that was used for the operation
+	 * @return  boolean  true if the content is the same, false if the content differs
+	 * */
+	private static boolean checkMatch(ByteArrayOutputStream result,
+			Assignment assignment, HashMap<String, String> meta) {
+		BinaryFileInfo binInfo = assignment.getBinaryFileInfo();
+		String binaryFullPath = binInfo.getFilePathList().get(meta.get("id"));
+		ByteArrayOutputStream payload = binInfo.read(binaryFullPath);
+		return Arrays.equals(result.toByteArray(), payload.toByteArray());
+	}
+
+	/**
+	 * This static utility method defines the read protocol between the project's Sampler
+	 * classes and different database entities. It has different main phases as follows:
+	 * 1. Fetch information from the Assignment object, based on the current thread ID.
+	 * 2. Based on user options and the information from 1., it calls the appropriate read
+	 * option of the QueryHandler that was passed.
+	 * 3. Based on the result, it finalizes the sample.
+	 * 
+	 * @param  queryHandler  and implemented QueryHandler object that handles a given database
+	 * @param  assignment  the Assignment object, to fetch the assigned informations
+	 * @param  res  the SampleResult to be finalized based on the result
+	 * @param  options  user options from the Sampler, that called this function
+	 * */
+	public static void readWith(QueryHandler queryHandler, Assignment assignment,
 			SampleResult res, HashMap<String, Boolean> options) {
-		HashMap<String, String> meta = new HashMap<String, String>();
-		if (options.get("isRandom")) {
-			meta = binaryInfo.getRandomMeta();
-		} else {
-			//meta = binaryInfo.getAssignedMeta();
-		}
-		res.setRequestHeaders(meta.toString());
+		// !!! CHECK THIS: Thread.currentThread().getId();
+		HashMap<String, String> meta = assignment.getMeta(getThreadID(Thread.currentThread().getName()));
+		res.setRequestHeaders(meta.get("id"));
 		try {
 			ByteArrayOutputStream result = null;
 			Boolean chunkMode = options.get("useChunks");
+			String tagName = meta.get("tag_name");
+			Long since = Long.valueOf(meta.get("since"));
 			if (chunkMode) {
 				Map<Integer, ByteArrayOutputStream> data = new HashMap<Integer, ByteArrayOutputStream>();
 				res.sampleStart();
-				data = queryHandler.getChunks(meta.get("tag_name"), Long.parseLong(meta.get("since")));
+				data = queryHandler.getChunks(tagName, since);
 				res.samplePause();
 				result = mergeToByteArrayOStream(data);
+				/*for (Entry<String, HashMap<String, String>> entry : metaMap.entrySet())
+				{
+					HashMap<String, String> meta = entry.getValue();
+					SampleResult subres = getInitialSampleResult(entry.getKey());
+					subres.sampleStart();
+					Map<Integer, ByteArrayOutputStream> data = queryHandler.getChunks(
+							meta.get("tag_name"), Long.parseLong(meta.get("since")));
+					subres.sampleEnd();
+					res.addSubResult(subres);
+				}*/
 			} else {
 				res.sampleStart();
-				result = queryHandler.getData(meta.get("tag_name"), Long.parseLong(meta.get("since")));
+				result = queryHandler.getData(tagName, since);
 				res.samplePause();
 			}
 
@@ -160,7 +210,7 @@ public class CustomSamplerUtils {
 				finalizeResponse(res, false, "500", "The result is empty for " + meta.get("id") + " !");
 			} else {
 				if (options.get("isCheckRead")) {
-					if (!checkMatch(result, binaryInfo, meta)) {
+					if (!checkMatch(result, assignment, meta)) {
 						finalizeResponse(res, false, "600", "Payload content for: " + meta.get("id")
 								+ " differs from the original! (Chunks?:" + chunkMode.toString() + ")");
 					} else {
@@ -180,50 +230,31 @@ public class CustomSamplerUtils {
 		}
 	}
 
-	private static boolean checkMatch(ByteArrayOutputStream result, BinaryFileInfo binaryInfo, 
-			HashMap<String, String> meta) {
-		String binaryFullPath = binaryInfo.getFilePathList().get(meta.get("id"));
-		ByteArrayOutputStream payload = binaryInfo.read(binaryFullPath);
-		return Arrays.equals(result.toByteArray(), payload.toByteArray());
-	}
-
-	public static void writeWith(QueryHandler queryHandler, BinaryFileInfo binaryInfo,
+	/**
+	 * This static utility method defines the write protocol between the project's Sampler
+	 * classes and different database entities. It has different main phases as follows:
+	 * 1. Fetch information from the Assignment object, based on the current thread ID.
+	 * 2. Based on user options and the information from 1., it calls the appropriate write
+	 * option of the QueryHandler that was passed.
+	 * 3. Based on QueryHandler responses, it finalizes the sample.
+	 * 
+	 * @param  queryHandler  and implemented QueryHandler object that handles a given database
+	 * @param  assignment  the Assignment object, to fetch the assigned informations
+	 * @param  res  the SampleResult to be finalized based on the result
+	 * @param  options  user options from the Sampler, that called this function
+	 * */
+	public static void writeWith(QueryHandler queryHandler, Assignment assignment,
 			SampleResult res, HashMap<String, Boolean> options) {
-		/*if (options.get("isSpecial")) {
-			queryHandler.writeWith();
-		}*/
-		
-		String binaryID = null;
-		HashMap<String, String> binaryMeta = null;
-		if (!options.get("isAssigned")) { // Then binaryID is based on ThreadID.
-			int threadID = getThreadID(Thread.currentThread().getName());
-			binaryID = binaryInfo.getXthFileName(threadID);
-			binaryMeta = binaryInfo.getMetaInfo().get(binaryID);
-		} else {
-			// TODO: String binaryID = BinaryInfo.getAssignedIDForThread(threadID);
-		}
+		HashMap<String, String> meta = assignment.getMeta(getThreadID(Thread.currentThread().getName()));
+		String binaryID = meta.get("id");
+		BinaryFileInfo binaryInfo = assignment.getBinaryFileInfo();
 		String streamerInfoFullPath = binaryInfo.getPathForStreamerInfo(binaryID);
 		ByteArrayOutputStream streamerInfo = binaryInfo.read(streamerInfoFullPath);
 
 		if (options.get("useChunks")) { // Write the chunks, not the big file.
-			//TreeMap<String, String> chunkPathList = binaryInfo.getChunkPathList().get(binaryID);
 			try {
 				res.sampleStart();
-				queryHandler.putChunks(binaryMeta, binaryInfo.readChunksFor(binaryID));
-				//queryHandler.putData(binaryMeta, null, streamerInfo);
-				//res.samplePause();
-				/*for (Map.Entry<String, String> it : chunkPathList.entrySet()) {
-					ByteArrayOutputStream chunk = binaryInfo.read(it.getValue());
-					SampleResult subres = getInitialSampleResult(binaryID + " - " + it.getKey());
-					Integer cId = binaryInfo.getIDForChunk(binaryID, it.getKey());
-					
-					subres.sampleStart();
-					queryHandler.putChunk(binaryMeta, cId, chunk);
-					finalizeResponse(subres, true, "200", "Chunk write: " + it.getKey() + " Successfull!");
-					subres.sampleEnd();
-					res.storeSubResult(subres);
-				}*/
-				//res.sampleResume();
+				queryHandler.putChunks(meta, binaryInfo.readChunksFor(binaryID));
 				finalizeResponse(res, true, "200", "Payload (chunk) write: " + binaryID + " Successfull!");
 			} catch (CustomSamplersException ex) {
 				finalizeResponse(res, false, "500", ex.toString());
@@ -235,7 +266,7 @@ public class CustomSamplerUtils {
 			ByteArrayOutputStream payload = binaryInfo.read(binaryFullPath);
 			try {
 				res.sampleStart();
-				queryHandler.putData(binaryMeta, payload, streamerInfo);
+				queryHandler.putData(meta, payload, streamerInfo);
 				finalizeResponse(res, true, "200", "Payload write: " + binaryID + " Successfull!");
 			} catch (CustomSamplersException ex) {
 				finalizeResponse(res, false, "500", ex.toString());

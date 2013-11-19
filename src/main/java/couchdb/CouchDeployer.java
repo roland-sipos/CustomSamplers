@@ -94,14 +94,14 @@ public class CouchDeployer {
 	public static void main(String[] args) {
 		CouchTestEnvironmentDeployer deployer =
 				new CouchTestEnvironmentDeployer(
-						"http://testdb-pc.cern.ch", "5984", "test" , "testUser", "testPass");
+						"http://test-couchdb.cern.ch", "5984", "test" , "testUser", "testPass");
 
-		//System.out.println("-------- CouchDB environment setup ------------");
-		//deployer.deployTestEnvironment();
+		System.out.println("-------- CouchDB environment setup ------------");
+		deployer.deployTestEnvironment();
 		//System.out.println("------- CouchDB environment teardown -----------");
 		//deployer.destroyTestEnvironment();
-		System.out.println("-------- CouchDB environment teardown and setup ------------");
-		deployer.redeployEnvironment();
+		//System.out.println("-------- CouchDB environment teardown and setup ------------");
+		//deployer.redeployEnvironment();
 
 	}
 

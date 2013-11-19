@@ -16,10 +16,9 @@ implements ConfigElement, TestStateListener, TestBean {
 	private static final long serialVersionUID = 5820940444795925355L;
 	private static final Logger log = LoggingManager.getLoggerForClass();
 
-	public final static String INPUT_LOCATION = "BinaryConfigElement.inputlocation";
+	public final static String INPUT_LOCATION = "BinaryConfigElement.inputLocation";
 	public final static String BINARY_INFO = "BinaryConfigElement.binaryInfo";
 	public final static String ENCODING = "BinaryConfigElement.encoding";
-	public final static String ASSIGNMENT_FILE = "BinaryConfigElement.assignmentFile";
 
 	@Override
 	public void testEnded() {
@@ -63,8 +62,7 @@ implements ConfigElement, TestStateListener, TestBean {
 				log.debug(getBinaryInfo() + " is being defined...");
 			}
 
-			BinaryFileInfo binaryInfo = BinaryFileInfo.getInstance(
-					getInputLocation(), getAssignmentFile());
+			BinaryFileInfo binaryInfo = BinaryFileInfo.getInstance(getInputLocation());
 			getThreadContext().getVariables().putObject(getBinaryInfo(), binaryInfo);
 		}
 
@@ -108,12 +106,6 @@ implements ConfigElement, TestStateListener, TestBean {
 	}
 	public void setEncoding(String encoding) {
 		setProperty(ENCODING, encoding);
-	}
-	public String getAssignmentFile() {
-		return getPropertyAsString(ASSIGNMENT_FILE);
-	}
-	public void setAssignmentFile(String assignmentFile) {
-		setProperty(ASSIGNMENT_FILE, assignmentFile);
 	}
 
 }

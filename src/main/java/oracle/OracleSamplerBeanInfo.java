@@ -14,18 +14,17 @@ public class OracleSamplerBeanInfo extends BeanInfoSupport {
 		super(OracleSampler.class);
 
 		createPropertyGroup("oracle", new String[] {"database"});
-		createPropertyGroup("sampler", new String[] {"binaryInfo", "useChunks"});
-		createPropertyGroup("reading", new String[] {"doRead", "useRandomAccess", "checkRead"});
-		createPropertyGroup("writing", new String[] {"doWrite", "assignedWrite"});
+		createPropertyGroup("sampler", new String[] {"assignmentInfo", "useChunks"});
+		createPropertyGroup("reading", new String[] {"doRead", "checkRead"});
+		createPropertyGroup("writing", new String[] {"doWrite"});
 
 		PropertyDescriptor p = property("database");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "test");
 
-		p = property("binaryInfo");
+		p = property("assignmentInfo");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, "binInfo");
-	
+		p.setValue(DEFAULT, "assignInfo");
 		p = property("useChunks");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, Boolean.FALSE);
@@ -33,17 +32,11 @@ public class OracleSamplerBeanInfo extends BeanInfoSupport {
 		p = property("doRead");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, Boolean.TRUE);
-		p = property("useRandomAccess");
-		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, "True");
 		p = property("checkRead");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, Boolean.FALSE);
 
 		p = property("doWrite");
-		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, Boolean.FALSE);
-		p = property("assignedWrite");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, Boolean.FALSE);
 

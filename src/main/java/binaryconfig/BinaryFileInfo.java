@@ -15,41 +15,29 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
-import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.Iterator;
 
 import org.apache.commons.codec.binary.Base64OutputStream;
+
 
 public class BinaryFileInfo {
 
 	private static BinaryFileInfo instance = null;
 
 	private static String location;
-	private static boolean isAssignAvailable;
-	private static String assignmentFile;
 	private static int numOfFiles;
 
 	private static TreeMap<String, HashMap<String, String> > metaInfo;
 	private static TreeMap<String, String> filePathList;
+	private static String[] fileNameArray;
+
 	private static TreeMap<String, TreeMap<String, String> > chunkPathList;
 	private static TreeMap<String, TreeMap<String, Integer> > chunkIDList;
-
-	private static HashMap<Integer, SortedSet<String>> assignMap;
 
 	public String getInputLocation() {
 		return location;
 	}
 
-	public String getAssignmentFile() {
-		return assignmentFile;
-	}
-	
-	public boolean isAssignAvailable() {
-		return isAssignAvailable;
-	}
-	
 	public int getNumOfFiles() {
 		return numOfFiles;
 	}
@@ -60,6 +48,10 @@ public class BinaryFileInfo {
 
 	public TreeMap<String, String> getFilePathList() {
 		return filePathList;
+	}
+
+	public String[] getFileNameArray() {
+		return fileNameArray;
 	}
 
 	public TreeMap<String, TreeMap<String, String> > getChunkPathList() {
@@ -86,23 +78,15 @@ public class BinaryFileInfo {
 		return filePathList.get(fileName) + ".chunks/STREAMER_INFO.bin";
 	}
 
-	public static BinaryFileInfo getInstance(String location, String assignFile) {
+	public static BinaryFileInfo getInstance(String location) {
 		if (instance == null) {
-			instance = new BinaryFileInfo(location, assignFile);
+			instance = new BinaryFileInfo(location);
 		}
 		return instance;
 	}
 
-	protected BinaryFileInfo(String loc, String assignFile) {
+	protected BinaryFileInfo(String loc) {
 		location = loc;
-		if (assignFile != "") {
-			assignmentFile = assignFile;
-			assignMap = AssignmentXMLParser.parse(assignmentFile);
-			isAssignAvailable = true;
-		} else {
-			assignmentFile = "";
-			isAssignAvailable = false;
-		}
 		numOfFiles = 0;
 		filePathList = new TreeMap<String, String>();
 		chunkPathList = new TreeMap<String, TreeMap<String, String> >();
@@ -130,6 +114,7 @@ public class BinaryFileInfo {
 				// IGNORE ANYTHING ELSE, dirs already processed.
 			}
 		}
+		fileNameArray = filePathList.keySet().toArray(new String[0]);
 	}
 
 	/*private String getMetaFilePath(File folder) {
@@ -175,26 +160,6 @@ public class BinaryFileInfo {
 		}
 		chunkPathList.put(binaryName, namelist);
 		chunkIDList.put(binaryName, idlist);
-	}
-
-
-	public HashMap<String, String> getRandomMeta() {
-		// TODO: Create the random generation customizable.
-		Random random = new Random();
-		// Get a random Binary ID.
-		Object[] fileNameArray = getFilePathList().keySet().toArray();
-		String binaryID = (String) fileNameArray[random.nextInt(fileNameArray.length)];
-		return getMetaInfo().get(binaryID);
-	}
-
-	public ArrayList<HashMap<String, String> > getAssignedMeta(Integer threadID) {
-		//TODO: Get an assigned meta information based on input file or thread group
-		ArrayList<HashMap<String, String> > result = new ArrayList<HashMap<String, String> >();
-		SortedSet<String> fileSet = assignMap.get(threadID);
-		for (final Iterator<String> it = fileSet.iterator(); it.hasNext(); ) {
-			result.add(getMetaInfo().get(it.next()));
-		}
-		return result;
 	}
 
 	public String getXthFileName(int x) {

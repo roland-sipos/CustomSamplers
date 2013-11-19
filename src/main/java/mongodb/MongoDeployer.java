@@ -89,14 +89,14 @@ public class MongoDeployer {
 	public static void main(String[] args) {
 		MongoTestEnvironmentDeployer deployer =
 				new MongoTestEnvironmentDeployer(
-						"testdb-pc.cern.ch", "27017", "test" , "testUser", "testPass");
+						"mongo-node1.cern.ch", "27017", "test" , "testUser", "testPass");
 
-		//System.out.println("-------- MongoDB environment setup ------------");
-		//deployer.deployTestEnvironment();
+		System.out.println("-------- MongoDB environment setup ------------");
+		deployer.deployTestEnvironment();
 		//System.out.println("------- MongoDB environment teardown -----------");
 		//deployer.destroyTestEnvironment();
-		System.out.println("-------- MongoDB environment teardown and setup ------------");
-		deployer.redeployEnvironment();
+		//System.out.println("-------- MongoDB environment teardown and setup ------------");
+		//deployer.redeployEnvironment();
 
 	}
 	

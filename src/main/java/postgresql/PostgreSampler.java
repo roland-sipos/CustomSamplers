@@ -9,8 +9,8 @@ import org.apache.jmeter.testbeans.TestBean;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
-import binaryconfig.BinaryConfigElement;
-import binaryconfig.BinaryFileInfo;
+import assignment.Assignment;
+import assignment.AssignmentConfigElement;
 
 import utils.CustomSamplerUtils;
 import utils.QueryHandler;
@@ -21,14 +21,12 @@ public class PostgreSampler extends AbstractSampler implements TestBean {
 	private static final Logger log = LoggingManager.getLoggerForClass();
 
 	public final static String DATABASE = "PostgreSampler.database";
-	public final static String BINARYINFO = "PostgreSampler.binaryInfo";
+	public final static String ASSIGNMENTINFO = "PostgreSampler.assignmentInfo";
 	public final static String USECHUNKS = "PostgreSampler.useChunks";
 	public final static String LARGEOBJECTMETHOD = "PostgreSampler.largeObjectMethod";
 	public final static String DOREAD = "PostgreSampler.doRead";
-	public final static String USERANDOMACCESS = "PostgreSampler.useRandomAccess";
 	public final static String CHECKREAD = "PostgreSampler.checkRead";
 	public final static String DOWRITE = "PostgreSampler.doWrite";
-	public final static String ASSIGNED_WRITE = "PostgreSampler.assignedWrite";
 
 	public PostgreSampler() {
 		trace("PostgreSampler()" + this.toString());
@@ -39,11 +37,11 @@ public class PostgreSampler extends AbstractSampler implements TestBean {
 		int threadID = CustomSamplerUtils.getThreadID(Thread.currentThread().getName());
 		trace("sample() ThreadID: " + threadID);
 
-		// Get BinaryInfo and QueryHandler instances.
-		BinaryFileInfo binaryInfo = null;
+		// Get Assignment and QueryHandler instances.
+		Assignment assignment = null;
 		QueryHandler queryHandler = null;
 		try {
-			binaryInfo = BinaryConfigElement.getBinaryFileInfo(getBinaryInfo());
+			assignment = AssignmentConfigElement.getAssignments(getAssignmentInfo());
 			if (Boolean.parseBoolean(getLargeObjectMethod())) {
 				queryHandler = new PostgreLOBQueryHandler(getDatabase());
 			} else {
@@ -59,9 +57,9 @@ public class PostgreSampler extends AbstractSampler implements TestBean {
 		HashMap<String, Boolean> options = prepareOptions();
 
 		if (options.get("doRead")) { // DO THE READ
-			CustomSamplerUtils.readWith(queryHandler, binaryInfo, res, options);
+			CustomSamplerUtils.readWith(queryHandler, assignment, res, options);
 		} else if (options.get("doWrite")) { // DO THE WRITE
-			CustomSamplerUtils.writeWith(queryHandler, binaryInfo, res, options);
+			CustomSamplerUtils.writeWith(queryHandler, assignment, res, options);
 		}
 		
 		return res;
@@ -72,10 +70,8 @@ public class PostgreSampler extends AbstractSampler implements TestBean {
 		options.put("doRead", Boolean.parseBoolean(getDoRead()));
 		options.put("doWrite", Boolean.parseBoolean(getDoWrite()));
 		options.put("useChunks", Boolean.parseBoolean(getUseChunks()));
-		options.put("isRandom", Boolean.parseBoolean(getUseRandomAccess()));
 		options.put("isCheckRead", Boolean.parseBoolean(getCheckRead()));
 		options.put("isSpecial", Boolean.parseBoolean(getLargeObjectMethod()));
-		options.put("isAssigned", Boolean.parseBoolean(getAssignedWrite()));
 		return options;
 	}
 
@@ -94,11 +90,11 @@ public class PostgreSampler extends AbstractSampler implements TestBean {
 	public void setDatabase(String database) {
 		setProperty(DATABASE, database);
 	}
-	public String getBinaryInfo() {
-		return getPropertyAsString(BINARYINFO);
+	public String getAssignmentInfo() {
+		return getPropertyAsString(ASSIGNMENTINFO);
 	}
-	public void setBinaryInfo(String binaryInfo) {
-		setProperty(BINARYINFO, binaryInfo);
+	public void setAssignmentInfo(String assignmentInfo) {
+		setProperty(ASSIGNMENTINFO, assignmentInfo);
 	}
 	public String getUseChunks() {
 		return getPropertyAsString(USECHUNKS);
@@ -111,12 +107,6 @@ public class PostgreSampler extends AbstractSampler implements TestBean {
 	}
 	public void setLargeObjectMethod(String largeObjectMethod) {
 		setProperty(LARGEOBJECTMETHOD, largeObjectMethod);
-	}
-	public String getUseRandomAccess() {
-		return getPropertyAsString(USERANDOMACCESS);
-	}
-	public void setUseRandomAccess(String useRandomAccess) {
-		setProperty(USERANDOMACCESS, useRandomAccess);
 	}
 	public String getCheckRead() {
 		return getPropertyAsString(CHECKREAD);
@@ -136,10 +126,5 @@ public class PostgreSampler extends AbstractSampler implements TestBean {
 	public void setDoWrite(String doWrite) {
 		setProperty(DOWRITE, doWrite);
 	}
-	public String getAssignedWrite() {
-		return getPropertyAsString(ASSIGNED_WRITE);
-	}
-	public void setAssignedWrite(String assignedWrite) {
-		setProperty(ASSIGNED_WRITE, assignedWrite);
-	}
+
 }

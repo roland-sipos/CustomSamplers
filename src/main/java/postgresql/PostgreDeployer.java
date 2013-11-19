@@ -6,7 +6,6 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
 
 import utils.TagList;
@@ -221,7 +220,7 @@ public class PostgreDeployer {
 	 */
 	public static void main(String[] args) {
 		PostgreTestEnvironmentDeployer deployer =
-				new PostgreTestEnvironmentDeployer("testdb-pc.cern.ch", "5432", 
+				new PostgreTestEnvironmentDeployer("test-postgre.cern.ch", "5432", 
 						"testdb", "postgres", "testPass", TagList.getTags());
 
 		//System.out.println("-------- PostgreSQL environment setup ------------");

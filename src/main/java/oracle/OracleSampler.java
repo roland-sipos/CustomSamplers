@@ -10,8 +10,9 @@ import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
 import utils.CustomSamplerUtils;
-import binaryconfig.BinaryConfigElement;
-import binaryconfig.BinaryFileInfo;
+import utils.CustomSamplersException;
+import assignment.Assignment;
+import assignment.AssignmentConfigElement;
 
 public class OracleSampler extends AbstractSampler implements TestBean {
 
@@ -20,12 +21,11 @@ public class OracleSampler extends AbstractSampler implements TestBean {
 
 	public final static String DATABASE = "OracleSampler.database";
 	public final static String BINARYINFO = "OracleSampler.binaryInfo";
+	public final static String ASSIGNMENTINFO = "OracleSampler.assignmentInfo";
 	public final static String USECHUNKS = "OracleSampler.useChunks";
 	public final static String DOREAD = "OracleSampler.doRead";
-	public final static String USERANDOMACCESS = "OracleSampler.useRandomAccess";
 	public final static String CHECKREAD = "OracleSampler.checkRead";
 	public final static String DOWRITE = "OracleSampler.doWrite";
-	public final static String ASSIGNED_WRITE = "OracleSampler.assignedWrite";
 
 	public OracleSampler() {
 		trace("OracleSampler()" + this.toString());
@@ -36,13 +36,13 @@ public class OracleSampler extends AbstractSampler implements TestBean {
 		int threadID = CustomSamplerUtils.getThreadID(Thread.currentThread().getName());
 		trace("sample() ThreadID: " + threadID);
 
-		// Get BinaryInfo and QueryHandler instances.
-		BinaryFileInfo binaryInfo = null;
+		// Get Assignment and QueryHandler instances.
+		Assignment assignment = null;
 		OracleQueryHandler queryHandler = null;
 		try {
-			binaryInfo = BinaryConfigElement.getBinaryFileInfo(getBinaryInfo());
+			assignment = AssignmentConfigElement.getAssignments(getAssignmentInfo());
 			queryHandler = new OracleQueryHandler(getDatabase());
-		} catch (Exception e) {
+		} catch (CustomSamplersException e) {
 			log.error("Failed to create a OracleSampler prerequisites for the " + 
 					Thread.currentThread().getName() + " sampler. Details:" + e.toString());
 		}
@@ -52,9 +52,9 @@ public class OracleSampler extends AbstractSampler implements TestBean {
 		HashMap<String, Boolean> options = prepareOptions();
 		
 		if (options.get("doRead")) { // DO THE READ
-			CustomSamplerUtils.readWith(queryHandler, binaryInfo, res, options);
+			CustomSamplerUtils.readWith(queryHandler, assignment, res, options);
 		} else if (options.get("doWrite")) { // DO THE WRITE
-			CustomSamplerUtils.writeWith(queryHandler, binaryInfo, res, options);
+			CustomSamplerUtils.writeWith(queryHandler, assignment, res, options);
 		}
 
 		return res;
@@ -65,10 +65,8 @@ public class OracleSampler extends AbstractSampler implements TestBean {
 		options.put("doRead", Boolean.parseBoolean(getDoRead()));
 		options.put("doWrite", Boolean.parseBoolean(getDoWrite()));
 		options.put("useChunks", Boolean.parseBoolean(getUseChunks()));
-		options.put("isRandom", Boolean.parseBoolean(getUseRandomAccess()));
 		options.put("isCheckRead", Boolean.parseBoolean(getCheckRead()));
 		options.put("isSpecial", false);
-		options.put("isAssigned", Boolean.parseBoolean(getAssignedWrite()));
 		return options;
 	}
 	
@@ -93,17 +91,17 @@ public class OracleSampler extends AbstractSampler implements TestBean {
 	public void setBinaryInfo(String binaryInfo) {
 		setProperty(BINARYINFO, binaryInfo);
 	}
+	public String getAssignmentInfo() {
+		return getPropertyAsString(ASSIGNMENTINFO);
+	}
+	public void setAssignmentInfo(String assignmentInfo) {
+		setProperty(ASSIGNMENTINFO, assignmentInfo);
+	}
 	public String getUseChunks() {
 		return getPropertyAsString(USECHUNKS);
 	}
 	public void setUseChunks(String useChunks) {
 		setProperty(USECHUNKS, useChunks);
-	}
-	public String getUseRandomAccess() {
-		return getPropertyAsString(USERANDOMACCESS);
-	}
-	public void setUseRandomAccess(String useRandomAccess) {
-		setProperty(USERANDOMACCESS, useRandomAccess);
 	}
 	public String getCheckRead() {
 		return getPropertyAsString(CHECKREAD);
@@ -123,11 +121,4 @@ public class OracleSampler extends AbstractSampler implements TestBean {
 	public void setDoWrite(String doWrite) {
 		setProperty(DOWRITE, doWrite);
 	}
-	public String getAssignedWrite() {
-		return getPropertyAsString(ASSIGNED_WRITE);
-	}
-	public void setAssignedWrite(String assignedWrite) {
-		setProperty(ASSIGNED_WRITE, assignedWrite);
-	}
-
 }
