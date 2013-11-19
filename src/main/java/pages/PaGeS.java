@@ -1,5 +1,9 @@
-package utils;
+package pages;
 
+/**
+ * This simple class is a wrapper around the PaGeS python script, to make it usable
+ * from the Java context.
+ * */
 public class PaGeS {
 
 	/**
@@ -11,7 +15,7 @@ public class PaGeS {
 
 		String pagesLocation = Thread.currentThread()
 				.getContextClassLoader()
-				.getResource("resources/PaGeS.py").getPath();
+				.getResource("pages/PaGeS.py").getPath();
 		
 		System.out.println(pagesLocation);
 

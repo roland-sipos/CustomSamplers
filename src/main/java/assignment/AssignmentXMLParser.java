@@ -8,6 +8,11 @@ import java.util.TreeSet;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
+import javax.xml.XMLConstants;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -33,10 +38,18 @@ public class AssignmentXMLParser {
 			File asFile = new File(assignmentFilePath);
 
 			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			dbFactory.setNamespaceAware(true);
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 			Document doc = dBuilder.parse(asFile);
-			doc.getDocumentElement().normalize();
+			Schema schema = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(
+					new File(Thread.currentThread().getContextClassLoader()
+							.getResource("assignment/assignment.xsd").getPath()));
+			System.out.println(Thread.currentThread().getContextClassLoader()
+							.getResource("assignment/assignment.xsd").getPath());
+			Validator validator = schema.newValidator();
+			validator.validate(new DOMSource(doc));
 
+			doc.getDocumentElement().normalize();
 			NodeList nList = doc.getElementsByTagName("payload");
 			for (int temp = 0; temp < nList.getLength(); temp++) {
 				Node nNode = nList.item(temp);
