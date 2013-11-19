@@ -1,6 +1,7 @@
 package assignment;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.SortedSet;
@@ -8,6 +9,7 @@ import java.util.TreeSet;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
@@ -18,6 +20,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import utils.CustomSamplersException;
 
 public class AssignmentXMLParser {
 
@@ -32,23 +37,32 @@ public class AssignmentXMLParser {
 		}
 	}
 
-	public static HashMap<Integer, SortedSet<String> > parse(String assignmentFilePath) {
+	public static HashMap<Integer, SortedSet<String> > parse(String assignmentFilePath)
+			throws CustomSamplersException {
 		HashMap<Integer, SortedSet<String> > result = new HashMap<Integer, SortedSet<String>>();
+		Document doc = null;
 		try {
 			File asFile = new File(assignmentFilePath);
-
 			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 			dbFactory.setNamespaceAware(true);
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-			Document doc = dBuilder.parse(asFile);
+			doc = dBuilder.parse(asFile);
 			Schema schema = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(
 					new File(Thread.currentThread().getContextClassLoader()
 							.getResource("assignment/assignment.xsd").getPath()));
 			System.out.println(Thread.currentThread().getContextClassLoader()
-							.getResource("assignment/assignment.xsd").getPath());
+					.getResource("assignment/assignment.xsd").getPath());
 			Validator validator = schema.newValidator();
 			validator.validate(new DOMSource(doc));
+		} catch (SAXException e) {
+			throw new CustomSamplersException("Validation exception occured!", e);
+		} catch (IOException e) {
+			throw new CustomSamplersException("IOException occured!", e);
+		} catch (ParserConfigurationException e) {
+			throw new CustomSamplersException("ParserConfigurationException occured!", e);
+		}
 
+		try {
 			doc.getDocumentElement().normalize();
 			NodeList nList = doc.getElementsByTagName("payload");
 			for (int temp = 0; temp < nList.getLength(); temp++) {
@@ -106,10 +120,9 @@ public class AssignmentXMLParser {
 					System.out.println(" -> Neither idList or idRange was found! Is this intentional?");
 				}
 			}
-			
+
 		} catch (Exception e) {
-			e.printStackTrace();
-			System.out.println(e.toString());
+			throw new CustomSamplersException("Could not parse the Assignment XML file!", e);
 		}
 		return result;
 	}

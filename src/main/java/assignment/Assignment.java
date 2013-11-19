@@ -46,7 +46,7 @@ public class Assignment {
 		}
 	}
 
-	private void finalizeAssignments() {
+	private void finalizeAssignments() throws CustomSamplersException {
 		if (assignmentMode == Mode.ASSIGNED) {
 			assignmentMap = AssignmentXMLParser.parse(assignFilePath);
 		} else if (assignmentMode == Mode.RANDOM) {
