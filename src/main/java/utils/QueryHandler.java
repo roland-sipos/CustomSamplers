@@ -7,10 +7,10 @@ import java.util.Map;
 
 /**
  * The QueryHandler interface represents the required communication protocol
- * with a database entity. Each implemented class needs to define, how a
+ * with a database entity. The implemented classes need to define, how a
  * given PAYLOAD (also if in chunk format) is written into and read from a given database.
- *
- * @category Utilities
+ * It may happen that a database support different techniques to R/W binary data.
+ * In such case, the packages contain a dedicated QueryHandler implementation for all techniques.
  * */
 public interface QueryHandler {
 
@@ -34,6 +34,7 @@ public interface QueryHandler {
 	 * <p>
 	 * @param  metaInfo  this map holds the meta-information of the PAYLOAD (SINCE, TAGNAME)
 	 * @param  payload  the BLOB of the PAYLOAD to write
+	 * @param  streamerInfo  the BLOB of the PAYLOAD's streamer information to write
 	 * @throws  CustomSamplersException  if the writing of the PAYLOAD failed
 	 */
 	public void putData(HashMap<String, String> metaInfo,
@@ -59,8 +60,8 @@ public interface QueryHandler {
 	 * value pairs. Also the implementation should write the meta information into the database
 	 * that is handled by the implemented class.
 	 * <p>
-	 * @param  tagName  the requested PAYLOAD's TAG_NAME
-	 * @param  since  the requested PAYLOAD's SINCE
+	 * @param  metaInfo  the requested PAYLOAD's TAG_NAME
+	 * @param  chunks  the chunks of the PAYLOAD to write
 	 * @throws  CustomSamplersException  if the writing of the PAYLOAD's chunks failed
 	 */
 	public void putChunks(HashMap<String, String> metaInfo, List<ByteArrayOutputStream> chunks)
