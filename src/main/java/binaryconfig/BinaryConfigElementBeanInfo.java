@@ -6,10 +6,23 @@ import org.apache.jmeter.testbeans.BeanInfoSupport;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
+/**
+ * This class is the BeanInfoSupport for the BinaryConfigElement class.
+ * */
 public class BinaryConfigElementBeanInfo extends BeanInfoSupport {
 
+	/** Static logger instance from JMeter. */
 	private static final Logger log = LoggingManager.getLoggerForClass();
 
+	/** The constructor binds the given properties for the BinaryConfigElement class.
+	 * <p>
+	 * The property groups and properties are the following: <br>
+	 * binary <br>
+	 * -- inputLocation <br>
+	 * -- binaryInfo <br>
+	 * options <br>
+	 * -- encoding
+	 * */
 	public BinaryConfigElementBeanInfo() {
 		super(BinaryConfigElement.class);
 

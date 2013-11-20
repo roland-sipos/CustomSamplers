@@ -24,8 +24,15 @@ import org.xml.sax.SAXException;
 
 import utils.CustomSamplersException;
 
+/**
+ * This static utility class handles the Assignment XML configuration file parsing.
+ * */
 public class AssignmentXMLParser {
 
+	/**
+	 * This utility function is used by the parse function to accumulate new entries
+	 * that are read from the configuration XML file.
+	 * */
 	private static void addAssignment(Integer threadId, SortedSet<String> payloadSet,
 			HashMap<Integer, SortedSet<String> > assignMap) {
 		if (!assignMap.containsKey(threadId)) {
@@ -37,6 +44,11 @@ public class AssignmentXMLParser {
 		}
 	}
 
+	/**
+	 * This is the parser function of the class, that parses the file, it got as a parameter.
+	 * First of all, it validates it against the assignment.xsd file that is stored in the assignment
+	 * package. If the validation passed, the parsing results in the assignment map.
+	 * */
 	public static HashMap<Integer, SortedSet<String> > parse(String assignmentFilePath)
 			throws CustomSamplersException {
 		HashMap<Integer, SortedSet<String> > result = new HashMap<Integer, SortedSet<String>>();
@@ -63,6 +75,7 @@ public class AssignmentXMLParser {
 		}
 
 		try {
+			/** First, it parses the {@literal <}payload{@literal >} DOM elements. */
 			doc.getDocumentElement().normalize();
 			NodeList nList = doc.getElementsByTagName("payload");
 			for (int temp = 0; temp < nList.getLength(); temp++) {
@@ -92,6 +105,7 @@ public class AssignmentXMLParser {
 				}
 			}
 
+			/** Finally, it parses the {@literal <}threads{@literal >} DOM elements. */
 			nList = doc.getElementsByTagName("threads");
 			for (int temp = 0; temp < nList.getLength(); temp++) {
 				Element nEl = (Element) nList.item(temp);

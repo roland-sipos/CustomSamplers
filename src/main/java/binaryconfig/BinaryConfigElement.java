@@ -10,27 +10,37 @@ import org.apache.log.Logger;
 
 import utils.CustomSamplersException;
 
+/**
+ * This class is a JMeter ConfigElement for configuring and storing a BinaryFileInfo
+ * instance as a JMeter variable in the JMeterContext.
+ * */
 public class BinaryConfigElement extends AbstractTestElement
 implements ConfigElement, TestStateListener, TestBean {
 
+	/** Generated UID. */
 	private static final long serialVersionUID = 5820940444795925355L;
+	/** Static logger instance from JMeter. */
 	private static final Logger log = LoggingManager.getLoggerForClass();
 
+	/** The inputLocation for the BinaryFileInfo instance. */
 	public final static String INPUT_LOCATION = "BinaryConfigElement.inputLocation";
+	/** The name (ID) of this ConfigElement resource. */
 	public final static String BINARY_INFO = "BinaryConfigElement.binaryInfo";
+	/** Encoding flag for the BinaryFileInfo. 
+	 * @deprecated */
+	@Deprecated
 	public final static String ENCODING = "BinaryConfigElement.encoding";
 
-	@Override
-	public void testEnded() {
-		getThreadContext().getVariables().putObject(getBinaryInfo(), null);
-	}
-
-	@Override
-	public void testEnded(String arg0) {
-		testEnded();
-	}
-
-	public static BinaryFileInfo getBinaryFileInfo(String binaryInfo) throws CustomSamplersException {
+	/**
+	 * This function looks up the BinaryFileInfo by the given ID, and if found fetches the
+	 * instance from the JMeterContext and return it.
+	 * 
+	 * @param  binaryInfo  the asked ID of the BinaryFileInfo
+	 * @return  BinaryFileInfo  the asked BinaryFileInfo
+	 * @throws  CustomSamplersException  if the object was not found, or not an instance of BinaryFileInfo
+	 * */
+	public static BinaryFileInfo getBinaryFileInfo(String binaryInfo)
+			throws CustomSamplersException {
 		Object fileInfoObject = JMeterContextService.getContext().getVariables().getObject(binaryInfo);
 		if (fileInfoObject == null) {
 			throw new CustomSamplersException("BinaryFileInfo object is null!");
@@ -45,6 +55,23 @@ implements ConfigElement, TestStateListener, TestBean {
 		}
 	}
 
+	/** When the test ends, this method removes the BinaryFileInfo object from the JMeterContext. */
+	@Override
+	public void testEnded() {
+		getThreadContext().getVariables().putObject(getBinaryInfo(), null);
+	}
+
+	/** The remote version of testEnded function calls the non-remote version, so does the same. */
+	@Override
+	public void testEnded(String arg0) {
+		testEnded();
+	}
+
+	/**
+	 * When the test starts, this ConfigElement puts the BinaryFileInfo singleton into the
+	 * JMeterContext, with an ID that is got from the user options. Basically, with the name
+	 * of the given ConfigElement.
+	 * */
 	@Override
 	public void testStarted() {
 		if (log.isDebugEnabled()) {
@@ -68,6 +95,7 @@ implements ConfigElement, TestStateListener, TestBean {
 
 	}
 
+	/** The remote version of testStarted function calls the non-remote version, so does the same. */
 	@Override
 	public void testStarted(String arg0) {
 		testStarted();
@@ -76,7 +104,6 @@ implements ConfigElement, TestStateListener, TestBean {
 	@Override
 	public void addConfigElement(ConfigElement arg0) {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override

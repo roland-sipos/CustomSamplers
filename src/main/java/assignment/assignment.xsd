@@ -2,6 +2,11 @@
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
+<!--
+ This XML Schema file is the descriptor of the accepted XML files as 
+ assignment configurations in the CustomSamplers Project.
+ -->
+
 	<xs:element name="assignment">
 		<xs:complexType>
 			<xs:sequence>
