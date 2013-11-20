@@ -3,4 +3,4 @@
  * and shows how to extend, modify or contribute to any part of it.
  * @author Roland Sipos
  */
-package template;
+package example;

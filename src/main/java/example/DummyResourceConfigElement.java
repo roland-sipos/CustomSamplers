@@ -1,4 +1,4 @@
-package template;
+package example;
 
 import org.apache.jmeter.config.ConfigElement;
 import org.apache.jmeter.testbeans.TestBean;

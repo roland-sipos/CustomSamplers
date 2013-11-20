@@ -1,4 +1,4 @@
-package template;
+package example;
 
 public class DummyResource {
 

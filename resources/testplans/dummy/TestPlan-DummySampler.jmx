@@ -26,15 +26,15 @@
         <stringProp name="ThreadGroup.delay"></stringProp>
       </ThreadGroup>
       <hashTree>
-        <template.DummyResourceConfigElement guiclass="TestBeanGUI" testclass="template.DummyResourceConfigElement" testname="Custom - DummyResource Configuration" enabled="true">
+        <example.DummyResourceConfigElement guiclass="TestBeanGUI" testclass="example.DummyResourceConfigElement" testname="Custom - DummyResource Configuration" enabled="true">
           <stringProp name="bar">foow foow!!!</stringProp>
           <stringProp name="foo">woof woof???</stringProp>
           <stringProp name="resourceName">myDummyResource</stringProp>
-        </template.DummyResourceConfigElement>
+        </example.DummyResourceConfigElement>
         <hashTree/>
-        <template.DummySampler guiclass="TestBeanGUI" testclass="template.DummySampler" testname="Custom - Dummy Sampler" enabled="true">
+        <example.DummySampler guiclass="TestBeanGUI" testclass="example.DummySampler" testname="Custom - Dummy Sampler" enabled="true">
           <stringProp name="resourceName">myDummyResource</stringProp>
-        </template.DummySampler>
+        </example.DummySampler>
         <hashTree/>
         <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
           <boolProp name="ResultCollector.error_logging">false</boolProp>

@@ -1,4 +1,4 @@
-package template;
+package example;
 
 import java.beans.PropertyDescriptor;
 

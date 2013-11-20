@@ -1,4 +1,4 @@
-package template;
+package example;
 
 import org.apache.jmeter.samplers.AbstractSampler;
 import org.apache.jmeter.samplers.Entry;
