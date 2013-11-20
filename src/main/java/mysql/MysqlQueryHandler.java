@@ -17,10 +17,20 @@ import customjdbc.CustomJDBCConfigElement;
 import utils.CustomSamplersException;
 import utils.QueryHandler;
 
+/**
+ * This is the implemented QueryHandler for MySQL Databases.
+ * */
 public class MysqlQueryHandler implements QueryHandler {
 
+	/** The JDBC Connection object, fetched from a CustomJDBCConfigElement. */
 	private static Connection connection;
-	
+
+	/** The constructor receives the ID of the Connection resource, that is looked up in
+	 * the JMeterContext and fetched from the CustomJDBCConfigElement.
+	 * 
+	 * @param  databaseName  the ID of a CustomJDBCConfigElement's resource
+	 * @throws  CustomSamplersException  if the CustomJDBCConfigElement could not fetch the resource
+	 * */
 	public MysqlQueryHandler(String databaseName) 
 			throws CustomSamplersException {
 		connection = CustomJDBCConfigElement.getJDBCConnection(databaseName);
@@ -28,6 +38,20 @@ public class MysqlQueryHandler implements QueryHandler {
 			throw new CustomSamplersException("JDBCConnection instance with name: " + databaseName + " was not found in config!");
 	}
 
+	/**
+	 * This function sends the read query for the MySQL database, that is the following: <br>
+	 * SELECT data <br>
+	 * FROM PAYLOAD p, (SELECT payload_hash FROM IOV WHERE tag_name=? AND since=?) iov <br>
+	 * WHERE p.hash = iov.payload_hash <br>
+	 * <p>
+	 * The values for tag_name and since are got from the parameters, and the result set
+	 * contains the binary content of the asked PAYLOAD, in the DATA column in a single row.
+	 * 
+	 * @param  tagName  the TAG_NAME value for the query
+	 * @param  since  the SINCE value for the query
+	 * @return  ByteArrayOutputStream  the binary content of the PAYLOAD
+	 * @throws  CustomSamplersException  if an error occurred while executing the query
+	 * */
 	@Override
 	public ByteArrayOutputStream getData(String tagName, long since)
 			throws CustomSamplersException {
@@ -39,7 +63,6 @@ public class MysqlQueryHandler implements QueryHandler {
 			ps.setString(1, tagName);
 			ps.setLong(2, since);
 			ResultSet rs = ps.executeQuery();
-
 			if (rs != null) {
 				int counter = 0;
 				while(rs.next()) {
@@ -51,13 +74,10 @@ public class MysqlQueryHandler implements QueryHandler {
 							+ "TAG=" + tagName + " SINCE=" + since +" !");
 				}
 				rs.close();
-
 			} else {
-
 				throw new CustomSamplersException("Payload not found for "
 						+ "TAG=" + tagName + " SINCE=" + since +" !");
 			}
-
 			ps.close();
 		} catch (SQLException e) {
 			throw new CustomSamplersException("SQLException occured during read attempt: " + e.toString());
@@ -67,6 +87,21 @@ public class MysqlQueryHandler implements QueryHandler {
 		return result;
 	}
 
+	/**
+	 * This function sends the read query for the MySQL database, that is the following: <br>
+	 * SELECT id, data <br>
+	 * FROM CHUNK c, (SELECT payload_hash FROM IOV WHERE tag_name=? AND since=?) iov <br>
+	 * WHERE c.payload_hash = iov.payload_hash <br>
+	 * <p>
+	 * The values for tag_name and since are got from the parameters, and the result set
+	 * contains the binary content of the asked PAYLOAD, in the ID and DATA columns where a
+	 * single row represent a CHUNK id - CHUNK binary content pair.
+	 * 
+	 * @param  tagName  the TAG_NAME value for the query
+	 * @param  since  the SINCE value for the query
+	 * @return  ByteArrayOutputStream  the binary content of the PAYLOAD
+	 * @throws  CustomSamplersException  if an error occurred while executing the query
+	 * */
 	@Override
 	public Map<Integer, ByteArrayOutputStream> getChunks(String tagName, long since)
 			throws CustomSamplersException {
@@ -99,6 +134,16 @@ public class MysqlQueryHandler implements QueryHandler {
 		return result;
 	}
 
+	/**
+	 * This method defines how a PAYLOAD is written into a MySQL database. First, it writes
+	 * the PAYLOAD itself into the database (calling writePayload), and then writes the IOV
+	 * (calling writeIov). 
+	 * 
+	 * @param  metaInfo  the PAYLOAD's meta information to write
+	 * @param  payload  the PAYLOAD's binary content to write
+	 * @param  streamerInfo  the PAYLOAD's streamer info to write
+	 * @throws  CustomSamplersException  if an error occurred during calling the functions
+	 * */
 	@Override
 	public void putData(HashMap<String, String> metaInfo, ByteArrayOutputStream payload, ByteArrayOutputStream streamerInfo)
 			throws CustomSamplersException {
@@ -106,6 +151,19 @@ public class MysqlQueryHandler implements QueryHandler {
 		writeIov(metaInfo);
 	}
 
+	/**
+	 * This method defines how a PAYLOAD's CHUNKs are written into a MySQL database. First,
+	 * it writes the PAYLOAD's meta information and then writes the IOV related data. Finally,
+	 * it writes every CHUNK into the database with the following query: <br>
+	 * 
+	 * INSERT INTO `CHUNK` (`PAYLOAD_HASH`, `CHUNK_HASH`, `ID`, `DATA`) VALUES (?, ?, ?, ?) <br>
+	 * <p>
+	 * The values for the query are got from the parameters.
+	 * 
+	 * @param  metaInfo  the PAYLOAD's meta information to write
+	 * @param  chunks  the list of PAYLOAD's CHUNKs' binary content to write
+	 * @throws  CustomSamplersException  if an error occurred during calling the functions
+	 * */
 	@Override
 	public void putChunks(HashMap<String, String> metaInfo,
 			List<ByteArrayOutputStream> chunks) throws CustomSamplersException {
@@ -129,6 +187,9 @@ public class MysqlQueryHandler implements QueryHandler {
 		}
 	}
 
+	/** An old way to handle chunks with this QueryHandler. Will be removed in a later update.
+	 * @deprecated*/
+	@Deprecated
 	public byte[] readChunk(String hashKey, String chunkHashKey)
 			throws CustomSamplersException {
 		byte[] result = null;
@@ -164,6 +225,19 @@ public class MysqlQueryHandler implements QueryHandler {
 		return result;
 	}
 
+	/**
+	 * This method defines how a PAYLOAD is written into a MySQL database, with the following query: <br>
+	 * INSERT INTO PAYLOAD <br>
+	 *   (HASH, OBJECT_TYPE, DATA, STREAMER_INFO, VERSION, CREATION_TIME, CMSSW_RELEASE) <br>
+	 *   VALUES (?, ?, ?, ?, ?, ?, ?) <br>
+	 * <p>
+	 * The values for the query are got from the parameters.
+	 * 
+	 * @param  metaInfo  the PAYLOAD's meta information to write
+	 * @param  payload  the binary content of the PAYLOAD
+	 * @param  streamerInfo  the binary content of the PAYLOAD's streamer info
+	 * @throws  CustomSamplersException  if an error occurred during calling the functions
+	 * */
 	public void writePayload(HashMap<String, String> metaMap, byte[] payload, byte[] streamerInfo)
 			throws CustomSamplersException {
 		try {
@@ -184,6 +258,15 @@ public class MysqlQueryHandler implements QueryHandler {
 		}
 	}
 
+	/**
+	 * This method defines how an IOV is written into a MySQL database, with the following query: <br>
+	 * INSERT INTO IOV (TAG_NAME, SINCE, PAYLOAD_HASH, INSERT_TIME) VALUES (?, ?, ?, ?) <br>
+	 * <p>
+	 * The values for the query are got from the parameters.
+	 * 
+	 * @param  keyAndMetaMap  the PAYLOAD's meta information to write
+	 * @throws  CustomSamplersException  if an error occurred during calling the functions
+	 * */
 	public void writeIov(HashMap<String, String> keyAndMetaMap)
 			throws CustomSamplersException {
 		try {
@@ -200,6 +283,16 @@ public class MysqlQueryHandler implements QueryHandler {
 		}
 	}
 
+	/**
+	 * This method defines how an IOV is read from a MySQL database, with the following query: <br>
+	 * SELECT PAYLOAD_HASH FROM `IOV` WHERE TAG_NAME=? AND SINCE=? <br>
+	 * <p>
+	 * The values for the query are got from the parameters.
+	 * 
+	 * @param  keyMap  the PAYLOAD's meta information that contains the TAG_NAME and SINCE
+	 * @return  String  the hash of the PAYLOAD
+	 * @throws  CustomSamplersException  if an error occurred during calling the functions
+	 * */
 	public String readIov(HashMap<String, String> keyMap)
 			throws CustomSamplersException {
 		String result = null;
@@ -239,6 +332,7 @@ public class MysqlQueryHandler implements QueryHandler {
 		return result;
 	}
 
+	/** An implementation to write TAGs with this QueryHandler. Will be removed in a later update. */
 	public void writeTag(HashMap<String, String> metaMap)
 			throws CustomSamplersException {
 		try {
@@ -262,6 +356,7 @@ public class MysqlQueryHandler implements QueryHandler {
 		}
 	}
 
+	/** An implementation to read TAGs with this QueryHandler. Will be removed in a later update. */
 	public HashMap<String, Object> readTag(String tagKey)
 			throws CustomSamplersException {
 		HashMap<String, Object> result = new HashMap<String, Object>();

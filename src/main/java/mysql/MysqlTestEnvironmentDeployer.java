@@ -15,15 +15,15 @@ import utils.TestEnvironmentDeployer;
  * */
 public class MysqlTestEnvironmentDeployer extends TestEnvironmentDeployer {
 
+	/** The JDBC Connection object. */
 	private Connection connection = null;
+	/** The name of the MySQL fork, that this EnvironmentDeployer handles. */
 	private String fork = null;
+	/** The name of the storage engine to be used during deployment. */
 	private String whichEngine = null;
+	/** Tag list to filled now. */
 	private List<String> tagList;
 
-	public MysqlTestEnvironmentDeployer(String[] args) {
-		super("", "", "", "", "");
-	}
-	
 	public MysqlTestEnvironmentDeployer(String host, String port, String databaseName,
 			String username, String password, String whichEngine, String fork, List<String> tags) {
 		super(host, port, databaseName, username, password);
