@@ -1,13 +1,16 @@
 package assignment;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 import utils.CustomSamplersException;
 
-import binaryconfig.BinaryFileInfo;
+import binaryinfo.BinaryFileInfo;
 
 /**
  * This class is holding assignment information, associated with a BinaryFileInfo instance.
@@ -33,26 +36,30 @@ public class Assignment {
 	}
 
 	/** Full path of the assignment XML configuration of this instance. */
-	private static String assignFilePath;
+	private String assignFilePath;
 	/** User option driven mode, set when the instance is created. */
-	private static Mode assignmentMode;
+	private Mode assignmentMode;
 	/** The number of thread, when the instance was created from the ConfigElement. */
-	private static int numOfThreads;
+	private int numOfThreads;
 	/** The ID of the BinaryFileInfo resource. Normally a BinaryConfigElement's binaryInfo property. */
-	private static BinaryFileInfo binaryFileInfo;
+	private BinaryFileInfo binaryFileInfo;
 	/** The final assignment map, that contains the thread ID - file name set pairs. */
-	private static HashMap<Integer, SortedSet<String>> assignmentMap;
+	private HashMap<Integer, SortedSet<String>> assignmentMap;
+	/** The final assignment map, that contains the thread ID - file path set pairs. */
+	private HashMap<Integer, SortedSet<String>> assignedPathMap;
 
 	/** Getter function for the assignmentMap.
 	 * @return  HashMap<Integer, SortedSet<String>>  the assignmentMap field */
 	public HashMap<Integer, SortedSet<String>> getAssignments() {
 		return assignmentMap;
 	}
+
 	/** Getter function for the assignmentMode.
 	 * @return  Mode  the assignmentMode field */
 	public Mode getAssignmentMode() {
 		return assignmentMode;
 	}
+
 	/** Getter function for the associated BinaryFileInfo.
 	 * @return  BinaryFileInfo  the binaryFileInfo field */
 	public BinaryFileInfo getBinaryFileInfo() {
@@ -78,6 +85,8 @@ public class Assignment {
 		setModeFromString(mode);
 		numOfThreads = threadNum;
 		binaryFileInfo = binInfo;
+		assignmentMap = new HashMap<Integer, SortedSet<String>>();
+		assignedPathMap = new HashMap<Integer, SortedSet<String>>();
 		sanityCheck();
 		finalizeAssignments();
 	}
@@ -88,13 +97,13 @@ public class Assignment {
 	 * @throws  CustomSamplersException  if the modeStr was not recognized as a valid assignment mode
 	 * */
 	private void setModeFromString(String modeStr) throws CustomSamplersException {
-		if (modeStr == "assigned") {
+		if (modeStr.equals("assigned")) {
 			assignmentMode = Mode.ASSIGNED;
-		} else if (modeStr == "random") {
+		} else if (modeStr.equals("random")) {
 			assignmentMode = Mode.RANDOM;
-		} else if (modeStr == "mixed") {
+		} else if (modeStr.equals("mixed")) {
 			assignmentMode = Mode.MIXED;
-		} else if (modeStr == "sequence") {
+		} else if (modeStr.equals("sequence")) {
 			assignmentMode = Mode.SEQUENCE;
 		} else {
 			throw new CustomSamplersException("Unknown Mode: " + modeStr
@@ -147,6 +156,28 @@ public class Assignment {
 				assignmentMap.put(i+1, set);
 			}
 		}
+
+		/** Based on the found binary file names, we look up the path of those also. */
+		Iterator<Entry<Integer, SortedSet<String>>> it = assignmentMap.entrySet().iterator();
+		while (it.hasNext()) {
+			Map.Entry<Integer, SortedSet<String>> assignment = it.next();
+			Iterator<String> setIt = assignment.getValue().iterator();
+
+			SortedSet<String> pathSet = new TreeSet<String>();
+			while (setIt.hasNext()) {
+				String fileName = setIt.next();
+				String pathForFile = binaryFileInfo.getAbsolutePathFor(fileName);
+				if (pathForFile == null) {
+					throw new CustomSamplersException("Faild to finalize the assignment, because a"
+							+ " file is unknown for the BinaryFileInfo!"
+							+ " File name: " + fileName);
+				} else {
+					pathSet.add(pathForFile);
+				}
+			}
+			assignedPathMap.put(new Integer(assignment.getKey()), pathSet);
+		}
+
 	}
 
 	/**
@@ -162,8 +193,15 @@ public class Assignment {
 	private void sanityCheck() throws CustomSamplersException {
 		int numOfFiles = binaryFileInfo.getFileNameArray().length;
 		if (assignmentMode == Mode.SEQUENCE && numOfFiles < numOfThreads) {
-			
+			throw new CustomSamplersException("Sanity check failed! The number of files are less "
+					+ "than the number of threads, and the assignmentMode was set to sequence!");
+		} else if ((assignmentMode == Mode.ASSIGNED || assignmentMode == Mode.MIXED)
+				&& assignFilePath.equals("")) {
+			throw new CustomSamplersException("Sanity check failed! Assignment mode requires "
+					+ "the path to the assignment file, but no such file given!");
 		}
+
+		
 	}
 
 	/*public HashMap<String, HashMap<String, String>> getMetaFor(int threadID) {
@@ -186,8 +224,21 @@ public class Assignment {
 	 * @return  HashMap<String, String>  the meta information for the thread
 	 * */
 	public HashMap<String, String> getMeta(int threadID) {
-		SortedSet<String> binaries = assignmentMap.get(threadID);
-		return binaryFileInfo.getMetaInfo().get(binaries.first());
+		return binaryFileInfo.getMetaInfo().get(assignmentMap.get(threadID).first());
+	}
+
+	/**
+	 * This function passes the full path of the file, that is assigned to the thread.
+	 * <p>
+	 * Note, that one thread ID may have several assigned binary files in the map, however
+	 * we just pass the first one from the set, due to avoid heavy modification in the 
+	 * utility methods. Marked, as a pending task.
+	 * 
+	 * @param  threadID  the ID that we want to fetch the meta information for
+	 * @return  String  the full path to the assigned file
+	 * */
+	public String getFilePath(int threadID) {
+		return assignedPathMap.get(threadID).first();
 	}
 
 }

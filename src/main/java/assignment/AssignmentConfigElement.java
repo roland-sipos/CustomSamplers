@@ -8,7 +8,7 @@ import org.apache.jmeter.threads.JMeterContextService;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
-import binaryconfig.BinaryConfigElement;
+import binaryinfo.BinaryFileInfo;
 
 import utils.CustomSamplersException;
 
@@ -28,8 +28,12 @@ implements ConfigElement, TestStateListener, TestBean {
 	private static final String ASSIGNMENT_INFO = "AssignmentConfigElement.assignmentInfo";
 	/** The full path of the Assignment XML configuration file for this resource. */
 	private static final String ASSIGNMENT_FILE = "AssignmentConfigElement.assignmentFile";
-	/** The associated BinaryFileInfo instance for this resource. */
-	private static final String BINARY_INFO = "AssignmentConfigElement.binaryInfo";
+	/** The inputLocation for the BinaryFileInfo instance. */
+	public final static String INPUT_LOCATION = "BinaryConfigElement.inputLocation";
+	/** Encoding flag for the BinaryFileInfo. 
+	 * @deprecated */
+	@Deprecated
+	public final static String ENCODING = "BinaryConfigElement.encoding";
 	/** The assignment mode that this resource need to utilize. */
 	private static final String ASSIGNMENT_MODE = "AssignmentConfigElement.assignmentMode";
 
@@ -91,16 +95,19 @@ implements ConfigElement, TestStateListener, TestBean {
 			}
 
 			try {
-				int numOfThreads = getThreadContext().getThreadGroup().getNumberOfThreads();
-				Assignment assignment = new Assignment(getAssignmentFile(), getAssignmentMode(),
-						numOfThreads, BinaryConfigElement.getBinaryFileInfo(getBinaryInfo()));
+				int numOfThreads = Integer.valueOf(
+						getThreadContext().getVariables().get("numberOfThreads"));
+				Assignment assignment =
+						new Assignment(getAssignmentFile(), getAssignmentMode(), numOfThreads,
+								BinaryFileInfo.getInstance(getInputLocation()));
 				getThreadContext().getVariables().putObject(getAssignmentInfo(), assignment);
-			} catch (CustomSamplersException e) {
+			} catch (Exception e) {
 				log.error("Could not create Assignment object, due to unable to get BinaryFileInfo"
-						+ " from BinaryConfigElement with name: " + getBinaryInfo()
-						+ " Details: " + e.toString());
+						+ " for inputLocation: " + getInputLocation()
+						+ " Details: " + e.getMessage());
+				e.printStackTrace();
 			}
-			
+
 		}
 	}
 
@@ -140,19 +147,26 @@ implements ConfigElement, TestStateListener, TestBean {
 		setProperty(ASSIGNMENT_FILE, assignmentFile);
 	}
 
+	public String getInputLocation() {
+		return getPropertyAsString(INPUT_LOCATION);
+	}
+	public void setInputLocation(String inputLocation) {
+		setProperty(INPUT_LOCATION, inputLocation);
+	}
+
+	public String getEncoding() {
+		return getPropertyAsString(ENCODING);
+	}
+
+	public void setEncoding(String encoding) {
+		setProperty(ENCODING, encoding);
+	}
+
 	public String getAssignmentMode() {
 		return getPropertyAsString(ASSIGNMENT_MODE);
 	}
 	public void setAssignmentMode(String assignmentMode) {
 		setProperty(ASSIGNMENT_MODE, assignmentMode);
 	}
-
-	public String getBinaryInfo() {
-		return getPropertyAsString(BINARY_INFO);
-	}
-	public void setBinaryInfo(String binaryInfo) {
-		setProperty(BINARY_INFO, binaryInfo);
-	}
-
 
 }

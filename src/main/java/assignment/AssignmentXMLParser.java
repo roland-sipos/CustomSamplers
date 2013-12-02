@@ -2,6 +2,7 @@ package assignment;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.SortedSet;
@@ -10,7 +11,9 @@ import java.util.TreeSet;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
@@ -59,11 +62,10 @@ public class AssignmentXMLParser {
 			dbFactory.setNamespaceAware(true);
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 			doc = dBuilder.parse(asFile);
-			Schema schema = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(
-					new File(Thread.currentThread().getContextClassLoader()
-							.getResource("assignment/assignment.xsd").getPath()));
-			System.out.println(Thread.currentThread().getContextClassLoader()
-					.getResource("assignment/assignment.xsd").getPath());
+			InputStream xsdIS = Thread.currentThread()
+					.getContextClassLoader().getResourceAsStream("assignment/assignment.xsd");
+			Schema schema = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
+					.newSchema(new StreamSource(xsdIS));
 			Validator validator = schema.newValidator();
 			validator.validate(new DOMSource(doc));
 		} catch (SAXException e) {
