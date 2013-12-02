@@ -9,14 +9,14 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import utils.TagList;
-import utils.TestEnvironmentDeployer;
+import utils.EnvironmentDeployer;
 
 public class OracleDeployer {
 
 	/**
-	 *This class is the extended TestEnvironmentDeployer for Oracle 11g.
+	 *This class is the extended EnvironmentDeployer for Oracle 11g.
 	 */
-	private static class OracleTestEnvironmentDeployer extends TestEnvironmentDeployer {
+	private static class OracleTestEnvironmentDeployer extends EnvironmentDeployer {
 
 		private Connection connection = null;
 		private List<String> tagList;

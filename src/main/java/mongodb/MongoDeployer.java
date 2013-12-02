@@ -6,11 +6,11 @@ import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.ServerAddress;
 
-import utils.TestEnvironmentDeployer;
+import utils.EnvironmentDeployer;
 
 public class MongoDeployer {
 
-	private static class MongoTestEnvironmentDeployer extends TestEnvironmentDeployer {
+	private static class MongoTestEnvironmentDeployer extends EnvironmentDeployer {
 
 		DB mongoDB = null;
 

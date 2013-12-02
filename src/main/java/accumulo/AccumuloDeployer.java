@@ -17,11 +17,11 @@ import org.apache.accumulo.core.security.ColumnVisibility;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.Text;
 
-import utils.TestEnvironmentDeployer;
+import utils.EnvironmentDeployer;
 
 public class AccumuloDeployer {
 
-	private static class AccumuloTestEnvironmentDeployer extends TestEnvironmentDeployer {
+	private static class AccumuloTestEnvironmentDeployer extends EnvironmentDeployer {
 
 		private Instance zooKeeper;
 		private Connector accumulo;

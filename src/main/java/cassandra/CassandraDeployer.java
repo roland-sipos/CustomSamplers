@@ -10,11 +10,11 @@ import me.prettyprint.hector.api.exceptions.HectorException;
 import me.prettyprint.hector.api.factory.HFactory;
 import me.prettyprint.hector.api.mutation.Mutator;
 
-import utils.TestEnvironmentDeployer;
+import utils.EnvironmentDeployer;
 
 public class CassandraDeployer {
 
-	private static class CassandraTestEnvironmentDeployer extends TestEnvironmentDeployer {
+	private static class CassandraTestEnvironmentDeployer extends EnvironmentDeployer {
 
 		private Cluster cassCluster;
 

@@ -9,11 +9,11 @@ import org.ektorp.http.HttpClient;
 import org.ektorp.http.StdHttpClient;
 import org.ektorp.impl.StdCouchDbInstance;
 
-import utils.TestEnvironmentDeployer;
+import utils.EnvironmentDeployer;
 
 public class CouchDeployer {
 
-	private static class CouchTestEnvironmentDeployer extends TestEnvironmentDeployer {
+	private static class CouchTestEnvironmentDeployer extends EnvironmentDeployer {
 
 		StdCouchDbInstance dbInstance = null;
 		CouchDbConnector couch = null;

@@ -13,11 +13,11 @@ import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
 
-import utils.TestEnvironmentDeployer;
+import utils.EnvironmentDeployer;
 
 public class HBaseDeployer {
 
-	private static class HBaseTestEnvironmentDeployer extends TestEnvironmentDeployer {
+	private static class HBaseTestEnvironmentDeployer extends EnvironmentDeployer {
 
 		private static Configuration hbaseConf;
 		private static HBaseAdmin hbaseAdmin;

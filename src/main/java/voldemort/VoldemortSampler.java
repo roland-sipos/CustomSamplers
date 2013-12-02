@@ -8,8 +8,8 @@ import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
 import utils.CustomSamplerUtils;
-import binaryconfig.BinaryConfigElement;
-import binaryconfig.BinaryFileInfo;
+import binaryinfo.BinaryConfigElement;
+import binaryinfo.BinaryFileInfo;
 
 public class VoldemortSampler extends AbstractSampler implements TestBean {
 

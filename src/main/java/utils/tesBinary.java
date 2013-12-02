@@ -1,15 +1,30 @@
 package utils;
 
-import java.io.ByteArrayOutputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
-import binaryconfig.BinaryFileInfo;
+import assignment.Assignment;
+import binaryinfo.BinaryFileInfo;
 
 public class tesBinary {
+	
+	public static class Test
+	{
+	    public String test()
+	    {
+	        try {
+	            System.out.println("try");
+	            throw new Exception();
+	        } catch(Exception e) {
+	            System.out.println("catch");
+	            //return "return"; 
+	        } finally {  
+	            System.out.println("finally");
+	            return "return in finally"; 
+	        }
+	    }
+	}
 	
 	/**
 	 * @param args
@@ -17,7 +32,65 @@ public class tesBinary {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		
-		BinaryFileInfo binaryInfo = BinaryFileInfo.getInstance(
+		System.out.println(Thread.currentThread().getId());
+
+		/*Assignment assign = null;
+		try {
+			 assign = new Assignment(
+					"/home/cb/EclipseWorkspace/customsamplers/resources/assignments/example.xml",
+					"mixed", 10, BinaryFileInfo.getInstance("/testdata2/"));
+		} catch (CustomSamplersException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		Assignment assign2 = null;
+		try {
+			 assign2 = new Assignment(
+					"/home/cb/EclipseWorkspace/customsamplers/resources/assignments/example.xml",
+					"mixed", 30, BinaryFileInfo.getInstance("/testdata/"));
+		} catch (CustomSamplersException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		Assignment assign3 = null;
+		try {
+			assign3 = new Assignment(
+					"/home/cb/EclipseWorkspace/customsamplers/resources/assignments/example.xml",
+					"mixed", 10, BinaryFileInfo.getInstance("/testdata/"));
+		} catch (CustomSamplersException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+
+		System.out.println(assign3.getAssignments().toString());
+		HashMap<String, String> res = assign3.getMeta(1);
+		Iterator it = res.entrySet().iterator();
+		while (it.hasNext()) {
+			Map.Entry pairs = (Map.Entry)it.next();
+			System.out.println(pairs.getKey() + " = " + pairs.getValue());
+		}
+		System.out.println(assign3.getMeta(1).toString());
+
+		System.out.println(assign3.getBinaryFileInfo().toString());
+		System.out.println(assign2.getBinaryFileInfo().toString());
+		System.out.println(assign.getBinaryFileInfo().toString());
+		
+		System.out.println(assign3.toString() + " -> " + assign3.getBinaryFileInfo().getInputLocation());
+		System.out.println(assign.toString() + " -> " + assign.getBinaryFileInfo().getInputLocation());
+
+		System.out.println(BinaryFileInfo.getInstance("/testdata/").getInputLocation());
+		System.out.println(BinaryFileInfo.getInstance("/testdata2/").getInputLocation());
+
+		System.out.println("\n");
+		System.out.println(assign.getAssignments().toString());*/
+		
+		Test test = new Test();
+		System.out.println(test.test());
+		
+		/*BinaryFileInfo binaryInfo = BinaryFileInfo.getInstance(
 				"/testdata/",
 				"/home/cb/EclipseWorkspace/customsamplers/resources/assignments/example.xml");
 
@@ -32,7 +105,7 @@ public class tesBinary {
 			
 			System.out.println();
 		}
-		System.out.println(binaryInfo.getAssignedMeta(1).toString());
+		System.out.println(binaryInfo.getAssignedMeta(1).toString());*/
 		
 		
 		/*System.out.println("------");

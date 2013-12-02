@@ -2,7 +2,7 @@ package utils;
 
 /** This abstract class defines a skeleton for the implemented classes that are able
  * to deploy and delete schemas in different databases.*/
-public abstract class TestEnvironmentDeployer {
+public abstract class EnvironmentDeployer {
 
 	/** Host name of the manipulated machine. */
 	protected String host;
@@ -16,7 +16,7 @@ public abstract class TestEnvironmentDeployer {
 	protected String password;
 
 	/** The constructor sets up every member field, got as parameters. */
-	public TestEnvironmentDeployer(String host, String port, 
+	public EnvironmentDeployer(String host, String port, 
 			String databaseName, String username, String password) {
 		this.host = host;
 		this.port = port;

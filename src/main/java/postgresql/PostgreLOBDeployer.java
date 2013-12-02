@@ -9,11 +9,11 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import utils.TagList;
-import utils.TestEnvironmentDeployer;
+import utils.EnvironmentDeployer;
 
 public class PostgreLOBDeployer {
 
-	private static class PostgreLOBTestEnvironmentDeployer extends TestEnvironmentDeployer {
+	private static class PostgreLOBTestEnvironmentDeployer extends EnvironmentDeployer {
 
 		private Connection connection = null;
 		private List<String> tagList;

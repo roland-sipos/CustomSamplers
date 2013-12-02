@@ -9,14 +9,14 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import utils.TagList;
-import utils.TestEnvironmentDeployer;
+import utils.EnvironmentDeployer;
 
 public class PostgreDeployer {
 
 	/**
-	 * This class is the extended TestEnvironmentDeployer for PostgreSQL.
+	 * This class is the extended EnvironmentDeployer for PostgreSQL.
 	 * */
-	private static class PostgreTestEnvironmentDeployer extends TestEnvironmentDeployer {
+	private static class PostgreTestEnvironmentDeployer extends EnvironmentDeployer {
 
 		private Connection connection = null;
 		private List<String> tagList;

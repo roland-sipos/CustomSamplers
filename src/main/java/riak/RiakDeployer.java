@@ -16,11 +16,11 @@ import com.basho.riak.client.raw.http.HTTPClusterConfig;
 import com.basho.riak.client.raw.pbc.PBClientConfig;
 import com.basho.riak.client.raw.pbc.PBClusterConfig;
 
-import utils.TestEnvironmentDeployer;
+import utils.EnvironmentDeployer;
 
 public class RiakDeployer {
 
-	private static class RiakTestEnvironmentDeployer extends TestEnvironmentDeployer {
+	private static class RiakTestEnvironmentDeployer extends EnvironmentDeployer {
 
 		private IRiakClient riakClient = null;
 		private int totalMaxConnections = 0;

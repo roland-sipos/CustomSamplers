@@ -16,11 +16,11 @@ import org.hypertable.thriftgen.Cell;
 import org.hypertable.thriftgen.ClientException;
 import org.hypertable.thriftgen.Key;
 
-import utils.TestEnvironmentDeployer;
+import utils.EnvironmentDeployer;
 
 public class HypertableDeployer {
 
-	private static class HypertableTestEnvironmentDeployer extends TestEnvironmentDeployer {
+	private static class HypertableTestEnvironmentDeployer extends EnvironmentDeployer {
 
 		private static ThriftClient hyperTClient;
 		private static Long hyperTNS = -1L;
