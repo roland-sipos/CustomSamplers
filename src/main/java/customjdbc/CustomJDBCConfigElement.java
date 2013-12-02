@@ -32,7 +32,6 @@ implements ConfigElement, TestStateListener, TestBean {
 	public final static String USERNAME = "CustomJDBCConfigElement.username";
 	public final static String PASSWORD = "CustomJDBCConfigElement.password";
 
-
 	@Override
 	public void testEnded() {
 		Object connectionObject =
@@ -60,9 +59,29 @@ implements ConfigElement, TestStateListener, TestBean {
 		testEnded();
 	}
 
-	public static Connection getJDBCConnection(String database) 
+	public static Connection createJDBCConnection(String jdbcName, String host,
+			String port, String sid, String database, String username, String password) {
+		Connection connection = null;
+		String connectionStr = jdbcName + "://" + host + ":" + port + "/" + database;
+		if (!sid.isEmpty()) {
+			connectionStr = jdbcName + ":@" + host + ":" + port + ":" + database;
+		}
+		try {
+			connection = DriverManager.getConnection(connectionStr, username, password);
+		} catch (SQLException e) {
+			log.error("Failed to connect to: " + connectionStr
+					+ " Usr/pswd: " + username + "/" + password
+					+ " Exception: " + e.toString());
+		}
+		if (connection != null) {
+			log.debug("Connection established for: " + connectionStr);
+		}
+		return connection;
+	}
+
+	public static Connection getJDBCConnection(String connectionID) 
 			throws CustomSamplersException {
-		Object connection = JMeterContextService.getContext().getVariables().getObject(database);
+		Object connection = JMeterContextService.getContext().getVariables().getObject(connectionID);
 		if (connection == null) {
 			throw new CustomSamplersException("JDBC Connection object is null!");
 		}
@@ -95,21 +114,9 @@ implements ConfigElement, TestStateListener, TestBean {
 				log.debug(getDatabase() + " is being initialized ...");
 			}
 
-			Connection connection = null;
-			String connectionStr = getJdbcname() + "://" + getHost() + ":" + getPort() + "/" + getDatabase();
-			if (!getSid().isEmpty()) {
-				connectionStr = getJdbcname() + ":@" + getHost() + ":" + getPort() + ":" + getSid();
-			}
-			try {
-				connection = DriverManager.getConnection(connectionStr, getUsername(), getPassword());
-			} catch (SQLException e) {
-				log.error("Failed to connect to: " + connectionStr
-						+ " Usr/pswd: " + getUsername() + "/" + getPassword()
-						+ " Exception: " + e.toString());
-			}
-			if (connection != null) {
-				log.debug(this.getName() + " Connection established for: " + connectionStr);
-			}
+			Connection connection = createJDBCConnection(getJdbcname(), getHost(),
+					getPort(), getSid(), getDatabase(), getUsername(), getPassword());
+
 			try {
 				connection.setAutoCommit(Boolean.parseBoolean(getAutocommit()));
 			} catch (SQLException e) {
