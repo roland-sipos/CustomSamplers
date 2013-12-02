@@ -12,7 +12,8 @@ import java.util.Map;
 import org.apache.jmeter.samplers.SampleResult;
 
 import assignment.Assignment;
-import binaryconfig.BinaryFileInfo;
+import binaryinfo.BinaryFileInfo;
+import binaryinfo.Readers;
 
 /**
  * This utility class has several static methods and functions to unify
@@ -155,9 +156,8 @@ public class CustomSamplerUtils {
 	 * */
 	private static boolean checkMatch(ByteArrayOutputStream result,
 			Assignment assignment, HashMap<String, String> meta) {
-		BinaryFileInfo binInfo = assignment.getBinaryFileInfo();
-		String binaryFullPath = binInfo.getFilePathList().get(meta.get("id"));
-		ByteArrayOutputStream payload = binInfo.read(binaryFullPath);
+		String binaryFullPath = assignment.getBinaryFileInfo().getFilePathList().get(meta.get("id"));
+		ByteArrayOutputStream payload = Readers.BinaryReader.read(binaryFullPath);
 		return Arrays.equals(result.toByteArray(), payload.toByteArray());
 	}
 
@@ -247,14 +247,19 @@ public class CustomSamplerUtils {
 			SampleResult res, HashMap<String, Boolean> options) {
 		HashMap<String, String> meta = assignment.getMeta(getThreadID(Thread.currentThread().getName()));
 		String binaryID = meta.get("id");
-		BinaryFileInfo binaryInfo = assignment.getBinaryFileInfo();
-		String streamerInfoFullPath = binaryInfo.getPathForStreamerInfo(binaryID);
-		ByteArrayOutputStream streamerInfo = binaryInfo.read(streamerInfoFullPath);
+
+		BinaryFileInfo binInfo = assignment.getBinaryFileInfo();
+		
+		String streamerInfoFullPath = binInfo.getPathForStreamerInfo(binaryID);
+		ByteArrayOutputStream streamerInfo = Readers.BinaryReader.read(streamerInfoFullPath);
 
 		if (options.get("useChunks")) { // Write the chunks, not the big file.
 			try {
+				List<ByteArrayOutputStream> chunks =
+						Readers.BinaryReader.readChunks(binInfo.getChunkPathList().get(binaryID));
 				res.sampleStart();
-				queryHandler.putChunks(meta, binaryInfo.readChunksFor(binaryID));
+				queryHandler.putChunks(meta, chunks);
+				res.samplePause();
 				finalizeResponse(res, true, "200", "Payload (chunk) write: " + binaryID + " Successfull!");
 			} catch (CustomSamplersException ex) {
 				finalizeResponse(res, false, "500", ex.toString());
@@ -262,11 +267,12 @@ public class CustomSamplerUtils {
 				res.sampleEnd();
 			}
 		} else { // Write the big file, not it's chunks.
-			String binaryFullPath = binaryInfo.getFilePathList().get(binaryID);
-			ByteArrayOutputStream payload = binaryInfo.read(binaryFullPath);
+			String binaryFullPath = binInfo.getAbsolutePathFor(binaryID);
+			ByteArrayOutputStream payload = Readers.BinaryReader.read(binaryFullPath);
 			try {
 				res.sampleStart();
 				queryHandler.putData(meta, payload, streamerInfo);
+				res.samplePause();
 				finalizeResponse(res, true, "200", "Payload write: " + binaryID + " Successfull!");
 			} catch (CustomSamplersException ex) {
 				finalizeResponse(res, false, "500", ex.toString());
