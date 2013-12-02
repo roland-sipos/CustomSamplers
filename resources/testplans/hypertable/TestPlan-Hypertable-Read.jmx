@@ -26,12 +26,12 @@
         <stringProp name="ThreadGroup.delay"></stringProp>
       </ThreadGroup>
       <hashTree>
-        <binaryconfig.BinaryConfigElement guiclass="TestBeanGUI" testclass="binaryconfig.BinaryConfigElement" testname="Custom - BinaryFileInfo Configuration" enabled="true">
+        <binaryinfo.BinaryConfigElement guiclass="TestBeanGUI" testclass="binaryinfo.BinaryConfigElement" testname="Custom - BinaryFileInfo Configuration" enabled="true">
           <stringProp name="assignmentFile"></stringProp>
           <stringProp name="binaryInfo">binInfo</stringProp>
           <stringProp name="encoding">NO</stringProp>
           <stringProp name="inputLocation">/home/cb/CMS/Projects/PaGeS/fb6fd61e48a708d56383/out</stringProp>
-        </binaryconfig.BinaryConfigElement>
+        </binaryinfo.BinaryConfigElement>
         <hashTree/>
         <hypertable.HypertableConfigElement guiclass="TestBeanGUI" testclass="hypertable.HypertableConfigElement" testname="Custom - Hypertable Connection Configuration" enabled="true">
           <stringProp name="clusterId">TestHypertable</stringProp>

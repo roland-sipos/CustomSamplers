@@ -42,12 +42,12 @@
           <stringProp name="username">testUser</stringProp>
         </mongodb.MongoConfigElement>
         <hashTree/>
-        <binaryconfig.BinaryConfigElement guiclass="TestBeanGUI" testclass="binaryconfig.BinaryConfigElement" testname="Custom - BinaryFileInfo Configuration" enabled="true">
+        <binaryinfo.BinaryConfigElement guiclass="TestBeanGUI" testclass="binaryinfo.BinaryConfigElement" testname="Custom - BinaryFileInfo Configuration" enabled="true">
           <stringProp name="assignmentFile"></stringProp>
           <stringProp name="binaryInfo">binInfo</stringProp>
           <stringProp name="inputLocation">/testdata/out</stringProp>
           <stringProp name="encoding">NO</stringProp>
-        </binaryconfig.BinaryConfigElement>
+        </binaryinfo.BinaryConfigElement>
         <hashTree/>
         <mongodb.MongoSampler guiclass="TestBeanGUI" testclass="mongodb.MongoSampler" testname="Custom - MongoDB Sampler" enabled="true">
           <stringProp name="assignedWrite">False</stringProp>

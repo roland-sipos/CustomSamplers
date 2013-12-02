@@ -40,12 +40,12 @@
           <stringProp name="thriftSocketTimeout">10000</stringProp>
         </cassandra.CassandraConfigElement>
         <hashTree/>
-        <binaryconfig.BinaryConfigElement guiclass="TestBeanGUI" testclass="binaryconfig.BinaryConfigElement" testname="Custom - BinaryFileInfo Configuration" enabled="true">
+        <binaryinfo.BinaryConfigElement guiclass="TestBeanGUI" testclass="binaryinfo.BinaryConfigElement" testname="Custom - BinaryFileInfo Configuration" enabled="true">
           <stringProp name="assignmentFile"></stringProp>
           <stringProp name="binaryInfo">binInfo</stringProp>
           <stringProp name="inputLocation">/home/cb/CMS/Projects/PaGeS/fb6fd61e48a708d56383/out</stringProp>
           <stringProp name="encoding">NO</stringProp>
-        </binaryconfig.BinaryConfigElement>
+        </binaryinfo.BinaryConfigElement>
         <hashTree/>
         <cassandra.CassandraSampler guiclass="TestBeanGUI" testclass="cassandra.CassandraSampler" testname="Custom - Cassandra Sampler" enabled="true">
           <stringProp name="assignedWrite">False</stringProp>

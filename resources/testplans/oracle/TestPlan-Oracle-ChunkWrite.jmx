@@ -38,12 +38,12 @@
           <stringProp name="autocommit">True</stringProp>
         </customjdbc.CustomJDBCConfigElement>
         <hashTree/>
-        <binaryconfig.BinaryConfigElement guiclass="TestBeanGUI" testclass="binaryconfig.BinaryConfigElement" testname="Custom - BinaryFileInfo Configuration" enabled="true">
+        <binaryinfo.BinaryConfigElement guiclass="TestBeanGUI" testclass="binaryinfo.BinaryConfigElement" testname="Custom - BinaryFileInfo Configuration" enabled="true">
           <stringProp name="binaryInfo">binInfo</stringProp>
           <stringProp name="inputLocation">/testdata/out</stringProp>
           <stringProp name="assignmentFile"></stringProp>
           <stringProp name="encoding">NO</stringProp>
-        </binaryconfig.BinaryConfigElement>
+        </binaryinfo.BinaryConfigElement>
         <hashTree/>
         <oracle.OracleSampler guiclass="TestBeanGUI" testclass="oracle.OracleSampler" testname="Custom - Oracle Sampler" enabled="true">
           <stringProp name="assignedWrite">False</stringProp>

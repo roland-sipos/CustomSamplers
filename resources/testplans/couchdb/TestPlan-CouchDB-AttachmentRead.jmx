@@ -35,12 +35,12 @@
           <stringProp name="createIfNotExists">False</stringProp>
         </couchdb.CouchConfigElement>
         <hashTree/>
-        <binaryconfig.BinaryConfigElement guiclass="TestBeanGUI" testclass="binaryconfig.BinaryConfigElement" testname="Custom - BinaryFileInfo Configuration" enabled="true">
+        <binaryinfo.BinaryConfigElement guiclass="TestBeanGUI" testclass="binaryinfo.BinaryConfigElement" testname="Custom - BinaryFileInfo Configuration" enabled="true">
           <stringProp name="assignmentFile"></stringProp>
           <stringProp name="binaryInfo">binInfo</stringProp>
           <stringProp name="inputLocation">/testdata/out</stringProp>
           <stringProp name="encoding">NO</stringProp>
-        </binaryconfig.BinaryConfigElement>
+        </binaryinfo.BinaryConfigElement>
         <hashTree/>
         <couchdb.CouchSampler guiclass="TestBeanGUI" testclass="couchdb.CouchSampler" testname="Custom - CouchDB Sampler" enabled="true">
           <stringProp name="assignedWrite">False</stringProp>
