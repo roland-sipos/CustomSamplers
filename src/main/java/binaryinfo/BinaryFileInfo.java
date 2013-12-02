@@ -1,60 +1,52 @@
-package binaryconfig;
+package binaryinfo;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.TreeMap;
 
-import org.apache.commons.codec.binary.Base64OutputStream;
-
 /**
- * This static singleton class holds and handles every information of the test binary
- * data that was generated with PaGeS (Payload Generator Script). It is always dedicated
- * to a given testing scenario, as only one instance of this class exists during a test run.
- * However, many Assignment objects may use the same data set on a different (assignment) way.
+ * This static multiton class holds and handles every information of the test binary data that 
+ * was generated with PaGeS (Payload Generator Script). It is always dedicated to a given testing 
+ * scenario, as only one instance per path of this class exists during a test run. However, many 
+ * Assignment objects may use the same data set on a different (assignment) way.
  * <p>
  * Note, that this class heavily relies on the PaGeS' generated directory structure!
- * Any modification on the generated data set may cause wrong behavior in this class.
+ * Any modification on the generated data set or even on the script may cause wrong behavior in 
+ * this class. Please make the appropriate changes here also.
  * <p>
- * Note2: The singleton pattern was introduced before the BinaryFileInfo was handled by every
- * Sampler, and not with a ConfigElement. In a later update, the singleton characteristic will
- * be removed.
+ * Note2: The multiton pattern was introduced in order to create a single static instance
+ * of every given test data location, so many Assignment configuration may exist for the same
+ * BinaryFileInfo instance.
  * */
 public class BinaryFileInfo {
 
 	/** The static private instance. */
-	private static BinaryFileInfo instance = null;
+	private static final HashMap<String, BinaryFileInfo> instance =
+			new HashMap<String, BinaryFileInfo>();
 
 	/** The absolute path to the test data set. */
-	private static String location;
+	private String location;
 	/** The number of files in the data set. */
-	private static int numOfFiles;
+	private int numOfFiles;
 
 	/** A mapping between binary file names, and the appropriate meta information,
 	 * that is read from the META-filename.bin.info under the file's chunk folder. */
-	private static TreeMap<String, HashMap<String, String> > metaInfo;
+	private TreeMap<String, HashMap<String, String> > metaInfo;
 	/** A mapping between binary file names, and the full path to the appropriate file. */
-	private static TreeMap<String, String> filePathList;
+	private TreeMap<String, String> filePathList;
 	/** The array of every binary file names. Directly copied from the filePathList's key-set.
 	 * Stored separately for fast threadID - binaryID mapping and lookup.*/
-	private static String[] fileNameArray;
+	private String[] fileNameArray;
 
 	/** A mapping between binary file names and chunk file name - chunk file path pairs. */
-	private static TreeMap<String, TreeMap<String, String> > chunkPathList;
+	private TreeMap<String, TreeMap<String, String> > chunkPathList;
 	/** A mapping between binary file names and chunk file name - chunk ID pairs. */
-	private static TreeMap<String, TreeMap<String, Integer> > chunkIDList;
+	private TreeMap<String, TreeMap<String, Integer> > chunkIDList;
 
 	public String getInputLocation() {
 		return location;
@@ -114,12 +106,12 @@ public class BinaryFileInfo {
 	 * @return  BinaryFileInfo  the only instance of this class
 	 * */
 	public static BinaryFileInfo getInstance(String location) {
-		if (instance == null) {
-			instance = new BinaryFileInfo(location);
-		} else if (instance.getInputLocation() != location){
-			instance = new BinaryFileInfo(location);
+		BinaryFileInfo binInfo = instance.get(location);
+		if (binInfo == null) {
+			binInfo = new BinaryFileInfo(location);
+			instance.put(location, binInfo);
 		}
-		return instance;
+		return binInfo;
 	}
 
 	/** The constructor of the class that reads every information about the test data set.
@@ -222,82 +214,19 @@ public class BinaryFileInfo {
 	 * @param  binaryName  the binary file name to get in chunks
 	 * @return  List{@literal}<}ByteArrayOutputStream{@literal}>}  the list of chunks
 	 * */
-	public List<ByteArrayOutputStream> readChunksFor(String binaryName) {
+	/*public List<ByteArrayOutputStream> readChunksFor(String binaryName) {
 		TreeMap<String, String> cPathList = chunkPathList.get(binaryName);
 		int size = cPathList.entrySet().size();
-		
+
 		List<ByteArrayOutputStream> res = new ArrayList<ByteArrayOutputStream>(size);
 		for (int i = 0; i < size; ++i) {
 			res.add(i, null);
 		}
 		for (Map.Entry<String, String> it : cPathList.entrySet()) {
 			int id = Integer.parseInt(it.getKey().replaceAll("[\\D]", ""));
-			res.set(id-1, read(it.getValue()));
+			res.set(id-1, Readers.BinaryReader.read(it.getValue()));
 		}
 		return res;
-	}
-
-	/** Read the given binary file, and return its contents as a byte array.
-	 * @param  inputFileName  the binary file name of the file to read in
-	 * @return  ByteArrayOutputStream  the file's content
-	 * */ 
-	public ByteArrayOutputStream read(String inputFileName) {
-		ByteArrayOutputStream bosr = new ByteArrayOutputStream();
-		File file = new File(inputFileName);
-		byte[] result = new byte[(int)file.length()];
-		try {
-			InputStream input = null;
-			try {
-				int totalBytesRead = 0;
-				input = new BufferedInputStream(new FileInputStream(file));
-				while(totalBytesRead < result.length){
-					int bytesRemaining = result.length - totalBytesRead;
-					//input.read() returns -1, 0, or more :
-					int bytesRead = input.read(result, totalBytesRead, bytesRemaining); 
-					if (bytesRead > 0){
-						totalBytesRead = totalBytesRead + bytesRead;
-					}
-				}
-				bosr.write(result);
-			}
-			finally {
-				input.close();
-			}
-		}
-		catch (FileNotFoundException ex) {
-			System.out.println("File not found.");
-		}
-		catch (IOException ex) {
-			System.out.println(ex.toString());
-		}
-		return bosr;
-	}
-
-	/** Read the given binary file as Base64 string.
-	 * @param  inputFileName  the binary file name of the file to read in
-	 * @return  ByteArrayOutputStream  the file's content as Base64
-	 * */
-	public ByteArrayOutputStream readAsBase64(String inputFileName) {
-		ByteArrayOutputStream res = null;
-		try {
-			int BUFFER_SIZE = 4096;
-			byte[] buffer = new byte[BUFFER_SIZE];
-			InputStream input = new FileInputStream(inputFileName);
-
-			res = new ByteArrayOutputStream();
-			OutputStream output = new Base64OutputStream(res);
-			//a.writeTo(result);
-			int n = input.read(buffer, 0, BUFFER_SIZE);
-			while (n >= 0) {
-				output.write(buffer, 0, n);
-				n = input.read(buffer, 0, BUFFER_SIZE);
-			}
-			input.close();
-			output.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return res;
-	}
+	}*/
 
 }

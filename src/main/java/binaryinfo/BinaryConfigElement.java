@@ -1,4 +1,4 @@
-package binaryconfig;
+package binaryinfo;
 
 import org.apache.jmeter.config.ConfigElement;
 import org.apache.jmeter.testbeans.TestBean;
@@ -13,7 +13,9 @@ import utils.CustomSamplersException;
 /**
  * This class is a JMeter ConfigElement for configuring and storing a BinaryFileInfo
  * instance as a JMeter variable in the JMeterContext.
+ * @deprecated
  * */
+@Deprecated
 public class BinaryConfigElement extends AbstractTestElement
 implements ConfigElement, TestStateListener, TestBean {
 

@@ -1,4 +1,4 @@
-package binaryconfig;
+package binaryinfo;
 
 import java.beans.PropertyDescriptor;
 
@@ -8,7 +8,9 @@ import org.apache.log.Logger;
 
 /**
  * This class is the BeanInfoSupport for the BinaryConfigElement class.
+ * @eprecated
  * */
+@Deprecated
 public class BinaryConfigElementBeanInfo extends BeanInfoSupport {
 
 	/** Static logger instance from JMeter. */
