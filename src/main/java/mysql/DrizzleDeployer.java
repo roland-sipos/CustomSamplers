@@ -5,14 +5,14 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import utils.TestEnvironmentDeployer;
+import utils.EnvironmentDeployer;
 
 public class DrizzleDeployer {
 
 	/**
-	 * This class is the extended TestEnvironmentDeployer for Drizzle.
+	 * This class is the extended EnvironmentDeployer for Drizzle.
 	 * */
-	private static class DrizzleTestEnvironmentDeployer extends TestEnvironmentDeployer {
+	private static class DrizzleTestEnvironmentDeployer extends EnvironmentDeployer {
 
 		private Connection connection = null;
 		

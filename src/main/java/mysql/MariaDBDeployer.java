@@ -11,8 +11,8 @@ public class MariaDBDeployer {
 	 */
 	public static void main(String[] args) {
 		List<String> tagList = TagList.getTags();
-		MysqlTestEnvironmentDeployer deployer =
-				new MysqlTestEnvironmentDeployer("testdb-pc2.cern.ch", "3306", 
+		MysqlEnvironmentDeployer deployer =
+				new MysqlEnvironmentDeployer("testdb-pc2.cern.ch", "3306", 
 						"test", "testUser", "testPass", "", "MariaDB", tagList);
 
 		//System.out.println("-------- MariaDB environment setup ------------");

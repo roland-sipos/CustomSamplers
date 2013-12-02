@@ -11,8 +11,8 @@ public class MysqlClusterDeployer {
 	 */
 	public static void main(String[] args) {
 		List<String> tagList = TagList.getTags();
-		MysqlTestEnvironmentDeployer deployer =
-				new MysqlTestEnvironmentDeployer("mysqlclustermng.cern.ch", "3306", 
+		MysqlEnvironmentDeployer deployer =
+				new MysqlEnvironmentDeployer("mysqlclustermng.cern.ch", "3306", 
 						"testdb", "testUser", "testPass", "", "Mysql", tagList);
 
 		//System.out.println("-------- MySQL-Cluster environment setup ------------");

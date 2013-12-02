@@ -11,10 +11,10 @@ public class MysqlDeployer {
 	 */
 	public static void main(String[] args) {
 		List<String> tagList = TagList.getTags();
-		MysqlTestEnvironmentDeployer deployer =
-				new MysqlTestEnvironmentDeployer("test-mysql.cern.ch", "3306", 
+		MysqlEnvironmentDeployer deployer =
+				new MysqlEnvironmentDeployer("test-mysql.cern.ch", "3306", 
 						"testdb", "testUser", "testPass", "InnoDB", "Mysql", tagList);
-				/*new MysqlTestEnvironmentDeployer("cloudnode1.cern.ch", "3306",
+				/*new MysqlEnvironmentDeployer("cloudnode1.cern.ch", "3306",
 						"testdb", "testUser", "testPass", "InnoDB", "Mysql", tagList);*/
 
 		//System.out.println("-------- MySQL environment setup ------------");
