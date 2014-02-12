@@ -23,6 +23,7 @@ public abstract class EnvironmentDeployer {
 		this.databaseName = databaseName;
 		this.username = username;
 		this.password = password;
+
 	}
 
 	/** Abstract method for initializing the connection with the machine. */
