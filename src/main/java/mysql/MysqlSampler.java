@@ -72,14 +72,14 @@ public class MysqlSampler extends AbstractSampler implements TestBean {
 
 		/** Get an initial SampleResult and parse user options. */
 		SampleResult res = CustomSamplerUtils.getInitialSampleResult(getTitle());
-		//HashMap<String, Boolean> options = prepareOptions();
+		HashMap<String, Boolean> options = prepareOptions();
 
 		/** Start the request, then return with the modified SampleResult. */
-		//if(getRequestType() == "read") {
-		//	CustomSamplerUtils.readWith(queryHandler, assignment, res, options);
-		//} else if (getRequestType() == "write") {
-		//	CustomSamplerUtils.writeWith(queryHandler, assignment, res, options);
-		//}
+		if(getRequestType() == "read") {
+			CustomSamplerUtils.readWith(queryHandler, assignment, res, options);
+		} else if (getRequestType() == "write") {
+			CustomSamplerUtils.writeWith(queryHandler, assignment, res, options);
+		}
 		return res;
 	}
 
