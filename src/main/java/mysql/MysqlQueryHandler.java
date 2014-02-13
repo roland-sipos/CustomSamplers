@@ -35,7 +35,6 @@ public class MysqlQueryHandler implements QueryHandler {
 	public MysqlQueryHandler(String databaseName) 
 			throws CustomSamplersException {
 		connection = CustomJDBCConfigElement.getJDBCConnection(databaseName);
-		System.out.println("addr: " + connection.toString());
 		if (connection == null)
 			throw new CustomSamplersException("JDBCConnection instance with name: " + databaseName + " was not found in config!");
 	}

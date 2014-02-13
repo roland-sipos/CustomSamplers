@@ -85,17 +85,6 @@ public class MysqlDeployer {
 			formatter.printHelp(classCmd, clpHeader, depOps, utils.Constants.supportFooter);
 		}
 
-		/*MysqlEnvironmentDeployer deployer =
-				new MysqlEnvironmentDeployer("test-mysql.cern.ch", "3306", 
-						"testdb", "testUser", "testPass", "InnoDB", "Mysql", tagList);*/
-
-		//System.out.println("-------- MySQL environment setup ------------");
-		//deployer.deployTestEnvironment();
-		//System.out.println("------- MySQL environment teardown ----------");
-		//deployer.destroyTestEnvironment();
-		//System.out.println("------- MySQL environment teardown and setup -----------");
-		//deployer.redeployEnvironment();
-
 	}
 
 }

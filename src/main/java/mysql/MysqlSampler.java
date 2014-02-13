@@ -63,7 +63,6 @@ public class MysqlSampler extends AbstractSampler implements TestBean {
 		try {
 			queryHandler = new MysqlQueryHandler(getDatabase());
 			assignment = AssignmentConfigElement.getAssignments(getAssignmentInfo());
-			System.out.println(assignment.toString());
 		} catch (Exception e) {
 			log.error("Failed to create a MysqlSampler prerequisites for the " + 
 					Thread.currentThread().getName() + " sampler. Details:" + e.toString());

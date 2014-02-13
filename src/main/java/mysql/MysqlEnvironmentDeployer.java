@@ -78,6 +78,7 @@ public class MysqlEnvironmentDeployer extends EnvironmentDeployer {
 
 	@Override
 	protected void setupEnvironment() {
+		System.out.println("----------- MySQL environment setup ----------");
 		System.out.println(" setupEnvironment() -> Setting up the environment...");
 
 		String createTagQuery = "CREATE  TABLE IF NOT EXISTS `TAG` ("
@@ -191,6 +192,7 @@ public class MysqlEnvironmentDeployer extends EnvironmentDeployer {
 
 	@Override
 	protected void destroyEnvironment() {
+		System.out.println("--------- MySQL environment teardown ---------");
 		System.out.println(" destroyEnvironment() -> Destroying environment...");
 		String deleteTagQuery = "DROP TABLE IF EXISTS `TAG`";
 		String deleteChunkQuery = "DROP TABLE IF EXISTS `CHUNK`";
