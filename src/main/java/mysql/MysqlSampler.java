@@ -26,7 +26,7 @@ public class MysqlSampler extends AbstractSampler implements TestBean {
 	private static final Logger log = LoggingManager.getLoggerForClass();
 
 	/** This field indicates which CustomJDBC ConfigElement will be used for the sampling. */
-	public final static String DATABASE = "MysqlSampler.database";
+	public final static String CONNECTIONID = "MysqlSampler.connectionId";
 	/** This field indicates which Assignment ConfigElement will be used for the sampling. */
 	public final static String ASSIGNMENTINFO = "MysqlSampler.assignmentInfo";
 	/** This field indicates, if the sampling will use chunks of the payloads. */
@@ -61,7 +61,7 @@ public class MysqlSampler extends AbstractSampler implements TestBean {
 		MysqlQueryHandler queryHandler = null;
 		Assignment assignment = null;
 		try {
-			queryHandler = new MysqlQueryHandler(getDatabase());
+			queryHandler = new MysqlQueryHandler(getConnectionId());
 			assignment = AssignmentConfigElement.getAssignments(getAssignmentInfo());
 		} catch (Exception e) {
 			log.error("Failed to create a MysqlSampler prerequisites for the " + 
@@ -74,9 +74,9 @@ public class MysqlSampler extends AbstractSampler implements TestBean {
 		HashMap<String, Boolean> options = prepareOptions();
 
 		/** Start the request, then return with the modified SampleResult. */
-		if(getRequestType() == "read") {
+		if(getRequestType().equals("read")) {
 			CustomSamplerUtils.readWith(queryHandler, assignment, res, options);
-		} else if (getRequestType() == "write") {
+		} else if (getRequestType().equals("write")) {
 			CustomSamplerUtils.writeWith(queryHandler, assignment, res, options);
 		}
 		return res;
@@ -88,8 +88,8 @@ public class MysqlSampler extends AbstractSampler implements TestBean {
 	 * */
 	private HashMap<String, Boolean> prepareOptions() {
 		HashMap<String, Boolean> options = new HashMap<String, Boolean>();
-		//options.put("requestType", Boolean.parseBoolean(getRequestType()));
-		options.put("useChunks", Boolean.parseBoolean(getUseChunks()));
+		String cProp = getUseChunks();
+		options.put("useChunks", cProp.equals(String.valueOf(Boolean.TRUE)));
 		options.put("validateOperation", Boolean.parseBoolean(getValidateOperation()));
 		return options;
 	}
@@ -106,11 +106,11 @@ public class MysqlSampler extends AbstractSampler implements TestBean {
 	public String getTitle() {
 		return this.getName();
 	}
-	public String getDatabase() {
-		return getPropertyAsString(DATABASE);
+	public String getConnectionId() {
+		return getPropertyAsString(CONNECTIONID);
 	}
-	public void setDatabase(String database) {
-		setProperty(DATABASE, database);
+	public void setConnectionId(String connectionId) {
+		setProperty(CONNECTIONID, connectionId);
 	}
 	public String getAssignmentInfo() {
 		return getPropertyAsString(ASSIGNMENTINFO);

@@ -6,19 +6,41 @@ import org.apache.jmeter.testbeans.BeanInfoSupport;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
+/**
+ * This class is the BeanInfoSupport for the CustomJDBCConnectionSampler class.
+ * */
 public class CustomJDBCConnectionSamplerBeanInfo extends BeanInfoSupport {
 
+	/** Static logger instance from JMeter. */
 	private static final Logger log = LoggingManager.getLoggerForClass();
 
+	/** The constructor binds the given properties for the CustomJDBCConnnectionSampler class.
+	 * <p>
+	 * The property groups and properties are the following: <br>
+	 * connection <br>
+	 * -- connectionId <br>
+	 * -- jdbcname <br>
+	 * -- classname <br>
+	 * -- host <br>
+	 * -- port <br>
+	 * -- database <br>
+	 * -- sid <br>
+	 * -- autocommit <br>
+	 * -- username <br>
+	 * -- password <br>
+	 * */
 	public CustomJDBCConnectionSamplerBeanInfo() {
 		super(CustomJDBCConnectionSampler.class);
 
 		createPropertyGroup("connection", new String[] {
-				"jdbcname", "classname", 
+				"connectionId", "jdbcname", "classname", 
 				"host", "port", "database", "sid", "autocommit", 
 				"username", "password"});
 
-		PropertyDescriptor p = property("jdbcname");
+		PropertyDescriptor p = property("connectionId");
+		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
+		p.setValue(DEFAULT, "postgreConn");
+		p = property("jdbcname");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "jdbc:postgresql");
 		p = property("classname");

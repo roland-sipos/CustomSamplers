@@ -22,15 +22,16 @@ public class CustomJDBCConnectionSampler extends AbstractSampler implements Test
 	/** Static logger instance from JMeter. */
 	private static final Logger log = LoggingManager.getLoggerForClass();
 
-	public final static String JDBCNAME = "CustomJDBCConfigElement.jdbcname";
-	public final static String CLASSNAME = "CustomJDBCConfigElement.classname";
-	public final static String HOST = "CustomJDBCConfigElement.host";
-	public final static String PORT = "CustomJDBCConfigElement.port";
-	public final static String DATABASE = "CustomJDBCConfigElement.database";
-	public final static String SID = "CustomJDBCConfigElement.sid";
-	public final static String AUTOCOMMIT = "CustomJDBCConfigElement.autocommit";
-	public final static String USERNAME = "CustomJDBCConfigElement.username";
-	public final static String PASSWORD = "CustomJDBCConfigElement.password";
+	public final static String CONNECTIONID = "CustomJDBCConnectionSampler.connectionId";
+	public final static String JDBCNAME = "CustomJDBCConnectionSampler.jdbcname";
+	public final static String CLASSNAME = "CustomJDBCConnectionSampler.classname";
+	public final static String HOST = "CustomJDBCConnectionSampler.host";
+	public final static String PORT = "CustomJDBCConnectionSampler.port";
+	public final static String DATABASE = "CustomJDBCConnectionSampler.database";
+	public final static String SID = "CustomJDBCConnectionSampler.sid";
+	public final static String AUTOCOMMIT = "CustomJDBCConnectionSampler.autocommit";
+	public final static String USERNAME = "CustomJDBCConnectionSampler.username";
+	public final static String PASSWORD = "CustomJDBCConnectionSampler.password";
 
 	public CustomJDBCConnectionSampler() {
 		trace("CustomJDBCConnectionSampler()" + this.toString());
@@ -55,7 +56,7 @@ public class CustomJDBCConnectionSampler extends AbstractSampler implements Test
 					getUsername(), getPassword());
 			res.samplePause();
 			connection.setAutoCommit(Boolean.parseBoolean(getAutocommit()));
-			getThreadContext().getVariables().putObject(getDatabase(), connection);
+			getThreadContext().getVariables().putObject(getConnectionId(), connection);
 		} catch (Exception e) {
 			CustomSamplerUtils.finalizeResponse(res, false, "999",
 					"Exception occured in this sample: " + e.toString());
@@ -79,7 +80,15 @@ public class CustomJDBCConnectionSampler extends AbstractSampler implements Test
 	public String getTitle() {
 		return this.getName();
 	}
-	
+
+	public String getConnectionId() {
+		return getPropertyAsString(CONNECTIONID);
+	}
+
+	public void setConnectionId(String connectionId) {
+		setProperty(CONNECTIONID, connectionId);
+	}
+
 	public String getJdbcname() {
 		return getPropertyAsString(JDBCNAME);
 	}

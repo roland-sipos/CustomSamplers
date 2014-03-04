@@ -18,7 +18,7 @@ public class MysqlSamplerBeanInfo extends BeanInfoSupport {
 	 * <p>
 	 * The property groups and properties are the following: <br>
 	 * mysql <br>
-	 * -- database <br>
+	 * -- connectionId <br>
 	 * sampler <br>
 	 * -- assignmentInfo <br>
 	 * -- useChunks <br>
@@ -29,13 +29,13 @@ public class MysqlSamplerBeanInfo extends BeanInfoSupport {
 	public MysqlSamplerBeanInfo() {
 		super(MysqlSampler.class);
 
-		createPropertyGroup("mysql", new String[] {"database"});
+		createPropertyGroup("mysql", new String[] {"connectionId"});
 		createPropertyGroup("sampler", new String[] {"assignmentInfo", "useChunks"});
 		createPropertyGroup("io", new String[] {"requestType", "validateOperation"});
 
-		PropertyDescriptor p = property("database");
+		PropertyDescriptor p = property("connectionId");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, "testdb");
+		p.setValue(DEFAULT, "mysqlConn");
 
 		p = property("assignmentInfo");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);

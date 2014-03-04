@@ -28,15 +28,16 @@ public class MysqlQueryHandler implements QueryHandler {
 	/** The constructor receives the ID of the Connection resource, that is looked up in
 	 * the JMeterContext and fetched from the CustomJDBCConfigElement.
 	 * 
-	 * @param  databaseName  the ID of a CustomJDBCConfigElement's resource
+	 * @param  connectionId  the ID of a CustomJDBCConfigElement's resource
 	 * @param ifNewConnection 
 	 * @throws  CustomSamplersException  if the CustomJDBCConfigElement could not fetch the resource
 	 * */
-	public MysqlQueryHandler(String databaseName) 
+	public MysqlQueryHandler(String connectionId) 
 			throws CustomSamplersException {
-		connection = CustomJDBCConfigElement.getJDBCConnection(databaseName);
+		connection = CustomJDBCConfigElement.getJDBCConnection(connectionId);
 		if (connection == null)
-			throw new CustomSamplersException("JDBCConnection instance with name: " + databaseName + " was not found in config!");
+			throw new CustomSamplersException("JDBCConnection instance with ID: "
+					+ connectionId + " was not found in config!");
 	}
 
 	/**

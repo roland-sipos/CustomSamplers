@@ -24,6 +24,16 @@ public class MysqlEnvironmentDeployer extends EnvironmentDeployer {
 	/** Tag list to filled now. */
 	private List<String> tagList;
 
+	/** Constructor
+	 * @param host target host for deployment (passed for super EnvironmentDeployer)
+	 * @param port port of target host (passed for super)
+	 * @param databaseName the name of the database instance on target host (passed for super)
+	 * @param username the user's name for target authentication (passed for super)
+	 * @param password the user's password for target authentication (passed for super)
+	 * @param whichEngine the requested storage engine to be used on target (MySQL specific)
+	 * @param fork indicate, if target is a special fork of MySQL (MySQL specific)
+	 * @param tags possible TAGs will be written into the database directly. (transaction specific)
+	 * */
 	public MysqlEnvironmentDeployer(String host, String port, String databaseName,
 			String username, String password, String whichEngine, String fork, List<String> tags) {
 		super(host, port, databaseName, username, password);
@@ -32,24 +42,35 @@ public class MysqlEnvironmentDeployer extends EnvironmentDeployer {
 		this.tagList = tags;
 	}
 
+	/** Initialize function for MySQL, and it's forks. */
 	@Override
 	protected void initialize() {
-		/*try {
-				Class.forName("com.mysql.jdbc.Driver");
+		/** A fast-check for the JDBC driver. */
+		String className = "";
+		if (fork.equals("Mysql")) {
+			className = "com.mysql.jdbc.Driver";
+		} else if (fork.equals("MariaDB")) {
+			className = "org.mariadb.jdbc.Driver";
+		} else if (fork.equals("Drizzle"))
+		try {
+				Class.forName(className);
 			} catch (ClassNotFoundException e) {
-				System.out.println(" initialize() -> Where is your MySQL JDBC Driver? "
-				+ "Include in your library path!");
+				System.out.println(" initialize() -> Where is your " + fork + " JDBC Driver? "
+						+ "Include it in your library path!");
 				e.printStackTrace();
 				return;
-			}*/
-		System.out.println(" initialize() -> MySQL JDBC Driver Registered!");
+		}
+		System.out.println(" initialize() -> " + fork + " JDBC Driver Registered!");
 
 		try {
 			if (fork.equals("MariaDB")) {
 				connection = DriverManager.getConnection("jdbc:mariadb://" + getHost() + ":" + getPort()
 						+ "/" + getDatabase(), getUsername(), getPassword());
 			} else if (fork.equals("Mysql")) {
-				connection = DriverManager.getConnection("jdbc:mysql://" + getHost() + ":" + getPort() 
+				connection = DriverManager.getConnection("jdbc:mysql://" + getHost() + ":" + getPort()
+						+ "/" + getDatabase(), getUsername(), getPassword());
+			} else  if (fork.equals("Drizzle")) {
+				connection = DriverManager.getConnection("jdbc:drizzle://" + getHost() + ":" + getPort()
 						+ "/" + getDatabase(), getUsername(), getPassword());
 			} else {
 				System.out.println(" initialize -> Connection cannot be established! "
@@ -64,6 +85,7 @@ public class MysqlEnvironmentDeployer extends EnvironmentDeployer {
 		System.out.println(" initialize() -> Connection established...\n");	
 	}
 
+	/** Tear-down function for MySQL, and it's forks. */
 	@Override
 	protected void tearDown() {
 		try {
@@ -76,6 +98,7 @@ public class MysqlEnvironmentDeployer extends EnvironmentDeployer {
 		}
 	}
 
+	/** Environment setup function for MySQL, and it's forks. */
 	@Override
 	protected void setupEnvironment() {
 		System.out.println("----------- MySQL environment setup ----------");
@@ -190,6 +213,7 @@ public class MysqlEnvironmentDeployer extends EnvironmentDeployer {
 		System.out.println(" setupEnvironment() -> The environment has been deployed.\n");
 	}
 
+	/** Environment destroy function for MySQL, and it's forks. */
 	@Override
 	protected void destroyEnvironment() {
 		System.out.println("--------- MySQL environment teardown ---------");

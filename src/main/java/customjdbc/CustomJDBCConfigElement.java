@@ -14,32 +14,52 @@ import org.apache.log.Logger;
 
 import utils.CustomSamplersException;
 
-
+/**
+ * A Custom ConfigElement for handling JDBC connections.
+ * */
 public class CustomJDBCConfigElement extends AbstractTestElement
 implements ConfigElement, TestStateListener, TestBean {
 
+	/** Generated serialVersionUID. */
 	private static final long serialVersionUID = 6256939089220907405L;
-
+	/** Static logger from the LoggingManager. */
 	private static final Logger log = LoggingManager.getLoggerForClass();
 
+	/** The ID of the JDBC Connection object. */
+	public final static String CONNECTIONID = "CustomJDBCConfigElement.connectionId";
+	/** The JDBC name of the database. */
 	public final static String JDBCNAME = "CustomJDBCConfigElement.jdbcname";
+	/** The class name of the JDBC driver. */
 	public final static String CLASSNAME = "CustomJDBCConfigElement.classname";
+	/** The host name of connection target. */
 	public final static String HOST = "CustomJDBCConfigElement.host";
+	/** The port to be used by the connection. */
 	public final static String PORT = "CustomJDBCConfigElement.port";
+	/** The name of the database instance on target host. */
 	public final static String DATABASE = "CustomJDBCConfigElement.database";
+	/** The SID if the connection should use this instead of Database name. */
 	public final static String SID = "CustomJDBCConfigElement.sid";
+	/** If the connection should use auto-commit mode or not. */
 	public final static String AUTOCOMMIT = "CustomJDBCConfigElement.autocommit";
+	/** User name for authentication. */
 	public final static String USERNAME = "CustomJDBCConfigElement.username";
+	/** Password for authentication. */
 	public final static String PASSWORD = "CustomJDBCConfigElement.password";
 
+	/**
+	 * The testEnded function of this custom ConfigElement.
+	 * It closes the connection in the JMeter context service, with the given ConnectionID.
+	 * */
 	@Override
 	public void testEnded() {
+		/** Lookup object with ConnectionID in the JMeter Context. */
 		Object connectionObject =
-				JMeterContextService.getContext().getVariables().getObject(getDatabase());
+				JMeterContextService.getContext().getVariables().getObject(getConnectionId());
 		if (connectionObject == null) {
 			log.error("JDBC Connection object is null!");
 		}
 		else {
+			/** Paranoid type check, and closing the instance. */
 			if (connectionObject instanceof Connection) {
 				Connection conn = (Connection)connectionObject;
 				try {
@@ -52,13 +72,30 @@ implements ConfigElement, TestStateListener, TestBean {
 				log.error("Casting the object to (java.sql.Connection) failed!");
 			}
 		}
-		getThreadContext().getVariables().putObject(getDatabase(), null);
+		getThreadContext().getVariables().putObject(getConnectionId(), null);
 	}
+
+	/** 
+	 * The remote testEnded matches the normal testEnded function.
+	 * */
 	@Override
 	public void testEnded(String arg0) {
 		testEnded();
 	}
 
+	/**
+	 * A static function for creating JDBC Connections, based on given parameters.
+	 * 
+	 * @param jdbcName the JDBC name
+	 * @param host  the target host
+	 * @param port  the port of target host
+	 * @param sid  SID of the database instance
+	 * @param database  alias of the database instance
+	 * @param username  user name for authentication
+	 * @param password  password of the user for authentication
+	 * 
+	 * @return Connection the set up JDBC Connection
+	 * */
 	public static Connection createJDBCConnection(String jdbcName, String host,
 			String port, String sid, String database, String username, String password) {
 		Connection connection = null;
@@ -79,6 +116,13 @@ implements ConfigElement, TestStateListener, TestBean {
 		return connection;
 	}
 
+	/**
+	 * Static getter function for looking up JDBC Connection instances in the JMeter Context Service.
+	 * 
+	 * @param connectionID  the ID of the Connection object to look up
+	 * 
+	 * @return Connection  the found ConnectionID in 
+	 * */
 	public static Connection getJDBCConnection(String connectionID) 
 			throws CustomSamplersException {
 		Object connection = JMeterContextService.getContext().getVariables().getObject(connectionID);
@@ -95,25 +139,33 @@ implements ConfigElement, TestStateListener, TestBean {
 		}
 	}
 
+	/**
+	 * The testStarted function of this custom ConfigElement.
+	 * It creates a JDBC Connection, and puts it into the JMeter Context Service Variables
+	 * with it's key as the given ConnectionID.
+	 * */
 	@Override
 	public void testStarted() {
 		if (log.isDebugEnabled()) {
 			log.debug(this.getName() + " testStarted()");
 		}
 
+		/** Fast Class availability check. */
 		try {
 			Class.forName(getClassname());
 		} catch (ClassNotFoundException e) {
 			log.error("JDBC Driver class not found for: " + getClassname() + " Exception:" + e);
 		}
 
-		if (getThreadContext().getVariables().getObject(getDatabase()) != null) {
-			log.warn(getDatabase() + " has already initialized!");
+		/** Before put, it looks up the Thread Context, if any resource already holds this ID. */
+		if (getThreadContext().getVariables().getObject(getConnectionId()) != null) {
+			log.warn(getConnectionId() + " has already initialized!");
 		} else {
 			if (log.isDebugEnabled()) {
-				log.debug(getDatabase() + " is being initialized ...");
+				log.debug(getConnectionId() + " is being initialized ...");
 			}
 
+			/** If not, it creates the Connection, and put's it into the JMeter Context. */
 			Connection connection = createJDBCConnection(getJdbcname(), getHost(),
 					getPort(), getSid(), getDatabase(), getUsername(), getPassword());
 
@@ -123,25 +175,39 @@ implements ConfigElement, TestStateListener, TestBean {
 				log.error("Failed to change autoCommit to false: " + e.toString());
 			}
 
-			getThreadContext().getVariables().putObject(getDatabase(), connection);
+			getThreadContext().getVariables().putObject(getConnectionId(), connection);
 		}
 	}
 
-
+	/** 
+	 * The remote testStarted matches the normal testStarted function.
+	 * */
 	@Override
 	public void testStarted(String arg0) {
 		testStarted();
 	}
+
+	/**
+	 * We will not add new ConfigElements.
+	 * */
 	@Override
 	public void addConfigElement(ConfigElement arg0) {
 		// TODO Auto-generated method stub
-
 	}
+
+	/** We do not expect modifications. */
 	@Override
 	public boolean expectsModification() {
 		return false;
 	}
 
+	public String getConnectionId() {
+		return getPropertyAsString(CONNECTIONID);
+	}
+
+	public void setConnectionId(String connectionId) {
+		setProperty(CONNECTIONID, connectionId);
+	}
 
 	public String getJdbcname() {
 		return getPropertyAsString(JDBCNAME);
