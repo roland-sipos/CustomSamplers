@@ -26,11 +26,11 @@ implements ConfigElement, TestStateListener, TestBean {
 	private static final Logger log = LoggingManager.getLoggerForClass();
 
 	/** The ID of the JDBC Connection object. */
-	public final static String CONNECTIONID = "CustomJDBCConfigElement.connectionId";
+	public final static String CONNECTION_ID = "CustomJDBCConfigElement.connectionId";
 	/** The JDBC name of the database. */
-	public final static String JDBCNAME = "CustomJDBCConfigElement.jdbcname";
+	public final static String JDBC_NAME = "CustomJDBCConfigElement.jdbcName";
 	/** The class name of the JDBC driver. */
-	public final static String CLASSNAME = "CustomJDBCConfigElement.classname";
+	public final static String CLASS_NAME = "CustomJDBCConfigElement.className";
 	/** The host name of connection target. */
 	public final static String HOST = "CustomJDBCConfigElement.host";
 	/** The port to be used by the connection. */
@@ -40,7 +40,7 @@ implements ConfigElement, TestStateListener, TestBean {
 	/** The SID if the connection should use this instead of Database name. */
 	public final static String SID = "CustomJDBCConfigElement.sid";
 	/** If the connection should use auto-commit mode or not. */
-	public final static String AUTOCOMMIT = "CustomJDBCConfigElement.autocommit";
+	public final static String AUTO_COMMIT = "CustomJDBCConfigElement.autoCommit";
 	/** User name for authentication. */
 	public final static String USERNAME = "CustomJDBCConfigElement.username";
 	/** Password for authentication. */
@@ -152,9 +152,9 @@ implements ConfigElement, TestStateListener, TestBean {
 
 		/** Fast Class availability check. */
 		try {
-			Class.forName(getClassname());
+			Class.forName(getClassName());
 		} catch (ClassNotFoundException e) {
-			log.error("JDBC Driver class not found for: " + getClassname() + " Exception:" + e);
+			log.error("JDBC Driver class not found for: " + getClassName() + " Exception:" + e);
 		}
 
 		/** Before put, it looks up the Thread Context, if any resource already holds this ID. */
@@ -166,11 +166,11 @@ implements ConfigElement, TestStateListener, TestBean {
 			}
 
 			/** If not, it creates the Connection, and put's it into the JMeter Context. */
-			Connection connection = createJDBCConnection(getJdbcname(), getHost(),
+			Connection connection = createJDBCConnection(getJdbcName(), getHost(),
 					getPort(), getSid(), getDatabase(), getUsername(), getPassword());
 
 			try {
-				connection.setAutoCommit(Boolean.parseBoolean(getAutocommit()));
+				connection.setAutoCommit(Boolean.parseBoolean(getAutoCommit()));
 			} catch (SQLException e) {
 				log.error("Failed to change autoCommit to false: " + e.toString());
 			}
@@ -202,27 +202,27 @@ implements ConfigElement, TestStateListener, TestBean {
 	}
 
 	public String getConnectionId() {
-		return getPropertyAsString(CONNECTIONID);
+		return getPropertyAsString(CONNECTION_ID);
 	}
 
 	public void setConnectionId(String connectionId) {
-		setProperty(CONNECTIONID, connectionId);
+		setProperty(CONNECTION_ID, connectionId);
 	}
 
-	public String getJdbcname() {
-		return getPropertyAsString(JDBCNAME);
+	public String getJdbcName() {
+		return getPropertyAsString(JDBC_NAME);
 	}
 
-	public void setJdbcname(String jdbcname) {
-		setProperty(JDBCNAME, jdbcname);
+	public void setJdbcName(String jdbcName) {
+		setProperty(JDBC_NAME, jdbcName);
 	}
 
-	public String getClassname() {
-		return getPropertyAsString(CLASSNAME);
+	public String getClassName() {
+		return getPropertyAsString(CLASS_NAME);
 	}
 
-	public void setClassname(String classname) {
-		setProperty(CLASSNAME, classname);
+	public void setClassName(String className) {
+		setProperty(CLASS_NAME, className);
 	}
 
 	public String getHost() {
@@ -257,12 +257,12 @@ implements ConfigElement, TestStateListener, TestBean {
 		setProperty(SID, sid);
 	}
 
-	public String getAutocommit() {
-		return getPropertyAsString(AUTOCOMMIT);
+	public String getAutoCommit() {
+		return getPropertyAsString(AUTO_COMMIT);
 	}
 
-	public void setAutocommit(String autocommit) {
-		setProperty(AUTOCOMMIT, autocommit);
+	public void setAutoCommit(String autoCommit) {
+		setProperty(AUTO_COMMIT, autoCommit);
 	}
 
 	public String getUsername() {

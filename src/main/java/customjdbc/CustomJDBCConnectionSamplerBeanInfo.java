@@ -19,13 +19,13 @@ public class CustomJDBCConnectionSamplerBeanInfo extends BeanInfoSupport {
 	 * The property groups and properties are the following: <br>
 	 * connection <br>
 	 * -- connectionId <br>
-	 * -- jdbcname <br>
-	 * -- classname <br>
+	 * -- jdbcName <br>
+	 * -- className <br>
 	 * -- host <br>
 	 * -- port <br>
 	 * -- database <br>
 	 * -- sid <br>
-	 * -- autocommit <br>
+	 * -- autoCommit <br>
 	 * -- username <br>
 	 * -- password <br>
 	 * */
@@ -33,22 +33,22 @@ public class CustomJDBCConnectionSamplerBeanInfo extends BeanInfoSupport {
 		super(CustomJDBCConnectionSampler.class);
 
 		createPropertyGroup("connection", new String[] {
-				"connectionId", "jdbcname", "classname", 
-				"host", "port", "database", "sid", "autocommit", 
+				"connectionId", "jdbcName", "className", 
+				"host", "port", "database", "sid", "autoCommit", 
 				"username", "password"});
 
 		PropertyDescriptor p = property("connectionId");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "postgreConn");
-		p = property("jdbcname");
+		p = property("jdbcName");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "jdbc:postgresql");
-		p = property("classname");
+		p = property("className");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "org.postgresql.Driver");
 		p = property("host");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, "137.138.229.253");
+		p.setValue(DEFAULT, "cloud-postgre.cern.ch");
 		p = property("port");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "5432");
@@ -58,7 +58,7 @@ public class CustomJDBCConnectionSamplerBeanInfo extends BeanInfoSupport {
 		p = property("sid");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "");
-		p = property("autocommit");
+		p = property("autoCommit");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, Boolean.TRUE);
 		p = property("username");
