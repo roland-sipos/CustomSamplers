@@ -18,26 +18,36 @@ import org.ektorp.impl.StdCouchDbInstance;
 import utils.CustomSamplersException;
 
 
-public class CouchConfigElement 
-	extends AbstractTestElement
-		implements ConfigElement, TestStateListener, TestBean {
+public class CouchConfigElement extends AbstractTestElement
+implements ConfigElement, TestStateListener, TestBean {
 
 	private static final long serialVersionUID = -6669728766687401677L;
 	private static final Logger log = LoggingManager.getLoggerForClass();
 
+	/** The ID of the CouchDB Connection object that is managed by this ConfigElement. */
+	public final static String CONNECTION_ID = "CouchConfigElement.connectionId";
 	public final static String HOST = "CouchConfigElement.host";
 	public final static String PORT = "CouchConfigElement.port";
 	public final static String DATABASE = "CouchConfigElement.database";
 	public final static String USERNAME = "CouchConfigElement.username";
 	public final static String PASSWORD = "CouchConfigElement.password";
-	public final static String CREATEIFNOTEXISTS = "CouchConfigElement.createIfNotExists";
+	public final static String CREATE_IF_NOT_EXISTS = "CouchConfigElement.createIfNotExists";
+
+	public final static String MAX_CONNECTIONS = "CouchConfigElement.maxConnections";
+	public final static String CONNECTION_TIMEOUT = "CouchConfigElement.connectionTimeout";
+	public final static String SOCKET_TIMEOUT = "CouchConfigElement.socketTimeout";
+	public final static String CACHING = "CouchConfigElement.caching";
+	public final static String MAX_CACHE_ENTRIES = "CouchConfigElement.maxCacheEntries";
+	public final static String MAX_OBJECT_SIZE_BYTES = "CouchConfigElement.maxObjectSizeBytes";
+	public final static String USE_EXPECT_CONTINUE = "CouchConfigElement.useExpectContinue";
+	public final static String CLEANUP_IDLE_CONNECTIONS = "CouchConfigElement.cleanupIdleConnections";
 
 	@Override
 	public void testEnded() {
 		if (log.isDebugEnabled()) {
 			log.debug(getTitle() + " test ended.");
 		}
-		getThreadContext().getVariables().putObject(getDatabase(), null);
+		getThreadContext().getVariables().putObject(getConnectionId(), null);
 	}
 
 	@Override
@@ -45,8 +55,8 @@ public class CouchConfigElement
 		testEnded();
 	}
 	
-	public static CouchDbConnector getCouchDB(String database) throws CustomSamplersException {
-		Object couch = JMeterContextService.getContext().getVariables().getObject(database);
+	public static CouchDbConnector getCouchDB(String connectionId) throws CustomSamplersException {
+		Object couch = JMeterContextService.getContext().getVariables().getObject(connectionId);
 		if (couch == null) {
 			throw new CustomSamplersException("CouchDB object is null!");
 		}
@@ -66,26 +76,33 @@ public class CouchConfigElement
 			log.debug(this.getName() + " testStarted()");
 		}
 		
-		if (getThreadContext().getVariables().getObject(getDatabase()) != null) {
-			log.warn(getDatabase() + " has already initialized!");
+		if (getThreadContext().getVariables().getObject(getConnectionId()) != null) {
+			log.warn(getConnectionId() + " has already initialized!");
 		} else {
 			if (log.isDebugEnabled()) {
-				log.debug(getDatabase() + " is being initialized ...");
+				log.debug(getConnectionId() + " is being initialized ...");
 			}
 
 			try {
-				/*HttpClient authHttpClient = new StdHttpClient.Builder()
-						.url(getHost().concat(":").concat(getPort()))
-						.username(getUsername())
-						.password(getPassword())
-						.build();*/
-				HttpClient httpClient = new StdHttpClient.Builder()
-						.url(getHost().concat(":").concat(getPort()))
-						.build();
-				StdCouchDbInstance dbInstance = new StdCouchDbInstance(httpClient);
+				StdHttpClient.Builder builder = new StdHttpClient.Builder()
+					.url(getHost().concat(":").concat(getPort()))
+					.maxConnections(Integer.valueOf(getMaxConnections()))
+					.connectionTimeout(Integer.valueOf(getConnectionTimeout()))
+					.socketTimeout(Integer.valueOf(getSocketTimeout()))
+					.caching(Boolean.valueOf(getCaching()))
+					.maxCacheEntries(Integer.valueOf(getMaxCacheEntries()))
+					.maxObjectSizeBytes(Integer.valueOf(getMaxObjectSizeBytes()))
+					.useExpectContinue(Boolean.valueOf(getUseExpectContinue()))
+					.cleanupIdleConnections(Boolean.valueOf(getCleanupIdleConnections()));
+				if (!getUsername().equals("")) {
+					builder.username(getUsername()).password(getPassword());
+				}
+
+				HttpClient client = builder.build();
+				StdCouchDbInstance dbInstance = new StdCouchDbInstance(client);
 				CouchDbConnector couchDB = dbInstance.createConnector(
 						getDatabase(), Boolean.parseBoolean(getCreateIfNotExists()));
-				getThreadContext().getVariables().putObject(getDatabase(), couchDB);
+				getThreadContext().getVariables().putObject(getConnectionId(), couchDB);
 			} catch (MalformedURLException e) {
 				log.error("MalformedURLException occured when creating CouchDB Instance...");
 				e.printStackTrace();
@@ -113,6 +130,14 @@ public class CouchConfigElement
 
 	public String getTitle() {
 		return this.getName();
+	}
+
+	public String getConnectionId() {
+		return getPropertyAsString(CONNECTION_ID);
+	}
+
+	public void setConnectionId(String connectionId) {
+		setProperty(CONNECTION_ID, connectionId);
 	}
 
 	public String getHost() {
@@ -156,11 +181,76 @@ public class CouchConfigElement
 	}
 
 	public String getCreateIfNotExists() {
-		return getPropertyAsString(CREATEIFNOTEXISTS);
+		return getPropertyAsString(CREATE_IF_NOT_EXISTS);
 	}
 
 	public void setCreateIfNotExists(String createIfNotExists) {
-		setProperty(CREATEIFNOTEXISTS, createIfNotExists);
+		setProperty(CREATE_IF_NOT_EXISTS, createIfNotExists);
 	}
+
+	public String getMaxConnections() {
+		return getPropertyAsString(MAX_CONNECTIONS);
+	}
+
+	public void setMaxConnections(String maxConnections) {
+		setProperty(MAX_CONNECTIONS, maxConnections);
+	}
+
+	public String getConnectionTimeout() {
+		return getPropertyAsString(CONNECTION_TIMEOUT);
+	}
+
+	public void setConnectionTimeout(String connectionTimeout) {
+		setProperty(CONNECTION_TIMEOUT, connectionTimeout);
+	}
+
+	public String getSocketTimeout() {
+		return getPropertyAsString(SOCKET_TIMEOUT);
+	}
+
+	public void setSocketTimeout(String socketTimeout) {
+		setProperty(SOCKET_TIMEOUT, socketTimeout);
+	}
+
+	public String getCaching() {
+		return getPropertyAsString(CACHING);
+	}
+
+	public void setCaching(String caching) {
+		setProperty(CACHING, caching);
+	}
+
+	public String getMaxCacheEntries() {
+		return getPropertyAsString(MAX_CACHE_ENTRIES);
+	}
+
+	public void setMaxCacheEntries(String maxCacheEntries) {
+		setProperty(MAX_CACHE_ENTRIES, maxCacheEntries);
+	}
+
+	public String getMaxObjectSizeBytes() {
+		return getPropertyAsString(MAX_OBJECT_SIZE_BYTES);
+	}
+
+	public void setMaxObjectSizeBytes(String maxObjectSizeBytes) {
+		setProperty(MAX_OBJECT_SIZE_BYTES, maxObjectSizeBytes);
+	}
+
+	public String getUseExpectContinue() {
+		return getPropertyAsString(USE_EXPECT_CONTINUE);
+	}
+
+	public void setUseExpectContinue(String useExpectContinue) {
+		setProperty(USE_EXPECT_CONTINUE, useExpectContinue);
+	}
+
+	public String getCleanupIdleConnections() {
+		return getPropertyAsString(CLEANUP_IDLE_CONNECTIONS);
+	}
+
+	public void setCleanupIdleConnections(String cleanupIdleConnections) {
+		setProperty(CLEANUP_IDLE_CONNECTIONS, cleanupIdleConnections);
+	}
+
 
 }

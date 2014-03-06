@@ -14,11 +14,16 @@ public class CouchConfigElementBeanInfo extends BeanInfoSupport {
 		super(CouchConfigElement.class);
 
 		createPropertyGroup("couch", new String[] {
-				"host", "port", "database", "username", "password"});
+				"connectionId", "host", "port", "database", "username", "password"});
 		createPropertyGroup("options", new String[] {
-				"createIfNotExists"});
+				"createIfNotExists", "maxConnections", "connectionTimeout",
+				"socketTimeout", "caching", "maxCacheEntries", "maxObjectSizeBytes",
+				"useExpectContinue", "cleanupIdleConnections"});
 
-		PropertyDescriptor p = property("host");
+		PropertyDescriptor p = property("connectionId");
+		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
+		p.setValue(DEFAULT, "couchConn");
+		p = property("host");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "http://testdb-pc.cern.ch");
 		p = property("port");
@@ -26,7 +31,7 @@ public class CouchConfigElementBeanInfo extends BeanInfoSupport {
 		p.setValue(DEFAULT, "5984");
 		p = property("database");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, "test");
+		p.setValue(DEFAULT, "testdb");
 		p = property("username");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "testUser");
@@ -37,6 +42,30 @@ public class CouchConfigElementBeanInfo extends BeanInfoSupport {
 		p = property("createIfNotExists");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, Boolean.FALSE);
+		p = property("maxConnections");
+		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
+		p.setValue(DEFAULT, "20");
+		p = property("connectionTimeout");
+		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
+		p.setValue(DEFAULT, "1000");
+		p = property("socketTimeout");
+		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
+		p.setValue(DEFAULT, "1000");
+		p = property("caching");
+		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
+		p.setValue(DEFAULT, Boolean.TRUE);
+		p = property("maxCacheEntries");
+		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
+		p.setValue(DEFAULT, "1000");
+		p = property("maxObjectSizeBytes");
+		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
+		p.setValue(DEFAULT, "8192");
+		p = property("useExpectContinue");
+		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
+		p.setValue(DEFAULT, Boolean.TRUE);
+		p = property("cleanupIdleConnections");
+		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
+		p.setValue(DEFAULT, Boolean.TRUE);
 
 		if(log.isDebugEnabled()) {
 			for (PropertyDescriptor pd : getPropertyDescriptors()) {

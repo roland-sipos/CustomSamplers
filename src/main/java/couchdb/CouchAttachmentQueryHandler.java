@@ -13,18 +13,21 @@ import org.ektorp.CouchDbConnector;
 import utils.CustomSamplersException;
 import utils.QueryHandler;
 
+/**
+ * This is the implemented QueryHandler for CouchDB databases, using the Attachments API.
+ * */
 public class CouchAttachmentQueryHandler implements QueryHandler {
 
+	/** The CouchDB Connection object, fetched from a CouchConfigElement. */
 	private static CouchDbConnector couchDB;
-	//private static SampleResult sampleResult;
 
-	public CouchAttachmentQueryHandler(String databaseName) 
+	public CouchAttachmentQueryHandler(String connectionId) 
 			throws CustomSamplersException {
-		couchDB = CouchConfigElement.getCouchDB(databaseName);
+		couchDB = CouchConfigElement.getCouchDB(connectionId);
 		//sampleResult = res;
 		if (couchDB == null)
 			throw new CustomSamplersException("CouchDB Database instance with name: " 
-					+ databaseName + " was not found in config!");
+					+ connectionId + " was not found in config!");
 	}
 
 	@Override
@@ -33,15 +36,20 @@ public class CouchAttachmentQueryHandler implements QueryHandler {
 		ByteArrayOutputStream result = new ByteArrayOutputStream();
 		try {
 			String id = tagName.concat("_").concat(String.valueOf(since));
-			//sampleResult.samplePause();
-			AttachmentInputStream dataIS = couchDB.getAttachment(id, "data");//, couchDB.getCurrentRevision(id));
-			//sampleResult.sampleResume();
-			int size = (int)dataIS.getContentLength();
+			String rev = couchDB.getRevisions(id).get(0).getRev();
+			AttachmentInputStream dataIS = couchDB.getAttachment(id, "data", rev);
+			int size = (int) dataIS.getContentLength();
 			byte[] data = new byte[size];
 			int nRead = 0;
 			while ((nRead = dataIS.read(data, 0, size)) != -1) {
 				result.write(data, 0, nRead);
 			}
+
+			/** NOTE: http://ektorp.org/javadoc/ektorp/1.4.1/ CouchDbConnector.getAttachment():
+			 * Please note that the stream has to be closed after usage, otherwise http connection 
+			 * leaks will occur and the system will eventually hang due to connection starvation.
+			 * */
+			dataIS.close();
 		} catch (Exception e) {
 			throw new CustomSamplersException("Exception occured during read attempt from CouchDB! "
 					+ "Details: " + e.toString());
@@ -69,7 +77,7 @@ public class CouchAttachmentQueryHandler implements QueryHandler {
 			AttachmentInputStream attS =
 					new AttachmentInputStream("data", dataS, "application/octet-stream");
 			couchDB.createAttachment(id, couchDB.getCurrentRevision(id), attS);
-
+			attS.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new CustomSamplersException("Exception occured during write attempt to CouchDB! "
