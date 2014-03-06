@@ -26,8 +26,10 @@ implements ConfigElement, TestStateListener, TestBean {
 
 	/** The name (ID) of this ConfigElement resource. */
 	private static final String ASSIGNMENT_INFO = "AssignmentConfigElement.assignmentInfo";
-	/** The full path of the Assignment XML configuration file for this resource. */
-	private static final String ASSIGNMENT_FILE = "AssignmentConfigElement.assignmentFile";
+	/** The full path of the Assignment XML configuration input file for this resource. */
+	private static final String ASSIGNMENT_INPUT_FILE = "AssignmentConfigElement.assignmentInputFile";
+	/** The full path of the Assignment XML configuration output file for this resource.*/
+	private static final String ASSIGNMENT_OUTPUT_FILE = "AssignmentConfigElement.assignmentOutputFile";
 	/** The inputLocation for the BinaryFileInfo instance. */
 	public final static String INPUT_LOCATION = "BinaryConfigElement.inputLocation";
 	/** Encoding flag for the BinaryFileInfo. 
@@ -81,7 +83,7 @@ implements ConfigElement, TestStateListener, TestBean {
 	public void testStarted() {
 		if (log.isDebugEnabled()) {
 			log.debug(getTitle() + " test started...");
-			log.debug("Input location of assignment file is: " + getAssignmentFile());
+			log.debug("Input location of assignment file is: " + getAssignmentInputFile());
 		}
 
 		if (getThreadContext().getVariables().getObject(getAssignmentInfo()) != null) {
@@ -98,7 +100,8 @@ implements ConfigElement, TestStateListener, TestBean {
 				int numOfThreads = Integer.valueOf(
 						getThreadContext().getVariables().get("numberOfThreads"));
 				Assignment assignment =
-						new Assignment(getAssignmentFile(), getAssignmentMode(), numOfThreads,
+						new Assignment(getAssignmentInputFile(), getAssignmentOutputFile(),
+								getAssignmentMode(), numOfThreads,
 								BinaryFileInfo.getInstance(getInputLocation()));
 				getThreadContext().getVariables().putObject(getAssignmentInfo(), assignment);
 			} catch (Exception e) {
@@ -140,11 +143,18 @@ implements ConfigElement, TestStateListener, TestBean {
 		setProperty(ASSIGNMENT_INFO, assignmentInfo);
 	}
 
-	public String getAssignmentFile() {
-		return getPropertyAsString(ASSIGNMENT_FILE);
+	public String getAssignmentInputFile() {
+		return getPropertyAsString(ASSIGNMENT_INPUT_FILE);
 	}
-	public void setAssignmentFile(String assignmentFile) {
-		setProperty(ASSIGNMENT_FILE, assignmentFile);
+	public void setAssignmentInputFile(String assignmentInputFile) {
+		setProperty(ASSIGNMENT_INPUT_FILE, assignmentInputFile);
+	}
+
+	public String getAssignmentOutputFile() {
+		return getPropertyAsString(ASSIGNMENT_OUTPUT_FILE);
+	}
+	public void setAssignmentOutputFile(String assignmentOutputFile) {
+		setProperty(ASSIGNMENT_OUTPUT_FILE, assignmentOutputFile);
 	}
 
 	public String getInputLocation() {

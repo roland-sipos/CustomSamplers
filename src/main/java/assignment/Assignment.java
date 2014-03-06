@@ -35,8 +35,10 @@ public class Assignment {
 		SEQUENCE
 	}
 
-	/** Full path of the assignment XML configuration of this instance. */
-	private String assignFilePath;
+	/** Full path of the assignment XML input configuration of this instance. */
+	private String inputAssignFilePath;
+	/** Full path of the assignment XML output configuration of this instance. */
+	private String outputAssignFilePath;
 	/** User option driven mode, set when the instance is created. */
 	private Mode assignmentMode;
 	/** The number of thread, when the instance was created from the ConfigElement. */
@@ -79,9 +81,10 @@ public class Assignment {
 	 * @param  binInfo  the associated BinaryFileInfo object for the assignments
 	 * @throws  CustomSamplersException  if the assignment creation failed, or was not possible at all
 	 * */
-	public Assignment(String filePath, String mode, int threadNum, BinaryFileInfo binInfo)
+	public Assignment(String iFilePath, String oFilePath, String mode, int threadNum, BinaryFileInfo binInfo)
 			throws CustomSamplersException {
-		assignFilePath = filePath;
+		inputAssignFilePath = iFilePath;
+		outputAssignFilePath = oFilePath;
 		setModeFromString(mode);
 		numOfThreads = threadNum;
 		binaryFileInfo = binInfo;
@@ -128,7 +131,7 @@ public class Assignment {
 	 * */
 	private void finalizeAssignments() throws CustomSamplersException {
 		if (assignmentMode == Mode.ASSIGNED) {
-			assignmentMap = AssignmentXMLParser.parse(assignFilePath);
+			assignmentMap = AssignmentXMLHandler.parse(inputAssignFilePath);
 		} else if (assignmentMode == Mode.RANDOM) {
 			Random random = new Random();
 			String[] fileNames = binaryFileInfo.getFileNameArray();
@@ -138,7 +141,7 @@ public class Assignment {
 				assignmentMap.put(i+1, set);
 			}
 		} else if (assignmentMode == Mode.MIXED) {
-			assignmentMap = AssignmentXMLParser.parse(assignFilePath);
+			assignmentMap = AssignmentXMLHandler.parse(inputAssignFilePath);
 			Random random = new Random();
 			String[] fileNames = binaryFileInfo.getFileNameArray();
 			for (int i = 0; i < numOfThreads; ++i) {
@@ -178,6 +181,11 @@ public class Assignment {
 			assignedPathMap.put(new Integer(assignment.getKey()), pathSet);
 		}
 
+		/** If outputFile is given, we'll create an assignmentFile. */
+		if (!outputAssignFilePath.equals("")) {
+			AssignmentXMLHandler.build(outputAssignFilePath, assignmentMap);
+		}
+
 	}
 
 	/**
@@ -192,16 +200,16 @@ public class Assignment {
 	 * */
 	private void sanityCheck() throws CustomSamplersException {
 		int numOfFiles = binaryFileInfo.getFileNameArray().length;
+		System.out.println("NUM OF FILE:" + numOfFiles);
 		if (assignmentMode == Mode.SEQUENCE && numOfFiles < numOfThreads) {
 			throw new CustomSamplersException("Sanity check failed! The number of files are less "
 					+ "than the number of threads, and the assignmentMode was set to sequence!");
 		} else if ((assignmentMode == Mode.ASSIGNED || assignmentMode == Mode.MIXED)
-				&& assignFilePath.equals("")) {
+				&& inputAssignFilePath.equals("")) {
 			throw new CustomSamplersException("Sanity check failed! Assignment mode requires "
 					+ "the path to the assignment file, but no such file given!");
 		}
 
-		
 	}
 
 	/*public HashMap<String, HashMap<String, String>> getMetaFor(int threadID) {
