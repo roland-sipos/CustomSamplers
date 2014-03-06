@@ -17,29 +17,45 @@ import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoClientOptions.Builder;
 import com.mongodb.ServerAddress;
 
-
+/**
+ * A Custom ConfigElement for handling MongoDB connections.
+ * */
 public class MongoConfigElement extends AbstractTestElement
 implements ConfigElement, TestStateListener, TestBean {
 
-	/**
-	 * 
-	 */
+	/** Generated serialVersionUID. */
 	private static final long serialVersionUID = 6833976447851154818L;
+	/** Static logger from the LoggingManager. */
 	private static final Logger log = LoggingManager.getLoggerForClass();
 
-	public final static String HOST = "MongoDBConfigElement.host";
-	public final static String PORT = "MongoDBConfigElement.port";
-	public final static String DATABASE = "MongoDBConfigElement.database";
-	public final static String USERNAME = "MongoDBConfigElement.username";
-	public final static String PASSWORD = "MongoDBConfigElement.password";
-	public final static String AUTO_CONNECT_RETRY = "MongoDBConfigElement.autoConnectRetry";
-	public final static String CONNECTIONS_PER_HOST = "MongoDBConfigElement.connectionsPerHost";
-	public final static String CONNECT_TIMEOUT = "MongoDBConfigElement.connectTimeout";
-	public final static String MAX_AUTO_CONNECT_RETRY_TIME = "MongoDBConfigElement.maxAutoConnectRetryTime";
-	public final static String MAX_WAIT_TIME = "MongoDBConfigElement.maxWaitTime";
-	public final static String SOCKET_TIMEOUT = "MongoDBConfigElement.socketTimeout";
-	public final static String SOCKET_KEEP_ALIVE = "MongoDBConfigElement.socketKeepAlive";
-	public final static String THREADS_ALLOWED_TO_BLOCK_MULTIPLIER = "MongoDBConfigElement.threadsAllowedToBlockMultiplier";
+	/** The ID of the MongoDB DB object. */
+	public final static String CONNECTIONID = "MongoConfigElement.connectionId";
+	/** The host name of connection target. */
+	public final static String HOST = "MongoConfigElement.host";
+	/** The port to be used by the connection. */
+	public final static String PORT = "MongoConfigElement.port";
+	/** The name of the database instance on target host. */
+	public final static String DATABASE = "MongoConfigElement.database";
+	/** User name for authentication. */
+	public final static String USERNAME = "MongoConfigElement.username";
+	/** Password for authentication. */
+	public final static String PASSWORD = "MongoConfigElement.password";
+	/** If the connection should auto-retry to establish the connection. */
+	public final static String AUTO_CONNECT_RETRY = "MongoConfigElement.autoConnectRetry";
+	/** The maximum allowed connection through this object. */
+	public final static String CONNECTIONS_PER_HOST = "MongoConfigElement.connectionsPerHost";
+	/** The timeout of the connection object. */
+	public final static String CONNECT_TIMEOUT = "MongoConfigElement.connectTimeout";
+	/** The maximum time of retry establishing connection. */
+	public final static String MAX_AUTO_CONNECT_RETRY_TIME = "MongoConfigElement.maxAutoConnectRetryTime";
+	/** The maximum idle time on this connection object. */
+	public final static String MAX_WAIT_TIME = "MongoConfigElement.maxWaitTime";
+	/** The timeout of the socket that is used by this connection. */
+	public final static String SOCKET_TIMEOUT = "MongoConfigElement.socketTimeout";
+	/** If the connection object should keep the socket alive. */
+	public final static String SOCKET_KEEP_ALIVE = "MongoConfigElement.socketKeepAlive";
+	/** The thread block multiplier. */
+	public final static String THREADS_ALLOWED_TO_BLOCK_MULTIPLIER = "MongoConfigElement.threadsAllowedToBlockMultiplier";
 
 
 	@Override
@@ -47,7 +63,21 @@ implements ConfigElement, TestStateListener, TestBean {
 		if (log.isDebugEnabled()) {
 			log.debug(getTitle() + " test ended.");
 		}
-		getThreadContext().getVariables().putObject(getDatabase(), null);
+		Object mongo = JMeterContextService.getContext().getVariables().getObject(getConnectionId());
+		if (mongo == null) {
+			log.error("MongoDB DB object is not found in JMeter context with id: " + getConnectionId());
+		}
+		else {
+			if (mongo instanceof DB) {
+				DB m = (DB)mongo;
+				m.getMongo().close();
+			}
+			else {
+				log.error("Object found in JMeter context with id: " + getConnectionId()
+						+ " Can not be casted to (Mongo) DB.");
+			}
+		}
+		getThreadContext().getVariables().putObject(getConnectionId(), null);
 	}
 
 	@Override
@@ -55,8 +85,8 @@ implements ConfigElement, TestStateListener, TestBean {
 		testEnded();
 	}
 
-	public static DB getMongoDB(String database) throws CustomSamplersException {
-		Object mongo = JMeterContextService.getContext().getVariables().getObject(database);
+	public static DB getMongoDB(String connectionId) throws CustomSamplersException {
+		Object mongo = JMeterContextService.getContext().getVariables().getObject(connectionId);
 		if (mongo == null) {
 			throw new CustomSamplersException("MongoDB object is null!");
 		}
@@ -100,11 +130,11 @@ implements ConfigElement, TestStateListener, TestBean {
 			log.debug("MongoClient Options: " + mongoConf.toString());
 		}
 
-		if (getThreadContext().getVariables().getObject(getDatabase()) != null) {
-			log.warn(getDatabase() + " has already initialized!");
+		if (getThreadContext().getVariables().getObject(getConnectionId()) != null) {
+			log.warn(getConnectionId() + " has already initialized!");
 		} else {
 			if (log.isDebugEnabled()) {
-				log.debug(getDatabase() + " is being initialized ...");
+				log.debug(getConnectionId() + " is being initialized ...");
 			}
 
 			MongoClient mongoClient = null;
@@ -115,14 +145,14 @@ implements ConfigElement, TestStateListener, TestBean {
 				log.error("MongoClient initialization failed due to: " + e.toString());
 			}
 
-			DB mongoDB = mongoClient.getDB(getDatabase());
+			DB mongoDB = mongoClient.getDB(getConnectionId());
 			boolean auth = mongoDB.isAuthenticated();
 			if (!auth) {
 				if (!getUsername().equals("") && !getPassword().equals("")) {
 					mongoDB.authenticate(getUsername(), getPassword().toCharArray());
 				}
 			}
-			getThreadContext().getVariables().putObject(getDatabase(), mongoDB);
+			getThreadContext().getVariables().putObject(getConnectionId(), mongoDB);
 		}
 	}
 
@@ -146,6 +176,14 @@ implements ConfigElement, TestStateListener, TestBean {
 
 	public String getTitle() {
 		return this.getName();
+	}
+
+	public String getConnectionId() {
+		return getPropertyAsString(CONNECTIONID);
+	}
+
+	public void setConnectionId(String connectionId) {
+		setProperty(CONNECTIONID, connectionId);
 	}
 
 	public String getHost() {

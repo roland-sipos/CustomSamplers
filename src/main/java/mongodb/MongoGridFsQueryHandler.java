@@ -17,10 +17,17 @@ import com.mongodb.gridfs.GridFSInputFile;
 import utils.CustomSamplersException;
 import utils.QueryHandler;
 
+/**
+ * This is the implemented QueryHandler for MongoDB Databases, if content is
+ * written through the GridFS API.
+ * */
 public class MongoGridFsQueryHandler implements QueryHandler {
 
+	/** A MongoDB's DB object, fetched from a MongoConfigElement. */
 	private static DB mongo;
+	/** A DBCollection object of the IOV Collection in the DB instance. */
 	private static DBCollection iovCollection;
+	/** The GridFS object, that is defined on the PAYLOAD collection. */
 	private static GridFS payloadGridFS;
 	
 	public MongoGridFsQueryHandler(String databaseName) 

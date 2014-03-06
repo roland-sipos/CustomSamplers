@@ -6,15 +6,39 @@ import org.apache.jmeter.testbeans.BeanInfoSupport;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
+/**
+ * This class is the BeanInfoSupport for the MongoConfigElement class.
+ * */
 public class MongoConfigElementBeanInfo extends BeanInfoSupport {
 
+	/** Static logger instance from JMeter. */
 	private static final Logger log = LoggingManager.getLoggerForClass();
 
+	/** The constructor binds the given properties for the MongoConfigElement class.
+	 * <p>
+	 * The property groups and properties are the following: <br>
+	 * mongodb <br>
+	 * -- connectionId <br>
+	 * -- host <br>
+	 * -- port <br>
+	 * -- database <br>
+	 * -- username <br>
+	 * -- password <br>
+	 * options <br>
+	 * -- autoConnectRetry <br>
+	 * -- connectionsPerHost <br>
+	 * -- connectionTimeout <br>
+	 * -- maxAutoConnectRetryTime <br>
+	 * -- maxWaitTime <br>
+	 * -- socketTimeout <br>
+	 * -- socketKeepAlive <br>
+	 * -- threadsAllowedToBlockMultiplier <br>
+	 * */
 	public MongoConfigElementBeanInfo() {
 		super(MongoConfigElement.class);
 
 		createPropertyGroup("mongodb", new String[] {
-				"host", "port", "database", "username", "password"});
+				"connectionId", "host", "port", "database", "username", "password"});
 
 		createPropertyGroup("options", new String[] {
 				"autoConnectRetry",
@@ -24,9 +48,12 @@ public class MongoConfigElementBeanInfo extends BeanInfoSupport {
 				"maxWaitTime",
 				"socketTimeout",
 				"socketKeepAlive",
-		"threadsAllowedToBlockMultiplier"});
+				"threadsAllowedToBlockMultiplier"});
 
-		PropertyDescriptor p = property("host");
+		PropertyDescriptor p = property("connectionId");
+		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
+		p.setValue(DEFAULT, "mongoConn");
+		p = property("host");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "testdb-pc.cern.ch");
 		p = property("port");
@@ -44,7 +71,9 @@ public class MongoConfigElementBeanInfo extends BeanInfoSupport {
 
 		p = property("autoConnectRetry");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, Boolean.FALSE);
+		p.setValue(TAGS, new String[] {"True", "False"});
+		p.setValue(NOT_OTHER, new String[] {"True", "False"});
+		p.setValue(DEFAULT, "False");
 		p = property("connectionsPerHost");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "10");
@@ -65,7 +94,9 @@ public class MongoConfigElementBeanInfo extends BeanInfoSupport {
 		p.setValue(DEFAULT, "0");
 		p = property("socketKeepAlive");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, Boolean.FALSE);
+		p.setValue(TAGS, new String[] {"True", "False"});
+		p.setValue(NOT_OTHER, new String[] {"True", "False"});
+		p.setValue(DEFAULT, "False");
 
 		if(log.isDebugEnabled()) {
 			for (PropertyDescriptor pd : getPropertyDescriptors()) {

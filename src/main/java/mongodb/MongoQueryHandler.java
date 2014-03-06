@@ -14,13 +14,16 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
-
+/**
+ * This is the implemented QueryHandler for MongoDB Databases, if content is
+ * written as standard BSON.
+ * */
 public class MongoQueryHandler implements QueryHandler {
 
 	private static DB mongo;
 	private static DBCollection iovCollection;
 	private static DBCollection payloadCollection;
-	
+
 	public MongoQueryHandler(String databaseName)
 			throws CustomSamplersException {
 		mongo = MongoConfigElement.getMongoDB(databaseName);
