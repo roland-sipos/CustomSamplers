@@ -26,15 +26,15 @@ public class MysqlSampler extends AbstractSampler implements TestBean {
 	private static final Logger log = LoggingManager.getLoggerForClass();
 
 	/** This field indicates which CustomJDBC ConfigElement will be used for the sampling. */
-	public final static String CONNECTIONID = "MysqlSampler.connectionId";
+	public final static String CONNECTION_ID = "MysqlSampler.connectionId";
 	/** This field indicates which Assignment ConfigElement will be used for the sampling. */
-	public final static String ASSIGNMENTINFO = "MysqlSampler.assignmentInfo";
+	public final static String ASSIGNMENT_INFO = "MysqlSampler.assignmentInfo";
 	/** This field indicates, if the sampling will use chunks of the payloads. */
-	public final static String USECHUNKS = "MysqlSampler.useChunks";
+	public final static String USE_CHUNKS = "MysqlSampler.useChunks";
 	/** This field indicates, which I/O operation the sampling will do. */
-	public final static String REQUESTTYPE = "MysqlSampler.requestType";
+	public final static String REQUEST_TYPE = "MysqlSampler.requestType";
 	/** This field indicates, if the sampling will validate the operations. */
-	public final static String VALIDATEOPERATION = "MysqlSampler.validateOperation";
+	public final static String VALIDATE_OPERATION = "MysqlSampler.validateOperation";
 
 	public MysqlSampler() {
 		trace("MysqlSampler()" + this.toString());
@@ -107,34 +107,34 @@ public class MysqlSampler extends AbstractSampler implements TestBean {
 		return this.getName();
 	}
 	public String getConnectionId() {
-		return getPropertyAsString(CONNECTIONID);
+		return getPropertyAsString(CONNECTION_ID);
 	}
 	public void setConnectionId(String connectionId) {
-		setProperty(CONNECTIONID, connectionId);
+		setProperty(CONNECTION_ID, connectionId);
 	}
 	public String getAssignmentInfo() {
-		return getPropertyAsString(ASSIGNMENTINFO);
+		return getPropertyAsString(ASSIGNMENT_INFO);
 	}
 	public void setAssignmentInfo(String assignmentInfo) {
-		setProperty(ASSIGNMENTINFO, assignmentInfo);
+		setProperty(ASSIGNMENT_INFO, assignmentInfo);
 	}
 	public String getUseChunks() {
-		return getPropertyAsString(USECHUNKS);
+		return getPropertyAsString(USE_CHUNKS);
 	}
 	public void setUseChunks(String useChunks) {
-		setProperty(USECHUNKS, useChunks);
+		setProperty(USE_CHUNKS, useChunks);
 	}
 	public String getRequestType() {
-		return getPropertyAsString(REQUESTTYPE);
+		return getPropertyAsString(REQUEST_TYPE);
 	}
 	public void setRequestType(String requestType) {
-		setProperty(REQUESTTYPE, requestType);
+		setProperty(REQUEST_TYPE, requestType);
 	}
 	public String getValidateOperation() {
-		return getPropertyAsString(VALIDATEOPERATION);
+		return getPropertyAsString(VALIDATE_OPERATION);
 	}
 	public void setValidateOperation(String validateOperation) {
-		setProperty(VALIDATEOPERATION, validateOperation);
+		setProperty(VALIDATE_OPERATION, validateOperation);
 	}
 
 }
