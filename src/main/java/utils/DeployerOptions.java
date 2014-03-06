@@ -3,6 +3,7 @@ package utils;
 import java.util.HashMap;
 
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 
 public class DeployerOptions {
@@ -88,7 +89,16 @@ public class DeployerOptions {
 		}
 
 		return argMap;
-	} 
+	}
+
+	public static void printHelp(Options depOps, String[] args, String classCmd, String clpHeader) {
+		HelpFormatter formatter = new HelpFormatter();
+		if (args.length < 1) {
+			System.err.println("Arguments are required for deploying anything...\n");
+			formatter.printHelp(classCmd, clpHeader, depOps, utils.Constants.SUPPORT_FOOTER);
+			return;
+		}
+	}
 
 }
 

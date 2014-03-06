@@ -88,7 +88,7 @@ public class CustomSamplerUtils {
 		res.setSuccessful(success);
 		res.setResponseCode(code);
 		res.setResponseMessage(responseStr);
-		res.setResponseData(responseStr.getBytes());
+		//res.setResponseData(responseStr.getBytes());
 	}
 
 	/**
@@ -209,7 +209,10 @@ public class CustomSamplerUtils {
 			if (result == null) {
 				finalizeResponse(res, false, "500", "The result is empty for " + meta.get("id") + " !");
 			} else {
-				if (options.get("isCheckRead")) {
+				/** We will not save the huge BLOBs as response data, however we'll store their size. */
+				//res.setResponseData(result.toByteArray());
+				res.setBytes(result.size());
+				if (options.get("validateOperation")) {
 					if (!checkMatch(result, assignment, meta)) {
 						finalizeResponse(res, false, "600", "Payload content for: " + meta.get("id")
 								+ " differs from the original! (Chunks?:" + chunkMode.toString() + ")");
@@ -249,7 +252,7 @@ public class CustomSamplerUtils {
 		String binaryID = meta.get("id");
 
 		BinaryFileInfo binInfo = assignment.getBinaryFileInfo();
-		
+
 		String streamerInfoFullPath = binInfo.getPathForStreamerInfo(binaryID);
 		ByteArrayOutputStream streamerInfo = Readers.BinaryReader.read(streamerInfoFullPath);
 
@@ -269,6 +272,7 @@ public class CustomSamplerUtils {
 		} else { // Write the big file, not it's chunks.
 			String binaryFullPath = binInfo.getAbsolutePathFor(binaryID);
 			ByteArrayOutputStream payload = Readers.BinaryReader.read(binaryFullPath);
+			res.setBytes(payload.size());
 			try {
 				res.sampleStart();
 				queryHandler.putData(meta, payload, streamerInfo);

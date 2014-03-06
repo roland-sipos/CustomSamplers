@@ -1,7 +1,9 @@
 package utils;
 
+/** Class of global constants of the CustomSamplers project. */
 public class Constants {
 
-	public static final String supportFooter = "\n For further support: Roland.Sipos@cern.ch \n";
+	/** Command line help footer for deployer classes. */
+	public static final String SUPPORT_FOOTER = "\n For further support: Roland.Sipos@cern.ch \n";
 
 }

@@ -8,6 +8,7 @@ package utils;
 public class CustomSamplersException extends Exception {
 
 	private static final long serialVersionUID = 357716820999255104L;
+	//private static final Logger log = LoggingManager.getLoggerForClass();
 
 	/**
 	 * This constructor gets an unique message and and exception as a parameter.
@@ -20,6 +21,7 @@ public class CustomSamplersException extends Exception {
 	 * */
 	public CustomSamplersException(String exStr, Exception e) {
 		super(e);
+		// !-> log.error("CustomSamplersException -> ".concat(exStr));
 		System.err.println("CustomSamplersException -> ".concat(exStr));
 		e.printStackTrace();
 		// Further stuff to be implemented in order to show the Exception.
