@@ -6,18 +6,18 @@ import org.apache.jmeter.testbeans.BeanInfoSupport;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
-public class HypertableConfigElementBeanInfo extends BeanInfoSupport {
+public class HypertableConnectionSamplerBeanInfo extends BeanInfoSupport {
 
 	private static final Logger log = LoggingManager.getLoggerForClass();
 
-	public HypertableConfigElementBeanInfo() {
-		super(HypertableConfigElement.class);
+	public HypertableConnectionSamplerBeanInfo() {
+		super(HypertableConnectionSampler.class);
 
-		createPropertyGroup("hypertable", new String[] { "clusterId", "namespace" });
+		createPropertyGroup("hypertable", new String[] { "connectionId", "namespace" });
 		createPropertyGroup("hypertableConfig", new String[] { "host", "port" });
 		createPropertyGroup("thriftClient", new String[] { "timeout", "doOpen", "frameSize" });
 
-		PropertyDescriptor p = property("clusterId");
+		PropertyDescriptor p = property("connectionId");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "TestHypertable");
 		p = property("namespace");
@@ -49,7 +49,6 @@ public class HypertableConfigElementBeanInfo extends BeanInfoSupport {
 				log.debug(pd.getDisplayName());
 			}
 		}
-
 	}
 
 }

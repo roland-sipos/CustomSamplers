@@ -26,6 +26,9 @@ implements ConfigElement, TestStateListener, TestBean {
 	public final static String NAMESPACE = "HypertableConfigElement.namespace";
 	public final static String HOST = "HypertableConfigElement.host";
 	public final static String PORT = "HypertableConfigElement.port";
+	public final static String TIMEOUT = "HypertableConfigElement.timeout";
+	public final static String DO_OPEN = "HypertableConfigElement.doOpen";
+	public final static String FRAME_SIZE = "HypertableConfigElement.frameSize";
 
 	public static ThriftClient getHypertableClient(String clusterId)
 			throws CustomSamplersException {
@@ -68,7 +71,9 @@ implements ConfigElement, TestStateListener, TestBean {
 		ThriftClient hyperTClient = null;
 		Long hyperTNS = -1L;
 		try {
-			hyperTClient = ThriftClient.create(getHost(), Integer.valueOf(getPort()));
+			hyperTClient = ThriftClient.create(getHost(), Integer.valueOf(getPort()), 
+					Integer.valueOf(getTimeout()), Boolean.parseBoolean(getDoOpen()),
+					Integer.valueOf(getFrameSize()) * 1024 * 1024);
 			if (!hyperTClient.namespace_exists(getNamespace())) {
 				String errStr = "Namespace " + getNamespace() + "doesn't exist!";
 				log.error(errStr, new CustomSamplersException(errStr));
@@ -199,6 +204,27 @@ implements ConfigElement, TestStateListener, TestBean {
 	}
 	public void setPort(String port) {
 		setProperty(PORT, port);
+	}
+
+	public String getTimeout() {
+		return getPropertyAsString(TIMEOUT);
+	}
+	public void setTimeout(String timeout) {
+		setProperty(TIMEOUT, timeout);
+	}
+
+	public String getDoOpen() {
+		return getPropertyAsString(DO_OPEN);
+	}
+	public void setDoOpen(String doOpen) {
+		setProperty(DO_OPEN, doOpen);
+	}
+
+	public String getFrameSize() {
+		return getPropertyAsString(FRAME_SIZE);
+	}
+	public void setFrameSize(String frameSize) {
+		setProperty(FRAME_SIZE, frameSize);
 	}
 
 }

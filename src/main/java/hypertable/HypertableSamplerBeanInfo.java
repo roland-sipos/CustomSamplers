@@ -13,33 +13,37 @@ public class HypertableSamplerBeanInfo extends BeanInfoSupport {
 	public HypertableSamplerBeanInfo() {
 		super(HypertableSampler.class);
 
-		createPropertyGroup("hypertable", new String[] {"cluster"});
-		createPropertyGroup("sampler", new String[] {"assignmentInfo", "useChunks"});
-		createPropertyGroup("reading", new String[] {"doRead", "checkRead"});
-		createPropertyGroup("writing", new String[] {"doWrite"});
+		createPropertyGroup("hypertable", new String[] {"connectionId"});
+		createPropertyGroup("sampler", new String[] {"closeConnection", "assignmentInfo", "useChunks"});
+		createPropertyGroup("io", new String[] {"requestType", "validateOperation"});
 
-		PropertyDescriptor p = property("cluster");
+		PropertyDescriptor p = property("connectionId");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, "TestHypertable");
+		p.setValue(DEFAULT, "hyperConn");
 
+		p = property("closeConnection");
+		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
+		p.setValue(TAGS, new String[] {"True", "False"});
+		p.setValue(NOT_OTHER, new String[] {"True", "False"});
+		p.setValue(DEFAULT, "False");
 		p = property("assignmentInfo");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "assignInfo");
 		p = property("useChunks");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(TAGS, new String[] {"true", "false", "bulk", "bigtable"});
+		p.setValue(TAGS, new String[] {"True", "False", "Bulk", "Bigtable"});
+		p.setValue(NOT_OTHER, new String[] {"True", "False", "Bulk", "Bigtable"});
 		p.setValue(DEFAULT, "false");
 
-		p = property("doRead");
+		p = property("requestType");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, Boolean.FALSE);
-		p = property("checkRead");
+		p.setValue(TAGS, new String[] {"read", "write"});
+		p.setValue(DEFAULT, "read");
+		p = property("validateOperation");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, Boolean.FALSE);
-
-		p = property("doWrite");
-		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, Boolean.FALSE);
+		p.setValue(TAGS, new String[] {"True", "False"});
+		p.setValue(NOT_OTHER, new String[] {"True", "False"});
+		p.setValue(DEFAULT, "False");
 
 		if(log.isDebugEnabled()) {
 			for (PropertyDescriptor pd : getPropertyDescriptors()) {

@@ -5,8 +5,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
+import org.apache.commons.cli.BasicParser;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
@@ -16,16 +23,17 @@ import org.hypertable.thriftgen.Cell;
 import org.hypertable.thriftgen.ClientException;
 import org.hypertable.thriftgen.Key;
 
+import utils.DeployerOptions;
 import utils.EnvironmentDeployer;
 
 public class HypertableDeployer {
 
-	private static class HypertableTestEnvironmentDeployer extends EnvironmentDeployer {
+	private static class HypertableEnvironmentDeployer extends EnvironmentDeployer {
 
 		private static ThriftClient hyperTClient;
 		private static Long hyperTNS = -1L;
 
-		public HypertableTestEnvironmentDeployer(String host, String port,
+		public HypertableEnvironmentDeployer(String host, String port,
 				String namespace, String username, String password) {
 			super(host, port, namespace, username, password);
 		}
@@ -53,12 +61,12 @@ public class HypertableDeployer {
 				hyperTClient = ThriftClient.create(getHost(), Integer.valueOf(getPort()));
 				if (!hyperTClient.namespace_exists(getDatabase())) {
 					hyperTClient.namespace_create(getDatabase());
-					System.out.println(" initialize() -> Namespace testNS created.");
+					System.out.println(" initialize() -> Namespace " + getDatabase() + " created.");
 				} else {
-					System.out.println(" initialize() -> Namespace testNS already exists.");
+					System.out.println(" initialize() -> Namespace " + getDatabase() + " already exists.");
 				}
 				hyperTNS = hyperTClient.namespace_open(getDatabase());
-				System.out.println(" initialize() -> Namespace testNS opened.");
+				System.out.println(" initialize() -> Namespace " + getDatabase() + " opened.");
 			} catch (NumberFormatException e) {
 				System.out.println("NumberFormatException occured. Details: " + e.toString());
 			} catch (TTransportException e) {
@@ -179,20 +187,65 @@ public class HypertableDeployer {
 		}
 	}
 
+	/** The name of this class for the command line parser. */
+	private static final String CLASS_CMD = "HypertableDeployer [OPTIONS]";
+	/** The help header for the command line parser. */
+	private static final String CLP_HEADER = "This class helps you to deploy test environments on "
+			+ "HyperTable clusters. For this, one needs to pass connection details of the cluster.\n"
+			+ "The possible arguments are the following:";
+
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		HypertableTestEnvironmentDeployer deployer =
-				new HypertableTestEnvironmentDeployer("hypertable1.cern.ch", "38080",
-						"testNamespace", "testUser", "testPass");
+		/*HypertableEnvironmentDeployer deployer =
+				new HypertableEnvironmentDeployer("hypertable1.cern.ch", "38080",
+						"testNamespace", "testUser", "testPass");*/
 
-		//System.out.println("-------- Hypertable environment setup ------------");
-		//deployer.deployTestEnvironment();
-		//System.out.println("------- Hypertable environment teardown -----------");
-		//deployer.destroyTestEnvironment();
-		System.out.println("-------- Hypertable environment teardown and setup ------------");
-		deployer.redeployEnvironment();
+		/** Get a basic apache.cli Options from DeployerOptions. */
+		Options depOps = new DeployerOptions().getDeployerOptions();
+		// HBase specific options are added manually here:
+		depOps.addOption("p", "port", true, "port of the host (Hypertable default: 38080)");
+
+		/** Help page creation. */
+		HelpFormatter formatter = new HelpFormatter();
+		if (args.length < 1) {
+			System.err.println("Arguments are required for deploying anything...\n");
+			formatter.printHelp(CLASS_CMD, CLP_HEADER, depOps, utils.Constants.SUPPORT_FOOTER);
+			return;
+		}
+
+		/** Start to parse the command line arguments. */
+		CommandLineParser parser = new BasicParser();
+		try {
+			CommandLine cl = parser.parse(depOps, args);
+			HashMap<String, String> optMap = DeployerOptions.mapCommandLine(cl);
+
+			if (optMap.containsKey("HELP")) {
+				System.out.println(optMap.get("HELP") + "\n");
+				formatter.printHelp(CLASS_CMD, CLP_HEADER, depOps, utils.Constants.SUPPORT_FOOTER);
+			} else {
+				/** Create an environment deployer with the parsed arguments. */
+				HypertableEnvironmentDeployer deployer = new HypertableEnvironmentDeployer(
+						optMap.get("HOST"), optMap.get("PORT"), optMap.get("DB"),
+						optMap.get("USER"), optMap.get("PASS"));
+				if (optMap.get("MODE").equals("deploy")) {
+					deployer.deployTestEnvironment();
+				} else if (optMap.get("MODE").equals("teardown")) {
+					deployer.destroyTestEnvironment();
+				} else if (optMap.get("MODE").equals("redeploy")) {
+					deployer.redeployEnvironment();
+				} else {
+					System.err.println("Unknown deployment mode: " + optMap.get("MODE"));
+					formatter.printHelp(CLASS_CMD, CLP_HEADER, depOps, utils.Constants.SUPPORT_FOOTER);
+				}
+			}
+
+		} catch (ParseException exp) {
+			System.err.println("Parsing failed. Details: " + exp.getMessage() + "\n");
+			formatter.printHelp(CLASS_CMD, CLP_HEADER, depOps, utils.Constants.SUPPORT_FOOTER);
+		}
+
 	}
 
 }

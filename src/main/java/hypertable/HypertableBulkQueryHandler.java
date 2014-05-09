@@ -23,7 +23,6 @@ public class HypertableBulkQueryHandler implements QueryHandler {
 	@Override
 	public ByteArrayOutputStream getData(String tagName, long since)
 			throws CustomSamplersException {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -47,6 +46,12 @@ public class HypertableBulkQueryHandler implements QueryHandler {
 			List<ByteArrayOutputStream> chunks) throws CustomSamplersException {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public void closeResources() throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
