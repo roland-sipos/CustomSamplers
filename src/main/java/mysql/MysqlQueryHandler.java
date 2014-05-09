@@ -404,5 +404,11 @@ public class MysqlQueryHandler implements QueryHandler {
 		return result;
 	}
 
+	@Override
+	public void closeResources() throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
 

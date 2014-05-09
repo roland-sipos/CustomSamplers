@@ -52,27 +52,27 @@ public class MysqlDeployer {
 			CommandLine cl = parser.parse(depOps, args);
 			HashMap<String, String> optMap = DeployerOptions.mapCommandLine(cl);
 
+			// MySQL specific options are parsed manually here:
+			if (cl.hasOption('e')) {
+				optMap.put("ENGINE", cl.getOptionValue('e'));
+			} else if (cl.hasOption("engine")) {
+				optMap.put("ENGINE", cl.getOptionValue("engine"));
+			} else {
+				optMap.put("HELP", "Engine argument is missing!");
+			}
+
+			if (cl.hasOption('f')) {
+				optMap.put("FORK", cl.getOptionValue('f'));
+			} else if (cl.hasOption("fork")) {
+				optMap.put("FORK", cl.getOptionValue("fork"));
+			} else {
+				optMap.put("HELP", "Fork argument is missing!");
+			}
+
 			if (optMap.containsKey("HELP")) {
 				System.out.println(optMap.get("HELP") + "\n");
 				formatter.printHelp(CLASS_CMD, CLP_HEADER, depOps, utils.Constants.SUPPORT_FOOTER);
 			} else {
-				// MySQL specific options are parsed manually here:
-				if (cl.hasOption('e')) {
-					optMap.put("ENGINE", cl.getOptionValue('e'));
-				} else if (cl.hasOption("engine")) {
-					optMap.put("ENGINE", cl.getOptionValue("engine"));
-				} else {
-					optMap.put("HELP", "Engine argument is missing!");
-				}
-
-				if (cl.hasOption('f')) {
-					optMap.put("FORK", cl.getOptionValue('f'));
-				} else if (cl.hasOption("fork")) {
-					optMap.put("FORK", cl.getOptionValue("fork"));
-				} else {
-					optMap.put("HELP", "Fork argument is missing!");
-				}
-
 				/** Create an environment deployer with the parsed arguments. */
 				MysqlEnvironmentDeployer deployer =
 						new MysqlEnvironmentDeployer(optMap.get("HOST"), optMap.get("PORT"),
