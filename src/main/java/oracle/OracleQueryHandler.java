@@ -18,10 +18,21 @@ import customjdbc.CustomJDBCConfigElement;
 import utils.CustomSamplersException;
 import utils.QueryHandler;
 
+/**
+ * This is the implemented QueryHandler for Oracle Databases.
+ * */
 public class OracleQueryHandler implements QueryHandler {
 
+	/** The JDBC Connection object, fetched from a CustomJDBCConfigElement. */
 	private static Connection connection;
 
+	/** The constructor receives the ID of the Connection resource, that is looked up in
+	 * the JMeterContext and fetched from the CustomJDBCConfigElement.
+	 * 
+	 * @param  connectionId  the ID of a CustomJDBCConfigElement's resource
+	 * @param ifNewConnection 
+	 * @throws  CustomSamplersException  if the CustomJDBCConfigElement could not fetch the resource
+	 * */
 	public OracleQueryHandler(String databaseName) 
 			throws CustomSamplersException {
 		connection = CustomJDBCConfigElement.getJDBCConnection(databaseName);
@@ -31,6 +42,20 @@ public class OracleQueryHandler implements QueryHandler {
 		}
 	}
 
+	/**
+	 * This function sends the read query for the Oracle database, that is the following: <br>
+	 * SELECT data <br>
+	 * FROM PAYLOAD p, (SELECT payload_hash FROM IOV WHERE tag_name=? AND since=?) iov <br>
+	 * WHERE p.hash = iov.payload_hash <br>
+	 * <p>
+	 * The values for tag_name and since are got from the parameters, and the result set
+	 * contains the binary content of the asked PAYLOAD, in the DATA column in a single row.
+	 * 
+	 * @param  tagName  the TAG_NAME value for the query
+	 * @param  since  the SINCE value for the query
+	 * @return  ByteArrayOutputStream  the binary content of the PAYLOAD
+	 * @throws  CustomSamplersException  if an error occurred while executing the query
+	 * */
 	@Override
 	public ByteArrayOutputStream getData(String tagName, long since)
 			throws CustomSamplersException {
@@ -298,6 +323,12 @@ public class OracleQueryHandler implements QueryHandler {
 			throw new CustomSamplersException("SQLException occured during read attempt: " + e.toString());
 		}
 		return result;
+	}
+
+	@Override
+	public void closeResources() throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

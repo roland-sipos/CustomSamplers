@@ -6,44 +6,67 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.List;
 
+import org.apache.commons.cli.BasicParser;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+
+import utils.DeployerOptions;
 import utils.TagList;
 import utils.EnvironmentDeployer;
 
+/** 
+ * This executable class is capable to deploy an Oracle schema into a database instance.
+ * */
 public class OracleDeployer {
 
 	/**
 	 *This class is the extended EnvironmentDeployer for Oracle 11g.
 	 */
-	private static class OracleTestEnvironmentDeployer extends EnvironmentDeployer {
+	private static class OracleEnvironmentDeployer extends EnvironmentDeployer {
 
+		/** The JDBC Connection object. */
 		private Connection connection = null;
+		/** Tag list to fill now. */
 		private List<String> tagList;
 
-		public OracleTestEnvironmentDeployer(String host, String port,
+		/** Constructor
+		 * @param host target host for deployment (passed for super EnvironmentDeployer)
+		 * @param port port of target host (passed for super)
+		 * @param databaseName the name of the database instance on target host (passed for super)
+		 * @param username the user's name for target authentication (passed for super)
+		 * @param password the user's password for target authentication (passed for super)
+		 * @param tags possible TAGs will be written into the database directly. (transaction specific)
+		 * */
+		public OracleEnvironmentDeployer(String host, String port,
 				String databaseName, String username, String password, List<String> tags) {
 			super(host, port, databaseName, username, password);
 			tagList = tags;
 		}
 
+		/** Initialize function for Oracle. */
 		@Override
 		protected void initialize() {
-			/*try {
-				Class.forName("com.oracle.jdbc.driver.OracleDriver");
+			/** A fast-check for the JDBC driver. */
+			try {
+				Class.forName("oracle.jdbc.driver.OracleDriver");
 			} catch (ClassNotFoundException e) {
-				System.out.println(" initialize() -> Where is your Oracle 11g XE JDBC Driver? "
+				System.out.println(" initialize() -> Where is your Oracle JDBC Driver? "
 					+ "Include in your library path!");
 				e.printStackTrace();
 				return;
-			}*/
-
+			}
 			System.out.println(" initialize() -> Oracle JDBC Driver Registered!");
 
 			try {
 				connection = DriverManager.getConnection("jdbc:oracle:thin:@"
 						+ getHost() + ":" + getPort() + ":" + getDatabase(), getUsername(), getPassword());
-				connection.setAutoCommit(false);
+				//connection.setAutoCommit(false);
 			} catch (SQLException e) {
 				System.out.println(" initialize() -> Connection Failed! "
 						+ " Some parameter is not correct!");
@@ -53,6 +76,7 @@ public class OracleDeployer {
 			System.out.println(" initialize() -> Connection established...\n");	
 		}
 
+		/** Tear-down function for Oracle. */
 		@Override
 		protected void tearDown() {
 			try {
@@ -63,7 +87,8 @@ public class OracleDeployer {
 				System.out.println(" tearDown() -> Connection closing failed: " + e.toString());
 			}
 		}
-		
+
+		/** Environment setup function for Oracle. */
 		@Override
 		protected void setupEnvironment() {
 			System.out.println(" setupEnvironment() -> Setting up the environment...");
@@ -176,6 +201,7 @@ public class OracleDeployer {
 			System.out.println(" setupEnvironment() -> The environment has been deployed.\n");
 		}
 
+		/** Environment destroy function for Oracle. */
 		@Override
 		protected void destroyEnvironment() {
 			System.out.println(" destroyEnvironment() -> Destroying environment...");
@@ -207,22 +233,62 @@ public class OracleDeployer {
 
 	}
 
+	/** The name of this class for the command line parser. */
+	private static final String CLASS_CMD = "OracleDeployer [OPTIONS]";
+	/** The help header for the command line parser. */
+	private static final String CLP_HEADER = "This class helps you to deploy test environments on "
+			+ "Oracle instances. For this, one needs to pass connection details of the server.\n"
+			+ "The possible arguments are the following:";
 
 	/**
-	 * @param args
+	 * @param args command line arguments, parsed by utils.DeployerOptions.
 	 */
 	public static void main(String[] args) {
 		List<String> tagList = TagList.getTags();
-		OracleTestEnvironmentDeployer deployer =
-				new OracleTestEnvironmentDeployer("testdb-ora.cern.ch", "1521",
-						"test", "testUser", "testPass", tagList);
 
-		//System.out.println("-------- Oracle environment setup ------------");
-		//deployer.deployTestEnvironment();		
-		//System.out.println("------- Oracle environment teardown -----------");
-		//deployer.destroyTestEnvironment();
-		System.out.println("-------- Oracle environment teardown and setup ------------");
-		deployer.redeployEnvironment();
+		/** Get a basic apache.cli Options from DeployerOptions. */
+		Options depOps = new DeployerOptions().getDeployerOptions();
+		// Oracle specific options are added manually here:
+		depOps.addOption("p", "port", true, "port of the host (Oracle default: 1521)");
+
+		/** Help page creation. */
+		HelpFormatter formatter = new HelpFormatter();
+		if (args.length < 1) {
+			System.err.println("Arguments are required for deploying anything...\n");
+			formatter.printHelp(CLASS_CMD, CLP_HEADER, depOps, utils.Constants.SUPPORT_FOOTER);
+			return;
+		}
+
+		/** Start to parse the command line arguments. */
+		CommandLineParser parser = new BasicParser();
+		try {
+			CommandLine cl = parser.parse(depOps, args);
+			HashMap<String, String> optMap = DeployerOptions.mapCommandLine(cl);
+
+			if (optMap.containsKey("HELP")) {
+				System.out.println(optMap.get("HELP") + "\n");
+				formatter.printHelp(CLASS_CMD, CLP_HEADER, depOps, utils.Constants.SUPPORT_FOOTER);
+			} else {
+				/** Create an environment deployer with the parsed arguments. */
+				OracleEnvironmentDeployer deployer =
+						new OracleEnvironmentDeployer(optMap.get("HOST"), optMap.get("PORT"),
+								optMap.get("DB"), optMap.get("USER"), optMap.get("PASS"), tagList);
+				if (optMap.get("MODE").equals("deploy")) {
+					deployer.deployTestEnvironment();
+				} else if (optMap.get("MODE").equals("teardown")) {
+					deployer.destroyTestEnvironment();
+				} else if (optMap.get("MODE").equals("redeploy")) {
+					deployer.redeployEnvironment();
+				} else {
+					System.err.println("Unknown deployment mode: " + optMap.get("MODE"));
+					formatter.printHelp(CLASS_CMD, CLP_HEADER, depOps, utils.Constants.SUPPORT_FOOTER);
+				}
+			}
+
+		} catch (ParseException exp) {
+			System.err.println("Parsing failed. Details: " + exp.getMessage() + "\n");
+			formatter.printHelp(CLASS_CMD, CLP_HEADER, depOps, utils.Constants.SUPPORT_FOOTER);
+		}
 
 	}
 

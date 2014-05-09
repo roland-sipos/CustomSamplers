@@ -14,18 +14,25 @@ import utils.CustomSamplersException;
 import assignment.Assignment;
 import assignment.AssignmentConfigElement;
 
+/**
+ * This class is the Sampler for Oracle databases.
+ * The member fields are the user options, set by the appropriate BeanInfo class.
+ * */
 public class OracleSampler extends AbstractSampler implements TestBean {
 
 	private static final long serialVersionUID = 2177540240166358248L;
 	private static final Logger log = LoggingManager.getLoggerForClass();
 
-	public final static String DATABASE = "OracleSampler.database";
-	public final static String BINARYINFO = "OracleSampler.binaryInfo";
-	public final static String ASSIGNMENTINFO = "OracleSampler.assignmentInfo";
-	public final static String USECHUNKS = "OracleSampler.useChunks";
-	public final static String DOREAD = "OracleSampler.doRead";
-	public final static String CHECKREAD = "OracleSampler.checkRead";
-	public final static String DOWRITE = "OracleSampler.doWrite";
+	/** This field indicates which CustomJDBC ConfigElement will be used for the sampling. */
+	public final static String CONNECTION_ID = "OracleSampler.connectionId";
+	/** This field indicates which Assignment ConfigElement will be used for the sampling. */
+	public final static String ASSIGNMENT_INFO = "OracleSampler.assignmentInfo";
+	/** This field indicates, if the sampling will use chunks of the payloads. */
+	public final static String USE_CHUNKS = "OracleSampler.useChunks";
+	/** This field indicates, which I/O operation the sampling will do. */
+	public final static String REQUEST_TYPE = "OracleSampler.requestType";
+	/** This field indicates, if the sampling will validate the operations. */
+	public final static String VALIDATE_OPERATION = "OracleSampler.validateOperation";
 
 	public OracleSampler() {
 		trace("OracleSampler()" + this.toString());
@@ -33,92 +40,86 @@ public class OracleSampler extends AbstractSampler implements TestBean {
 
 	@Override
 	public SampleResult sample(Entry arg0) {
-		int threadID = CustomSamplerUtils.getThreadID(Thread.currentThread().getName());
-		trace("sample() ThreadID: " + threadID);
+		trace("sample() ThreadID: " + Thread.currentThread().getName());
 
-		// Get Assignment and QueryHandler instances.
-		Assignment assignment = null;
+		/** Fetch Assignment and QueryHandler instances. */
 		OracleQueryHandler queryHandler = null;
+		Assignment assignment = null;
+
 		try {
 			assignment = AssignmentConfigElement.getAssignments(getAssignmentInfo());
-			queryHandler = new OracleQueryHandler(getDatabase());
+			queryHandler = new OracleQueryHandler(getConnectionId());
 		} catch (CustomSamplersException e) {
 			log.error("Failed to create a OracleSampler prerequisites for the " + 
 					Thread.currentThread().getName() + " sampler. Details:" + e.toString());
 		}
 
-		// Get an initial SampleResult and parse options.
+		/** Get an initial SampleResult and parse user options. */
 		SampleResult res = CustomSamplerUtils.getInitialSampleResult(getTitle());
 		HashMap<String, Boolean> options = prepareOptions();
-		
-		if (options.get("doRead")) { // DO THE READ
+
+		/** Start the request, then return with the modified SampleResult. */
+		if(getRequestType().equals("read")) {
 			CustomSamplerUtils.readWith(queryHandler, assignment, res, options);
-		} else if (options.get("doWrite")) { // DO THE WRITE
+		} else if (getRequestType().equals("write")) {
 			CustomSamplerUtils.writeWith(queryHandler, assignment, res, options);
 		}
-
 		return res;
 	}
 
+	/**
+	 * This function parses the user options into a map.
+	 * @return  HashMap<String, Boolean>  a map that contains the user options
+	 * */
 	private HashMap<String, Boolean> prepareOptions() {
 		HashMap<String, Boolean> options = new HashMap<String, Boolean>();
-		options.put("doRead", Boolean.parseBoolean(getDoRead()));
-		options.put("doWrite", Boolean.parseBoolean(getDoWrite()));
-		options.put("useChunks", Boolean.parseBoolean(getUseChunks()));
-		options.put("isCheckRead", Boolean.parseBoolean(getCheckRead()));
-		options.put("isSpecial", false);
+		String cProp = getUseChunks();
+		options.put("useChunks", cProp.equals(String.valueOf(Boolean.TRUE)));
+		options.put("validateOperation", Boolean.parseBoolean(getValidateOperation()));
 		return options;
 	}
-	
+
+	/**
+	 * Utility function for logging in the Sampler.
+	 * @param  s  trace message
+	 * */
 	private void trace(String s) {
-		if(log.isDebugEnabled()) {
+		if(log.isDebugEnabled())
 			log.debug(Thread.currentThread().getName() + " (" + getTitle() + " " + s + " " + this.toString());
-		}
 	}
-	
+
 	public String getTitle() {
 		return this.getName();
 	}
-	public String getDatabase() {
-		return getPropertyAsString(DATABASE);
+	public String getConnectionId() {
+		return getPropertyAsString(CONNECTION_ID);
 	}
-	public void setDatabase(String database) {
-		setProperty(DATABASE, database);
-	}
-	public String getBinaryInfo() {
-		return getPropertyAsString(BINARYINFO);
-	}
-	public void setBinaryInfo(String binaryInfo) {
-		setProperty(BINARYINFO, binaryInfo);
+	public void setConnectionId(String connectionId) {
+		setProperty(CONNECTION_ID, connectionId);
 	}
 	public String getAssignmentInfo() {
-		return getPropertyAsString(ASSIGNMENTINFO);
+		return getPropertyAsString(ASSIGNMENT_INFO);
 	}
 	public void setAssignmentInfo(String assignmentInfo) {
-		setProperty(ASSIGNMENTINFO, assignmentInfo);
+		setProperty(ASSIGNMENT_INFO, assignmentInfo);
 	}
 	public String getUseChunks() {
-		return getPropertyAsString(USECHUNKS);
+		return getPropertyAsString(USE_CHUNKS);
 	}
 	public void setUseChunks(String useChunks) {
-		setProperty(USECHUNKS, useChunks);
+		setProperty(USE_CHUNKS, useChunks);
 	}
-	public String getCheckRead() {
-		return getPropertyAsString(CHECKREAD);
+	public String getRequestType() {
+		return getPropertyAsString(REQUEST_TYPE);
 	}
-	public void setCheckRead(String checkRead) {
-		setProperty(CHECKREAD, checkRead);
+	public void setRequestType(String requestType) {
+		setProperty(REQUEST_TYPE, requestType);
 	}
-	public String getDoRead() {
-		return getPropertyAsString(DOREAD);
+	public String getValidateOperation() {
+		return getPropertyAsString(VALIDATE_OPERATION);
 	}
-	public void setDoRead(String doRead) {
-		setProperty(DOREAD, doRead);
+	public void setValidateOperation(String validateOperation) {
+		setProperty(VALIDATE_OPERATION, validateOperation);
 	}
-	public String getDoWrite() {
-		return getPropertyAsString(DOWRITE);
-	}
-	public void setDoWrite(String doWrite) {
-		setProperty(DOWRITE, doWrite);
-	}
+
 }
