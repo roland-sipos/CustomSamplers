@@ -145,11 +145,16 @@ implements ConfigElement, TestStateListener, TestBean {
 				log.error("MongoClient initialization failed due to: " + e.toString());
 			}
 
-			DB mongoDB = mongoClient.getDB(getConnectionId());
+			DB mongoDB = mongoClient.getDB(getDatabase());
 			boolean auth = mongoDB.isAuthenticated();
 			if (!auth) {
-				if (!getUsername().equals("") && !getPassword().equals("")) {
-					mongoDB.authenticate(getUsername(), getPassword().toCharArray());
+				if (!getUsername().equals("")) {
+					auth = mongoDB.authenticate(getUsername(), getPassword().toCharArray());
+					if (!auth) {
+						log.error("MongoClient authentication failed...");
+					}
+				} else {
+					log.error("MongoClient username is empty, but authentication is needed!");
 				}
 			}
 			getThreadContext().getVariables().putObject(getConnectionId(), mongoDB);

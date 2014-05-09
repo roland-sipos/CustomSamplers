@@ -158,5 +158,11 @@ public class MongoQueryHandler implements QueryHandler {
 					+ e.toString());
 		}
 	}
+
+	@Override
+	public void closeResources() throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		
+	}
 	
 }

@@ -139,10 +139,12 @@ public class MongoDeployer {
 	 * @param args command line arguments, parsed by utils.DeployerOptions.
 	 */
 	public static void main(String[] args) {
+		/** Get a basic apache.cli Options from DeployerOptions. */
 		Options depOps = new DeployerOptions().getDeployerOptions();
 		// MongoDB specific options are added manually here:
 		depOps.addOption("p", "port", true, "port of the host (MongoDB default: 27017)");
 
+		/** Help page creation. */
 		HelpFormatter formatter = new HelpFormatter();
 		if (args.length < 1) {
 			System.err.println("Arguments are required for deploying anything...\n");
@@ -150,6 +152,7 @@ public class MongoDeployer {
 			return;
 		}
 
+		/** Start to parse the command line arguments. */
 		CommandLineParser parser = new BasicParser();
 		try {
 			CommandLine line = parser.parse(depOps, args);
@@ -159,6 +162,7 @@ public class MongoDeployer {
 				System.out.println(optionMap.get("HELP") + "\n");
 				formatter.printHelp(CLASS_CMD, CLP_HEADER, depOps, utils.Constants.SUPPORT_FOOTER);
 			} else {
+				/** Create an environment deployer with the parsed arguments. */
 				MongoEnvironmentDeployer deployer =
 						new MongoEnvironmentDeployer(optionMap.get("HOST"), optionMap.get("PORT"),
 								optionMap.get("DB"), optionMap.get("USER"), optionMap.get("PASS"));
