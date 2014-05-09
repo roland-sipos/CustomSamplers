@@ -50,7 +50,9 @@ public class AssignmentConfigElementBeanInfo extends BeanInfoSupport {
 		p.setValue(DEFAULT, "/testdata/");
 		p = property("encoding");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, "NO");
+		p.setValue(TAGS, new String[] {"binary", "base64"});
+		p.setValue(NOT_OTHER, new String[] {"binary", "base64"});
+		p.setValue(DEFAULT, "binary");
 
 		p = property("assignmentMode");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);

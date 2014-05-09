@@ -11,6 +11,8 @@ import java.util.TreeSet;
 import utils.CustomSamplersException;
 
 import binaryinfo.BinaryFileInfo;
+import binaryinfo.Readers;
+import binaryinfo.Readers.CustomReader;
 
 /**
  * This class is holding assignment information, associated with a BinaryFileInfo instance.
@@ -43,6 +45,8 @@ public class Assignment {
 	private Mode assignmentMode;
 	/** The number of thread, when the instance was created from the ConfigElement. */
 	private int numOfThreads;
+	/** The reader instance, based on the encoding mode. */
+	private CustomReader reader;
 	/** The ID of the BinaryFileInfo resource. Normally a BinaryConfigElement's binaryInfo property. */
 	private BinaryFileInfo binaryFileInfo;
 	/** The final assignment map, that contains the thread ID - file name set pairs. */
@@ -69,6 +73,14 @@ public class Assignment {
 	}
 
 	/**
+	 * Getter function for the encoding associated CustomReader instance. 
+	 * @return  CustomReader  the encoding related CustomReader
+	 * */
+	public CustomReader getReader() {
+		return reader;
+	}
+
+	/**
 	 * An assignment object is constructed, based on several factors. Namely the full path to the
 	 * assignment configuration (may be empty), the assignment mode as a string, the number of threads
 	 * in the test plan where this resource is created, and finally a BinaryFileInfo object to create
@@ -81,12 +93,14 @@ public class Assignment {
 	 * @param  binInfo  the associated BinaryFileInfo object for the assignments
 	 * @throws  CustomSamplersException  if the assignment creation failed, or was not possible at all
 	 * */
-	public Assignment(String iFilePath, String oFilePath, String mode, int threadNum, BinaryFileInfo binInfo)
-			throws CustomSamplersException {
+	public Assignment(String iFilePath, String oFilePath, String mode, int threadNum,
+			String encoding, BinaryFileInfo binInfo)
+					throws CustomSamplersException {
 		inputAssignFilePath = iFilePath;
 		outputAssignFilePath = oFilePath;
 		setModeFromString(mode);
 		numOfThreads = threadNum;
+		setReaderFromEncoding(encoding);
 		binaryFileInfo = binInfo;
 		assignmentMap = new HashMap<Integer, SortedSet<String>>();
 		assignedPathMap = new HashMap<Integer, SortedSet<String>>();
@@ -95,7 +109,7 @@ public class Assignment {
 	}
 
 	/**
-	 * This utility method sets the appropriate Enum, based on the user option string.
+	 * This utility method sets the appropriate Mode Enum, based on the user option string.
 	 * @param  modeStr  the mode, as a string
 	 * @throws  CustomSamplersException  if the modeStr was not recognized as a valid assignment mode
 	 * */
@@ -110,6 +124,22 @@ public class Assignment {
 			assignmentMode = Mode.SEQUENCE;
 		} else {
 			throw new CustomSamplersException("Unknown Mode: " + modeStr
+					+ " Cannot create Assignment!");
+		}
+	}
+
+	/**
+	 * This utility method sets the appropriate Encoding Enum, based on the user option string.
+	 * @param  encodingStr  the encoding option, as a string
+	 * @throws  CustomSamplersException  if the encodingStr was not recognized as a valid encoding mode
+	 * */
+	private void setReaderFromEncoding(String encodingStr) throws CustomSamplersException {
+		if (encodingStr.equals("binary")) {
+			reader = new Readers.BinaryReader();
+		} else if (encodingStr.equals("base64")) {
+			reader = new Readers.Base64Reader();
+		} else {
+			throw new CustomSamplersException("Unknown Encoding: " + encodingStr
 					+ " Cannot create Assignment!");
 		}
 	}

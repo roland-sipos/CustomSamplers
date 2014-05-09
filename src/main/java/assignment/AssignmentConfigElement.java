@@ -32,9 +32,7 @@ implements ConfigElement, TestStateListener, TestBean {
 	private static final String ASSIGNMENT_OUTPUT_FILE = "AssignmentConfigElement.assignmentOutputFile";
 	/** The inputLocation for the BinaryFileInfo instance. */
 	public final static String INPUT_LOCATION = "BinaryConfigElement.inputLocation";
-	/** Encoding flag for the BinaryFileInfo. 
-	 * @deprecated */
-	@Deprecated
+	/** Encoding flag for the BinaryFileInfo. */
 	public final static String ENCODING = "BinaryConfigElement.encoding";
 	/** The assignment mode that this resource need to utilize. */
 	private static final String ASSIGNMENT_MODE = "AssignmentConfigElement.assignmentMode";
@@ -101,7 +99,7 @@ implements ConfigElement, TestStateListener, TestBean {
 						getThreadContext().getVariables().get("numberOfThreads"));
 				Assignment assignment =
 						new Assignment(getAssignmentInputFile(), getAssignmentOutputFile(),
-								getAssignmentMode(), numOfThreads,
+								getAssignmentMode(), numOfThreads, getEncoding(),
 								BinaryFileInfo.getInstance(getInputLocation()));
 				getThreadContext().getVariables().putObject(getAssignmentInfo(), assignment);
 			} catch (Exception e) {
