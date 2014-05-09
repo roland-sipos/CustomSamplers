@@ -26,16 +26,19 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 	private static Connection connection;
 	private static LargeObjectManager lobManager;
 
-	public PostgreLOBQueryHandler(String databaseName)
+	public PostgreLOBQueryHandler(String connectionId)
 			throws CustomSamplersException {
-		connection = CustomJDBCConfigElement.getJDBCConnection(databaseName);
+		
+		connection = CustomJDBCConfigElement.getJDBCConnection(connectionId);
+		System.out.println("Fetched: " + connectionId + " ref:" + connection.toString());
 		try {
 			lobManager = ((org.postgresql.PGConnection)connection).getLargeObjectAPI();
 		} catch (SQLException e) {
 			throw new CustomSamplersException("SQLException occured! Details: " + e.toString());
 		}
 		if (connection == null)
-			throw new CustomSamplersException("JDBCConnection instance with name: " + databaseName + " was not found in config!");
+			throw new CustomSamplersException("JDBCConnection instance with ID: " + connectionId
+					+ " was not found in config!");
 	}
 
 	@Override
@@ -55,12 +58,11 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 				int counter = 0;
 				while(rs.next()) {
 					long objectID = rs.getLong(1);
-					LargeObject object = ((org.postgresql.PGConnection)connection)
-							.getLargeObjectAPI().open(objectID, LargeObjectManager.READ);
+					LargeObject object = lobManager.open(objectID, LargeObjectManager.READ);
 					byte[] pl = new byte[object.size()];
 					object.read(pl, 0, object.size());
-					result.write(pl);
 					object.close();
+					result.write(pl);
 					counter++;
 				}
 				if (counter > 1) {
@@ -74,11 +76,21 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 						+ "TAG=" + tagName + " SINCE=" + since +" !");
 			}
 			ps.close();
-			connection.setAutoCommit(true);
+			connection.commit();
 		} catch (SQLException e) {
-			throw new CustomSamplersException("SQLException occured during read attempt: " + e.toString());
+			e.printStackTrace();
+			throw new CustomSamplersException("SQLException occured during read attempt: " + e.toString()
+					+ " " + e.getErrorCode());
 		} catch (IOException e) {
+			e.printStackTrace();
 			throw new CustomSamplersException("SQLException occured during read attempt: " + e.toString());
+		}
+		try {
+			connection.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new CustomSamplersException("SQLException occured during close attempt: " + e.toString()
+					+ " " + e.getErrorCode());
 		}
 		return result;
 	}
@@ -88,6 +100,12 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 			ByteArrayOutputStream streamerInfo) throws CustomSamplersException {
 		writeLOBPayload(metaInfo, payload.toByteArray(), streamerInfo.toByteArray());
 		writeIov(metaInfo);
+		/*try {
+			connection.close();
+		} catch (SQLException e) {
+			throw new CustomSamplersException("Cannot close connection after INSERT..." + e.toString());
+		}*/
+		
 	}
 
 	@Override
@@ -95,7 +113,6 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 			throws CustomSamplersException {
 		Map<Integer, ByteArrayOutputStream> result = new HashMap<Integer, ByteArrayOutputStream>();
 		try {
-			connection.setAutoCommit(false);
 			PreparedStatement ps = connection.prepareStatement("SELECT id, data "
 					+ "FROM LOB_CHUNK c, (SELECT payload_hash FROM IOV WHERE tag_name=? AND since=?) iov "
 					+ "WHERE c.payload_hash = iov.payload_hash");
@@ -121,7 +138,6 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 						+ "TAG=" + tagName + " SINCE=" + since +" ! (via chunk read)");
 			}
 			ps.close();
-			connection.setAutoCommit(true);
 		} catch (SQLException e) {
 			throw new CustomSamplersException("SQLException occured during read attempt: " + e.toString());
 		} catch (IOException e) {
@@ -136,8 +152,6 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 		try {
 			writeLOBPayload(metaInfo, new byte[0], new byte[0]);
 			writeIov(metaInfo);
-
-			connection.setAutoCommit(false);
 			for (int i = 0; i < chunks.size(); ++i) {
 				long objectId = lobManager.createLO(LargeObjectManager.READWRITE);
 				LargeObject object = lobManager.open(objectId, LargeObjectManager.WRITE);
@@ -154,9 +168,7 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 				ps.execute();
 				ps.close();
 			}
-			
 			connection.commit();
-			connection.setAutoCommit(true);
 		} catch (SQLException se) {
 			throw new CustomSamplersException("SQLException occured during write attempt: " + se.toString());
 		}
@@ -186,7 +198,10 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 			connection.commit();
 			connection.setAutoCommit(true);
 		} catch (SQLException e) {
-			throw new CustomSamplersException("SQLException occured during LOB insert attempt: " + e.toString());
+			e.printStackTrace();
+			throw new CustomSamplersException("SQLException occured during LOB insert attempt: " + e.toString()
+					+ " " + e.getErrorCode()
+					+ " " + e.getMessage());
 		}
 	}
 
@@ -194,7 +209,6 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 	private byte[] readLOBPayload(String hashKey) throws CustomSamplersException {
 		byte[] result = null;
 		try {
-			connection.setAutoCommit(false);
 			PreparedStatement ps = connection.prepareStatement(
 					"SELECT DATA FROM LOB_PAYLOAD WHERE HASH=?");
 			ps.setString(1, hashKey);
@@ -219,7 +233,6 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 						+ " not found in LOB_PAYLOAD!");
 			}
 			ps.close();
-			connection.setAutoCommit(true);
 		} catch (SQLException e) {
 			throw new CustomSamplersException("SQLException occured during read attempt: " + e.toString());
 		}
@@ -230,7 +243,6 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 	private void writeLOBChunk(HashMap<String, String> metaInfo, String chunkID, byte[] chunk) 
 			throws CustomSamplersException {
 		try {
-			connection.setAutoCommit(false);
 			long objectId = lobManager.createLO(LargeObjectManager.READWRITE);
 			LargeObject object = lobManager.open(objectId, LargeObjectManager.WRITE);
 			object.write(chunk);
@@ -243,7 +255,6 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 			ps.execute();
 			ps.close();
 			connection.commit();
-			connection.setAutoCommit(true);
 		} catch (SQLException se) {
 			throw new CustomSamplersException(
 					"SQLException occured during write attempt: " + se.toString());
@@ -255,7 +266,6 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 			throws CustomSamplersException {
 		byte[] result = null;
 		try {
-			connection.setAutoCommit(false);
 			PreparedStatement ps = connection.prepareStatement(
 					"SELECT DATA FROM LOB_CHUNK WHERE PAYLOAD_HASH=? AND CHUNK_HASH=?");
 			ps.setString(1, hashKey);
@@ -284,7 +294,6 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 						+ " chunk_hash=" +chunkHashKey + " not found in LOB_CHUNK!");
 			}
 			ps.close();
-			connection.setAutoCommit(true);
 		} catch (SQLException e) {
 			throw new CustomSamplersException("SQLException occured during read attempt: " + e.toString());
 		}
@@ -295,7 +304,6 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 			throws CustomSamplersException {
 		byte[] result = null;
 		try {
-			connection.setAutoCommit(false);
 			PreparedStatement ps = connection.prepareStatement(
 					"SELECT DATA FROM LOB_CHUNK WHERE PAYLOAD_HASH=?");
 			ps.setString(1, hashKey);
@@ -315,7 +323,6 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 				throw new CustomSamplersException("The rows with hash=" + hashKey + " not found in LOB_CHUNK!");
 			}
 			ps.close();
-			connection.setAutoCommit(true);
 			result = os.toByteArray();
 		} catch (SQLException e) {
 			throw new CustomSamplersException("SQLException occured during read attempt: " + e.toString()
@@ -342,6 +349,12 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 		} catch (SQLException se) {
 			throw new CustomSamplersException("SQLException occured during write attempt: " + se.toString());
 		}
+	}
+
+	@Override
+	public void closeResources() throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

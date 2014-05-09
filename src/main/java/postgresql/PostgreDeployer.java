@@ -1,234 +1,99 @@
 package postgresql;
 
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.List;
 
-import utils.TagList;
-import utils.EnvironmentDeployer;
+import org.apache.commons.cli.BasicParser;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 
+import utils.DeployerOptions;
+import utils.EnvironmentDeployer;
+import utils.TagList;
+
+/** 
+ * This executable class is capable to deploy a relational schema into a PostgreSQL database instance.
+ * */
 public class PostgreDeployer {
 
-	/**
-	 * This class is the extended EnvironmentDeployer for PostgreSQL.
-	 * */
-	private static class PostgreTestEnvironmentDeployer extends EnvironmentDeployer {
-
-		private Connection connection = null;
-		private List<String> tagList;
-
-		public PostgreTestEnvironmentDeployer(String host, String port,
-				String databaseName, String username, String password, List<String> tags) {
-			super(host, port, databaseName, username, password);
-			tagList = tags;
-		}
-
-		@Override
-		protected void initialize() {
-			/*try {
-				Class.forName("org.postgresql.Driver");
-			} catch (ClassNotFoundException e) {
-				System.out.println(" initialize() -> Where is your PostgreSQL JDBC Driver? "
-					+ "Include in your library path!");
-			e.printStackTrace();
-			return;
-			}*/
-			System.out.println(" initialize() -> PostgreSQL JDBC Driver Registered!");
-
-			try {
-				connection = DriverManager.getConnection("jdbc:postgresql://" + getHost() + ":" + getPort() 
-						+ "/" + getDatabase(), getUsername(), getPassword());
-				connection.setAutoCommit(false);
-			} catch (SQLException e) {
-				System.out.println(" initialize() -> Connection Failed! Some parameter is not correct!");
-				e.printStackTrace();
-				return;
-			}
-			System.out.println(" initialize() -> Connection established...\n");
-		}
-
-		@Override
-		protected void tearDown() {
-			try {
-				if (connection != null)
-					connection.close();
-				System.out.println(" tearDown() -> Connection closed.\n");
-			}
-			catch (Exception e){
-				System.out.println(" tearDown() -> Connection closing failed: " + e.toString());
-			}
-		}
-
-		@Override
-		protected void setupEnvironment() {
-			String createTagQuery = "CREATE TABLE TAG ("
-					+ " NAME VARCHAR(100) NOT NULL,"
-					+ " REVISION INT default NULL,"
-					+ " REVISION_TIME TIMESTAMP default NULL,"
-					+ " COMMENT VARCHAR(4000) default NULL,"
-					+ " TIME_TYPE INT default NULL,"
-					+ " OBJECT_TYPE VARCHAR(100) default NULL,"
-					+ " LAST_VALIDATED_TIME INT default NULL,"
-					+ " END_OF_VALIDITY INT default NULL,"
-					+ " LAST_SINCE BIGINT default NULL,"
-					+ " LAST_SINCE_PID INT default NULL,"
-					+ " CREATION_TIME TIMESTAMP default NULL,"
-					+ " PRIMARY KEY (NAME) )";
-
-			String createPayloadQuery = "CREATE TABLE PAYLOAD ("
-					+ " HASH VARCHAR(40) NOT NULL ,"
-					+ " OBJECT_TYPE VARCHAR(100) default NULL ,"
-					+ " DATA BYTEA default NULL ,"
-					+ " STREAMER_INFO BYTEA default NULL ,"
-					+ " VERSION VARCHAR(20) default NULL ,"
-					+ " CREATION_TIME TIMESTAMP default NULL ,"
-					+ " CMSSW_RELEASE VARCHAR(45) default NULL ,"
-					+ " PRIMARY KEY (HASH) )";
-			String createChunkQuery = "CREATE TABLE CHUNK ("
-					+ " PAYLOAD_HASH VARCHAR(40) NOT NULL,"
-					+ " CHUNK_HASH VARCHAR(40) NOT NULL,"
-					+ " ID SMALLINT NOT NULL,"
-					+ " DATA BYTEA default NULL,"
-					+ " PRIMARY KEY (PAYLOAD_HASH, CHUNK_HASH) )";
-
-			String createChunkIdxQuery = "CREATE INDEX PAYLOAD_HASH_FK_IDX ON CHUNK (PAYLOAD_HASH)";
-
-			String alterChunkHashFK = "ALTER TABLE CHUNK ADD CONSTRAINT PAYLOAD_HASH_FK_IDX "
-					+ " FOREIGN KEY (PAYLOAD_HASH) REFERENCES PAYLOAD(HASH)";
-
-			String createIOVQuery = "CREATE TABLE IOV ("
-					+ " TAG_NAME VARCHAR(100) NOT NULL,"
-					+ " SINCE BIGINT NOT NULL,"
-					+ " PAYLOAD_HASH VARCHAR(40) NOT NULL,"
-					+ " INSERT_TIME TIMESTAMP NOT NULL,"
-					+ " PRIMARY KEY (TAG_NAME, SINCE) )";
-			String createTagIdxQuery = "CREATE INDEX TAG_FK_idx ON IOV (TAG_NAME)";
-			String createPayloadIdxQuery = "CREATE INDEX PAYLOAD_FK_idx ON IOV (PAYLOAD_HASH)";
-
-			String alterIovTagFK = "ALTER TABLE IOV ADD CONSTRAINT TAG_FK_IDX "
-					+ " FOREIGN KEY (TAG_NAME) REFERENCES TAG(NAME)";
-			String alterIovPayloadFK = "ALTER TABLE IOV ADD CONSTRAINT PAYLOAD_FK_IDX "
-					+ " FOREIGN KEY (PAYLOAD_HASH) REFERENCES PAYLOAD(HASH)";
-			
-
-			PreparedStatement create = null;
-			String prefix = " setupEnvironment() -> ";
-			try {
-				create = connection.prepareStatement(createTagQuery);
-				Boolean failed = create.execute();
-				checkAndNotify(failed, createTagQuery, prefix);
-				create = connection.prepareStatement(createIOVQuery);
-				failed = create.execute();
-				checkAndNotify(failed, createIOVQuery, prefix);
-				create = connection.prepareStatement(createTagIdxQuery);
-				failed = create.execute();
-				checkAndNotify(failed, createTagIdxQuery, prefix);
-				create = connection.prepareStatement(createPayloadIdxQuery);
-				failed = create.execute();
-				checkAndNotify(failed, createPayloadIdxQuery, prefix);
-				create = connection.prepareStatement(alterIovTagFK);
-				failed = create.execute();
-				checkAndNotify(failed, alterIovTagFK, prefix);
-
-				PreparedStatement createL = connection.prepareStatement(createPayloadQuery);
-				failed = createL.execute();
-				checkAndNotify(failed, createPayloadQuery, prefix);
-				createL = connection.prepareStatement(createChunkQuery);
-				failed = createL.execute();
-				checkAndNotify(failed, createChunkQuery, prefix);
-				createL = connection.prepareStatement(createChunkIdxQuery);
-				failed = createL.execute();
-				checkAndNotify(failed, createChunkIdxQuery, prefix);
-				createL = connection.prepareStatement(alterChunkHashFK);
-				failed = createL.execute();
-				checkAndNotify(failed, alterChunkHashFK, prefix);
-				createL = connection.prepareStatement(alterIovPayloadFK);
-				failed = createL.execute();
-				checkAndNotify(failed, alterIovPayloadFK, prefix);
-				createL.close();
-
-				create.close();
-
-				for (int i = 0; i < tagList.size(); ++i) {
-					PreparedStatement insertTT = connection.prepareStatement("INSERT INTO TAG "
-							+ " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-					insertTT.setString(1, tagList.get(i));
-					insertTT.setInt(2, 1);
-					insertTT.setDate(3, new Date(System.currentTimeMillis()));
-					insertTT.setString(4, "This is the tag for " + tagList.get(i)+ ".");
-					insertTT.setInt(5, 1);
-					insertTT.setString(6, "any_obj_type");
-					insertTT.setInt(7, 111);
-					insertTT.setInt(8, 222);
-					insertTT.setInt(9, 333);
-					insertTT.setInt(10, 444);
-					insertTT.setTimestamp(11, new Timestamp(System.currentTimeMillis()));
-					failed = insertTT.execute();
-					checkAndNotify(failed, "INSERT INTO TAG statement - " + tagList.get(i), prefix);
-					insertTT.close();
-				}
-
-				connection.commit();
-
-			} catch (SQLException e) {
-				System.out.println(" setupEnvironment() -> SQLException occured. Details: " + e.toString());
-			}
-			System.out.println(" setupEnvironment() -> The environment has been deployed.\n");
-		}
-
-		@Override
-		protected void destroyEnvironment() {
-			System.out.println(" destroyEnvironment() -> Destroying environment...");
-			String deleteTagQuery = "DROP TABLE IF EXISTS TAG";
-			String deleteChunkQuery = "DROP TABLE IF EXISTS CHUNK";
-			String deletePayloadQuery = "DROP TABLE IF EXISTS PAYLOAD";
-			String deleteIOVQuery = "DROP TABLE IF EXISTS IOV";
-
-			PreparedStatement delete = null;
-			String prefix = " destroyEnvironment() -> ";
-			try {
-				delete = connection.prepareStatement(deleteIOVQuery);
-				Boolean failed = delete.execute();
-				checkAndNotify(failed, deleteIOVQuery, prefix);
-				delete = connection.prepareStatement(deleteChunkQuery);
-				failed = delete.execute();
-				checkAndNotify(failed, deleteChunkQuery, prefix);
-				delete = connection.prepareStatement(deletePayloadQuery);
-				failed = delete.execute();
-				checkAndNotify(failed, deletePayloadQuery, prefix);
-				delete = connection.prepareStatement(deleteTagQuery);
-				failed = delete.execute();
-				checkAndNotify(failed, deleteTagQuery, prefix);
-
-				delete.close();
-				
-				connection.commit();
-
-			} catch (SQLException e) {
-				System.out.println(" destroyEnvironment() -> SQLException occured. Details: " + e.toString());
-			}
-			System.out.println(" destroyEnvironment() -> The environment has been destroyed.\n");
-		}		
-	}
+	/** The name of this class for the command line parser. */
+	private static final String CLASS_CMD = "PostgreDeployer [OPTIONS]";
+	/** The help header for the command line parser. */
+	private static final String CLP_HEADER = "This class helps you to deploy test environments on "
+			+ "PostgreSQL instances. For this, one needs to pass connection details of the server.\n"
+			+ "The possible arguments are the following:";
 
 	/**
-	 * @param args
+	 * @param args command line arguments, parsed by utils.DeployerOptions.
 	 */
 	public static void main(String[] args) {
-		PostgreTestEnvironmentDeployer deployer =
-				new PostgreTestEnvironmentDeployer("test-postgre.cern.ch", "5432", 
-						"testdb", "postgres", "testPass", TagList.getTags());
+		List<String> tagList = TagList.getTags();
 
-		//System.out.println("-------- PostgreSQL environment setup ------------");
-		//deployer.deployTestEnvironment();
-		//System.out.println("------- PostgreSQL environment teardown -----------");
-		//deployer.destroyTestEnvironment();
-		System.out.println("-------- PostgreSQL environment teardown and setup ------------");
-		deployer.redeployEnvironment();
+		/** Get a basic apache.cli Options from DeployerOptions. */
+		Options depOps = new DeployerOptions().getDeployerOptions();
+		// PostgreSQL specific options are added manually here:
+		depOps.addOption("p", "port", true, "port of the host (PostgreSQL default: 5432)");
+		depOps.addOption("a", "api", true, "which PostgreSQL API to use. (DEFAULT, LOBAPI)");
+
+		/** Help page creation. */
+		HelpFormatter formatter = new HelpFormatter();
+		if (args.length < 1) {
+			System.err.println("Arguments are required for deploying anything...\n");
+			formatter.printHelp(CLASS_CMD, CLP_HEADER, depOps, utils.Constants.SUPPORT_FOOTER);
+			return;
+		}
+
+		/** Start to parse the command line arguments. */
+		CommandLineParser parser = new BasicParser();
+		try {
+			CommandLine cl = parser.parse(depOps, args);
+			HashMap<String, String> optMap = DeployerOptions.mapCommandLine(cl);
+
+			// PostgreSQL specific options are parsed manually here:
+			if (cl.hasOption('a')) {
+				optMap.put("API", cl.getOptionValue('a'));
+			} else if (cl.hasOption("api")) {
+				optMap.put("API", cl.getOptionValue("api"));
+			} else {
+				optMap.put("HELP", "API argument is missing!");
+			}
+
+			if (optMap.containsKey("HELP")) {
+				System.out.println(optMap.get("HELP") + "\n");
+				formatter.printHelp(CLASS_CMD, CLP_HEADER, depOps, utils.Constants.SUPPORT_FOOTER);
+			} else {
+				/** Create an environment deployer with the parsed arguments. */
+				EnvironmentDeployer deployer = null;
+				if (optMap.get("API").equals("DEFAULT")) {
+					deployer = new PostgreEnvironmentDeployer(optMap.get("HOST"), optMap.get("PORT"),
+							optMap.get("DB"), optMap.get("USER"), optMap.get("PASS"), tagList);
+				} else if (optMap.get("API").equals("LOBAPI")) {
+					deployer = new PostgreLOBEnvironmentDeployer(optMap.get("HOST"), optMap.get("PORT"),
+							optMap.get("DB"), optMap.get("USER"), optMap.get("PASS"), tagList);
+				} else {
+					System.err.println("Unknown API: " + optMap.get("API"));
+					formatter.printHelp(CLASS_CMD, CLP_HEADER, depOps, utils.Constants.SUPPORT_FOOTER);
+				}
+
+				if (optMap.get("MODE").equals("deploy")) {
+					deployer.deployTestEnvironment();
+				} else if (optMap.get("MODE").equals("teardown")) {
+					deployer.destroyTestEnvironment();
+				} else if (optMap.get("MODE").equals("redeploy")) {
+					deployer.redeployEnvironment();
+				} else {
+					System.err.println("Unknown deployment mode: " + optMap.get("MODE"));
+					formatter.printHelp(CLASS_CMD, CLP_HEADER, depOps, utils.Constants.SUPPORT_FOOTER);
+				}
+			}
+
+		} catch (ParseException exp) {
+			System.err.println("Parsing failed. Details: " + exp.getMessage() + "\n");
+			formatter.printHelp(CLASS_CMD, CLP_HEADER, depOps, utils.Constants.SUPPORT_FOOTER);
+		}
 
 	}
 
