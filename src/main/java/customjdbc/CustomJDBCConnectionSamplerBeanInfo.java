@@ -26,6 +26,7 @@ public class CustomJDBCConnectionSamplerBeanInfo extends BeanInfoSupport {
 	 * -- database <br>
 	 * -- sid <br>
 	 * -- autoCommit <br>
+	 * -- readOnly <br>
 	 * -- username <br>
 	 * -- password <br>
 	 * */
@@ -34,7 +35,7 @@ public class CustomJDBCConnectionSamplerBeanInfo extends BeanInfoSupport {
 
 		createPropertyGroup("connection", new String[] {
 				"connectionId", "jdbcName", "className", 
-				"host", "port", "database", "sid", "autoCommit", 
+				"host", "port", "database", "sid", "autoCommit", "readOnly",
 				"username", "password"});
 
 		PropertyDescriptor p = property("connectionId");
@@ -59,6 +60,9 @@ public class CustomJDBCConnectionSamplerBeanInfo extends BeanInfoSupport {
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "");
 		p = property("autoCommit");
+		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
+		p.setValue(DEFAULT, Boolean.TRUE);
+		p = property("readOnly");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, Boolean.TRUE);
 		p = property("username");

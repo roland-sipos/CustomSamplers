@@ -30,6 +30,7 @@ public class CustomJDBCConnectionSampler extends AbstractSampler implements Test
 	public final static String DATABASE = "CustomJDBCConnectionSampler.database";
 	public final static String SID = "CustomJDBCConnectionSampler.sid";
 	public final static String AUTO_COMMIT = "CustomJDBCConnectionSampler.autoCommit";
+	public final static String READ_ONLY = "CustomJDBCConnectionSampler.readOnly";
 	public final static String USERNAME = "CustomJDBCConnectionSampler.username";
 	public final static String PASSWORD = "CustomJDBCConnectionSampler.password";
 
@@ -55,7 +56,9 @@ public class CustomJDBCConnectionSampler extends AbstractSampler implements Test
 					getJdbcName(), getHost(), getPort(), getSid(), getDatabase(),
 					getUsername(), getPassword());
 			res.samplePause();
-			connection.setAutoCommit(Boolean.parseBoolean(getAutocommit()));
+			connection.setAutoCommit(Boolean.parseBoolean(getAutoCommit()));
+			connection.setReadOnly(Boolean.parseBoolean(getReadOnly()));
+			connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
 			getThreadContext().getVariables().putObject(getConnectionId(), connection);
 		} catch (Exception e) {
 			CustomSamplerUtils.finalizeResponse(res, false, "999",
@@ -137,12 +140,20 @@ public class CustomJDBCConnectionSampler extends AbstractSampler implements Test
 		setProperty(SID, sid);
 	}
 
-	public String getAutocommit() {
+	public String getAutoCommit() {
 		return getPropertyAsString(AUTO_COMMIT);
 	}
 
 	public void setAutoCommit(String autoCommit) {
 		setProperty(AUTO_COMMIT, autoCommit);
+	}
+
+	public String getReadOnly() {
+		return getPropertyAsString(READ_ONLY);
+	}
+
+	public void setReadOnly(String readOnly) {
+		setProperty(READ_ONLY, readOnly);
 	}
 
 	public String getUsername() {

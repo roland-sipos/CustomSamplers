@@ -41,6 +41,10 @@ implements ConfigElement, TestStateListener, TestBean {
 	public final static String SID = "CustomJDBCConfigElement.sid";
 	/** If the connection should use auto-commit mode or not. */
 	public final static String AUTO_COMMIT = "CustomJDBCConfigElement.autoCommit";
+	/** If the connection is in read only mode. */
+	public final static String READ_ONLY = "CustomJDBCConfigElement.readOnly";
+	/** Set the level of transaction isolation. */
+	//public final static String TRANSACTION_ISOLATION = "CustomJDBCConfigElement.transactionIsolation";
 	/** User name for authentication. */
 	public final static String USERNAME = "CustomJDBCConfigElement.username";
 	/** Password for authentication. */
@@ -101,7 +105,7 @@ implements ConfigElement, TestStateListener, TestBean {
 		Connection connection = null;
 		String connectionStr = jdbcName + "://" + host + ":" + port + "/" + database;
 		if (!sid.isEmpty()) {
-			connectionStr = jdbcName + ":@" + host + ":" + port + ":" + database;
+			connectionStr = jdbcName + ":@" + host + ":" + port + ":" + sid;
 		}
 		try {
 			connection = DriverManager.getConnection(connectionStr, username, password);
@@ -171,6 +175,7 @@ implements ConfigElement, TestStateListener, TestBean {
 
 			try {
 				connection.setAutoCommit(Boolean.parseBoolean(getAutoCommit()));
+				connection.setReadOnly(Boolean.parseBoolean(getReadOnly()));
 			} catch (SQLException e) {
 				log.error("Failed to change autoCommit to false: " + e.toString());
 			}
@@ -264,6 +269,22 @@ implements ConfigElement, TestStateListener, TestBean {
 	public void setAutoCommit(String autoCommit) {
 		setProperty(AUTO_COMMIT, autoCommit);
 	}
+
+	public String getReadOnly() {
+		return getPropertyAsString(READ_ONLY);
+	}
+
+	public void setReadOnly(String readOnly) {
+		setProperty(READ_ONLY, readOnly);
+	}
+
+	/*public String getTransactionIsolation() {
+		return getPropertyAsString(TRANSACTION_ISOLATION);
+	}
+
+	public void setTransactionIsolation(String transactionIsolation) {
+		setProperty(TRANSACTION_ISOLATION, transactionIsolation);
+	}*/
 
 	public String getUsername() {
 		return getPropertyAsString(USERNAME);

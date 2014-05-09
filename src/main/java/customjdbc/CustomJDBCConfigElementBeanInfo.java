@@ -34,7 +34,8 @@ public class CustomJDBCConfigElementBeanInfo extends BeanInfoSupport {
 
 		createPropertyGroup("connection", new String[] {
 				"connectionId", "jdbcName", "className", 
-				"host", "port", "database", "sid", "autoCommit", 
+				"host", "port", "database", "sid",
+				"autoCommit", "readOnly",
 				"username", "password"});
 
 		PropertyDescriptor p = property("connectionId");
@@ -61,6 +62,10 @@ public class CustomJDBCConfigElementBeanInfo extends BeanInfoSupport {
 		p = property("autoCommit");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, Boolean.TRUE);
+		p = property("readOnly");
+		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
+		p.setValue(DEFAULT, Boolean.TRUE);
+
 		p = property("username");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "postgres");
