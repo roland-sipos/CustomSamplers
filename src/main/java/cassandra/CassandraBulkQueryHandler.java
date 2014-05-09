@@ -72,32 +72,32 @@ public class CassandraBulkQueryHandler implements QueryHandler {
 			Composite key = new Composite();
 			key.addComponent(tagName, ss);
 			key.addComponent(String.valueOf(since), ss);
-			
+			/*
 			SliceQuery<Composite, Integer, String> iovQuery = HFactory
 					.createSliceQuery(keyspace, CompositeSerializer.get(), IntegerSerializer.get(), ss)
 					.setColumnFamily(iovCFName)
-					.setKey(key);
+					.setKey(key);*/
 
-			ColumnSliceIterator<Composite, Integer, String> iterator = 
+			/*ColumnSliceIterator<Composite, Integer, String> iterator = 
 					new ColumnSliceIterator<Composite, Integer, String>(
-							iovQuery, 0, 10000, false);
+							iovQuery, 0, 10000, false);*/
 
 			ColumnQuery<String, Integer, byte[]> plQuery = HFactory
 					.createColumnQuery(keyspace, ss, IntegerSerializer.get(), BytesArraySerializer.get())
 					.setColumnFamily(payloadCFName);
-			while (iterator.hasNext()) {
+			/*while (iterator.hasNext()) {
 				HColumn<Integer, String> hashColumn = iterator.next();
 				plQuery.setKey(hashColumn.getValue()).setName(hashColumn.getName());
 				QueryResult<HColumn<Integer, byte[]> > cResult = plQuery.execute();
 				ByteArrayOutputStream cBaos = new ByteArrayOutputStream();
 				cBaos.write(cResult.get().getValue());
 				result.put(Integer.valueOf(hashColumn.getName()), cBaos);
-			}
+			}*/
 		} catch (HectorException he) {
 			throw new CustomSamplersException("HectorException occured during write attempt -> ", he);
-		} catch (IOException e) {
+		} /*catch (IOException e) {
 			throw new CustomSamplersException("IOException occured during write attempt -> ", e);
-		}
+		}*/
 		return result;
 	}
 
@@ -109,20 +109,26 @@ public class CassandraBulkQueryHandler implements QueryHandler {
 			key.addComponent(metaInfo.get("tag_name"), StringSerializer.get());
 			key.addComponent(metaInfo.get("since"), StringSerializer.get());
 
-			Mutator<Composite> compMutator = HFactory.createMutator(keyspace, CompositeSerializer.get());
-			Mutator<String> strMutator = HFactory.createMutator(keyspace, StringSerializer.get());
-			for (int i = 0; i < chunks.size(); ++i) {
+			//Mutator<Composite> compMutator = HFactory.createMutator(keyspace, CompositeSerializer.get());
+			//Mutator<String> strMutator = HFactory.createMutator(keyspace, StringSerializer.get());
+			/*for (int i = 0; i < chunks.size(); ++i) {
 				String chunkHash = metaInfo.get(String.valueOf(i+1));
 				compMutator.addInsertion(key, iovCFName, HFactory.createColumn(i+1, chunkHash));
 				// TODO: Not bulk insert, but: pl_hash -> (id:hash:data) -> (id:hash:data) etc ... 
 				strMutator.addInsertion(chunkHash, payloadCFName,
 						HFactory.createColumn(i+1, chunks.get(i).toByteArray()));
-			}
-			compMutator.execute();
-			strMutator.execute();
+			}*/
+			//compMutator.execute();
+			//strMutator.execute();
 		} catch (HectorException he) {
 			throw new CustomSamplersException("Hector exception occured -> ", he);
 		}
+	}
+
+	@Override
+	public void closeResources() throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

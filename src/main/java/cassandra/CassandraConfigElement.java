@@ -22,6 +22,7 @@ implements ConfigElement, TestStateListener, TestBean {
 	private static final long serialVersionUID = 100179183283120561L;
 	private static final Logger log = LoggingManager.getLoggerForClass();
 
+	public final static String CONNECTION_ID = "CassandraConfigElement.connectionId";
 	public final static String HOST = "CassandraConfigElement.host"; //DEF: 188.184.23.11
 	public final static String PORT = "CassandraConfigElement.port"; // 9160
 	public final static String CLUSTER = "CassandraConfigElement.cluster";
@@ -35,8 +36,8 @@ implements ConfigElement, TestStateListener, TestBean {
 	public final static String SET_HOST_TIMEOUT_COUNTER = "CassandraConfigElement.setHostTimeoutCounter"; //def: 20
 
 
-	public static Cluster getCassandraCluster(String cluster) throws CustomSamplersException {
-		Object cassandra = JMeterContextService.getContext().getVariables().getObject(cluster);
+	public static Cluster getCassandraCluster(String connectionId) throws CustomSamplersException {
+		Object cassandra = JMeterContextService.getContext().getVariables().getObject(connectionId);
 		if (cassandra == null) {
 			throw new CustomSamplersException("Cassandra cluster object is null!");
 		}
@@ -72,19 +73,19 @@ implements ConfigElement, TestStateListener, TestBean {
 			log.debug("Cassandra host config: " + conf.toString());
 		}
 
-		if (getThreadContext().getVariables().getObject(getCluster()) != null) {
+		if (getThreadContext().getVariables().getObject(getConnectionId()) != null) {
 			if (log.isWarnEnabled()) {
-				log.warn(getCluster() + " has already been defined!");
+				log.warn(getConnectionId() + " has already been defined!");
 			}
 		}
 		else {
 			if (log.isDebugEnabled()) {
-				log.debug(getCluster() + " is being defined...");
+				log.debug(getConnectionId() + " is being defined...");
 			}
-			Cluster cluster = HFactory.getOrCreateCluster(getCluster(), fullHost);
+			//Cluster cluster = HFactory.getOrCreateCluster(getCluster(), fullHost);
 			// This will be the real use-case, when the host itself is configured:
-			// Cluster confedCluster = HFactory.getOrCreateCluster(getCluster(), conf);
-			getThreadContext().getVariables().putObject(getCluster(), cluster);
+			Cluster cluster = HFactory.getOrCreateCluster(getCluster(), conf);
+			getThreadContext().getVariables().putObject(getConnectionId(), cluster);
 		}
 
 	}
@@ -99,7 +100,7 @@ implements ConfigElement, TestStateListener, TestBean {
 		if (log.isDebugEnabled()) {
 			log.debug(getTitle() + " test ended.");
 		}
-		getThreadContext().getVariables().putObject(getCluster(), null);
+		getThreadContext().getVariables().putObject(getConnectionId(), null);
 	}
 
 	@Override
@@ -119,6 +120,14 @@ implements ConfigElement, TestStateListener, TestBean {
 
 	public String getTitle() {
 		return this.getName();
+	}
+
+	public String getConnectionId() {
+		return getPropertyAsString(CONNECTION_ID);
+	}
+
+	public void setConnectionId(String connectionId) {
+		setProperty(CONNECTION_ID, connectionId);
 	}
 
 	public String getHost() {
