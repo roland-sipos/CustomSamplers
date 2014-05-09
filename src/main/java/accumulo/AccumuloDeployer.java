@@ -1,6 +1,7 @@
 package accumulo;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.accumulo.core.client.AccumuloException;
@@ -14,19 +15,26 @@ import org.apache.accumulo.core.client.ZooKeeperInstance;
 import org.apache.accumulo.core.data.Mutation;
 import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.security.ColumnVisibility;
+import org.apache.commons.cli.BasicParser;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.Text;
 
+import utils.DeployerOptions;
 import utils.EnvironmentDeployer;
 
 public class AccumuloDeployer {
 
-	private static class AccumuloTestEnvironmentDeployer extends EnvironmentDeployer {
+	private static class AccumuloEnvironmentDeployer extends EnvironmentDeployer {
 
 		private Instance zooKeeper;
 		private Connector accumulo;
 
-		public AccumuloTestEnvironmentDeployer(String host, String port,
+		public AccumuloEnvironmentDeployer(String host, String port,
 				String namespace, String username, String password, String id) {
 			super(host, port, namespace, username, password);
 		}
@@ -148,20 +156,81 @@ public class AccumuloDeployer {
 		}
 	}
 
+	/** The name of this class for the command line parser. */
+	private static final String CLASS_CMD = "AccumuloDeployer [OPTIONS]";
+	/** The help header for the command line parser. */
+	private static final String CLP_HEADER = "This class helps you to deploy test environments on "
+			+ "Accumulo clusters. For this, one needs to pass connection details of the cluster.\n"
+			+ "The possible arguments are the following:";
+
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		AccumuloTestEnvironmentDeployer deployer =
-				new AccumuloTestEnvironmentDeployer("accumulo1.cern.ch", "2181",
-						"testAccumulo", "testUser", "testPass", "3c98b122-4872-4d03-8051-787af3c491f2");
+		/*AccumuloEnvironmentDeployer deployer =
+				new AccumuloEnvironmentDeployer("accumulo1.cern.ch", "2181",
+						"testAccumulo", "testUser", "testPass", "3c98b122-4872-4d03-8051-787af3c491f2");*/
 
 		//System.out.println("-------- Accumulo environment setup ------------");
 		//deployer.deployTestEnvironment();
 		//System.out.println("------- Accumulo environment teardown -----------");
 		//deployer.destroyTestEnvironment();
-		System.out.println("-------- Accumulo environment teardown and setup ------------");
-		deployer.redeployEnvironment();
+		/*System.out.println("-------- Accumulo environment teardown and setup ------------");
+		deployer.redeployEnvironment();*/
+
+		/** Get a basic apache.cli Options from DeployerOptions. */
+		Options depOps = new DeployerOptions().getDeployerOptions();
+		// HBase specific options are added manually here:
+		depOps.addOption("p", "port", true, "port of the host (Accumulo default: 2181)");
+		depOps.addOption("i", "id", true, "ID of Accumulo instance");
+
+		/** Help page creation. */
+		HelpFormatter formatter = new HelpFormatter();
+		if (args.length < 1) {
+			System.err.println("Arguments are required for deploying anything...\n");
+			formatter.printHelp(CLASS_CMD, CLP_HEADER, depOps, utils.Constants.SUPPORT_FOOTER);
+			return;
+		}
+
+		/** Start to parse the command line arguments. */
+		CommandLineParser parser = new BasicParser();
+		try {
+			CommandLine cl = parser.parse(depOps, args);
+			HashMap<String, String> optMap = DeployerOptions.mapCommandLine(cl);
+
+			if (cl.hasOption('i')) {
+				optMap.put("ID", cl.getOptionValue('i'));
+			} else if (cl.hasOption("id")) {
+				optMap.put("ID", cl.getOptionValue("id"));
+			} else {
+				optMap.put("HELP", "ID argument is missing!");
+			}
+
+			if (optMap.containsKey("HELP")) {
+				System.out.println(optMap.get("HELP") + "\n");
+				formatter.printHelp(CLASS_CMD, CLP_HEADER, depOps, utils.Constants.SUPPORT_FOOTER);
+			} else {
+				/** Create an environment deployer with the parsed arguments. */
+				AccumuloEnvironmentDeployer deployer = new AccumuloEnvironmentDeployer(
+						optMap.get("HOST"), optMap.get("PORT"), optMap.get("DB"),
+						optMap.get("USER"), optMap.get("PASS"), optMap.get("ID"));
+				if (optMap.get("MODE").equals("deploy")) {
+					deployer.deployTestEnvironment();
+				} else if (optMap.get("MODE").equals("teardown")) {
+					deployer.destroyTestEnvironment();
+				} else if (optMap.get("MODE").equals("redeploy")) {
+					deployer.redeployEnvironment();
+				} else {
+					System.err.println("Unknown deployment mode: " + optMap.get("MODE"));
+					formatter.printHelp(CLASS_CMD, CLP_HEADER, depOps, utils.Constants.SUPPORT_FOOTER);
+				}
+			}
+
+		} catch (ParseException exp) {
+			System.err.println("Parsing failed. Details: " + exp.getMessage() + "\n");
+			formatter.printHelp(CLASS_CMD, CLP_HEADER, depOps, utils.Constants.SUPPORT_FOOTER);
+		}
+		
 	}
 
 }

@@ -13,21 +13,21 @@ public class AccumuloConfigElementBeanInfo extends BeanInfoSupport {
 	public AccumuloConfigElementBeanInfo() {
 		super(AccumuloConfigElement.class);
 
-		createPropertyGroup("accumulo", new String[] { "clusterId", "namespace" });
+		createPropertyGroup("accumulo", new String[] { "clusterId", "instance" });
 		createPropertyGroup("accumuloConfig", new String[] {
 				"zookeeperHost", "zookeeperPort", "username", "password" });
 
 		PropertyDescriptor p = property("clusterId");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "testAccumulo");
-		p = property("namespace");
+		p = property("instance");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "testAccumulo");
 
-		p = property("host");
+		p = property("zookeeperHost");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "accumulo1.cern.ch");
-		p = property("port");
+		p = property("zookeeperPort");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "2181");
 

@@ -48,4 +48,10 @@ public class AccumuloBigtableQueryHandler implements QueryHandler {
 
 	}
 
+	@Override
+	public void closeResources() throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
