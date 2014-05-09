@@ -1,9 +1,17 @@
 package riak;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import org.apache.commons.cli.BasicParser;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 
 import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.IRiakObject;
@@ -16,18 +24,19 @@ import com.basho.riak.client.raw.http.HTTPClusterConfig;
 import com.basho.riak.client.raw.pbc.PBClientConfig;
 import com.basho.riak.client.raw.pbc.PBClusterConfig;
 
+import utils.DeployerOptions;
 import utils.EnvironmentDeployer;
 
 public class RiakDeployer {
 
-	private static class RiakTestEnvironmentDeployer extends EnvironmentDeployer {
+	private static class RiakEnvironmentDeployer extends EnvironmentDeployer {
 
 		private IRiakClient riakClient = null;
 		private int totalMaxConnections = 0;
 		private List<String> bucketNames = null;
 		private String protocol = null;
 
-		public RiakTestEnvironmentDeployer(String host, String port, String databaseName,
+		public RiakEnvironmentDeployer(String host, String port, String databaseName,
 				String username, String password,
 				int totalMaxConnections, String bucketNames, String protocol) {
 			super(host, port, databaseName, username, password);
@@ -163,22 +172,73 @@ public class RiakDeployer {
 		}
 	}
 
+	/** The name of this class for the command line parser. */
+	private static final String CLASS_CMD = "RiakDeployer [OPTIONS]";
+	/** The help header for the command line parser. */
+	private static final String CLP_HEADER = "This class helps you to deploy test environments on "
+			+ "RIAK clusters. For this, one needs to pass connection details of the cluster.\n"
+			+ "The possible arguments are the following:";
+
 	/**
-	 * @param args
+	 * @param args command line arguments, parsed by utils.DeployerOptions.
 	 */
 	public static void main(String[] args) {
-		RiakTestEnvironmentDeployer deployer =
-				new RiakTestEnvironmentDeployer(
-						"veszterdb1.cern.ch:veszterdb2.cern.ch:veszterdb3.cern.ch:"+
-						"veszterdb4.cern.ch:veszterdb5.cern.ch:veszterdb6.cern.ch",
-						"8087", "" , "", "", 10, "TAG IOV PAYLOAD CHUNK", "RAW-PB"); // RAW-PB: 8087
+		/*RiakEnvironmentDeployer deployer =
+				new RiakEnvironmentDeployer(
+						"riak-n1.cern.ch",
+						"8087", "" , "", "", 10, "TAG IOV PAYLOAD CHUNK", "RAW-PB"); // RAW-PB: 8087*/
 
 		//System.out.println("-------- RIAK environment setup ------------");
 		//deployer.deployTestEnvironment();
 		//System.out.println("------- RIAK environment teardown -----------");
 		//deployer.destroyTestEnvironment();
-		System.out.println("-------- RIAK environment teardown and setup ------------");
-		deployer.redeployEnvironment();
+		//System.out.println("-------- RIAK environment teardown and setup ------------");
+		//deployer.redeployEnvironment();
+
+		/** Get a basic apache.cli Options from DeployerOptions. */
+		Options depOps = new DeployerOptions().getDeployerOptions();
+		// MongoDB specific options are added manually here:
+		depOps.addOption("p", "port", true, "port of the host (RIAK defaults: RAW:8087 HTTP:8098)");
+
+		/** Help page creation. */
+		HelpFormatter formatter = new HelpFormatter();
+		if (args.length < 1) {
+			System.err.println("Arguments are required for deploying anything...\n");
+			formatter.printHelp(CLASS_CMD, CLP_HEADER, depOps, utils.Constants.SUPPORT_FOOTER);
+			return;
+		}
+
+		/** Start to parse the command line arguments. */
+		CommandLineParser parser = new BasicParser();
+		try {
+			CommandLine line = parser.parse(depOps, args);
+			HashMap<String, String> optionMap = DeployerOptions.mapCommandLine(line);
+
+			if (optionMap.containsKey("HELP")) {
+				System.out.println(optionMap.get("HELP") + "\n");
+				formatter.printHelp(CLASS_CMD, CLP_HEADER, depOps, utils.Constants.SUPPORT_FOOTER);
+			} else {
+				/** Create an environment deployer with the parsed arguments. */
+				RiakEnvironmentDeployer deployer =
+						new RiakEnvironmentDeployer(optionMap.get("HOST"), optionMap.get("PORT"),
+								optionMap.get("DB"), optionMap.get("USER"), optionMap.get("PASS"),
+								10, "TAG IOV PAYLOAD CHUNK", "RAW-PB");
+				if (optionMap.get("MODE").equals("deploy")) {
+					deployer.deployTestEnvironment();
+				} else if (optionMap.get("MODE").equals("teardown")) {
+					deployer.destroyTestEnvironment();
+				} else if (optionMap.get("MODE").equals("redeploy")) {
+					deployer.redeployEnvironment();
+				} else {
+					System.err.println("Unknown deployment mode: " + optionMap.get("MODE"));
+					formatter.printHelp(CLASS_CMD, CLP_HEADER, depOps, utils.Constants.SUPPORT_FOOTER);
+				}
+			}
+
+		} catch (ParseException exp) {
+			System.err.println("Parsing failed. Details: " + exp.getMessage() + "\n");
+			formatter.printHelp(CLASS_CMD, CLP_HEADER, depOps, utils.Constants.SUPPORT_FOOTER);
+		}
 
 	}
 

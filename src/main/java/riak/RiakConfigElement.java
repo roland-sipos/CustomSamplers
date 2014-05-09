@@ -25,6 +25,7 @@ implements ConfigElement, TestStateListener, TestBean {
 	private static final long serialVersionUID = -4956133291185363007L;
 	private static final Logger log = LoggingManager.getLoggerForClass();
 
+	public final static String CONNECTION_ID = "RiakConfigElement.connectionId";
 	public final static String HOST = "RiakConfigElement.host";
 	public final static String PORT = "RiakConfigElement.port";
 	public final static String CLUSTER = "RiakConfigElement.cluster";
@@ -41,7 +42,7 @@ implements ConfigElement, TestStateListener, TestBean {
 	public void testEnded() {
 		IRiakClient riak = null;
 		try {
-			riak = getRiakClient(getCluster());
+			riak = getRiakClient(getConnectionId());
 		} catch (CustomSamplersException e) {
 			log.error("Unable to get the RiakClient for Shutdown in testEnd()!");
 		} finally {
@@ -54,8 +55,8 @@ implements ConfigElement, TestStateListener, TestBean {
 		testEnded();
 	}
 
-	public static IRiakClient getRiakClient(String cluster) throws CustomSamplersException {
-		Object riak = JMeterContextService.getContext().getVariables().getObject(cluster);
+	public static IRiakClient getRiakClient(String connectionId) throws CustomSamplersException {
+		Object riak = JMeterContextService.getContext().getVariables().getObject(connectionId);
 		if (riak == null) {
 			throw new CustomSamplersException("RiakClient object is null!");
 		}
@@ -134,13 +135,13 @@ implements ConfigElement, TestStateListener, TestBean {
 			log.debug("RiakClient prepared: " + riakClient.toString());
 		}
 
-		if (getThreadContext().getVariables().getObject(getCluster()) != null) {
-			log.warn(getCluster() + " has already initialized!");
+		if (getThreadContext().getVariables().getObject(getConnectionId()) != null) {
+			log.warn(getConnectionId() + " has already initialized!");
 		} else {
 			if (log.isDebugEnabled())
-				log.debug(getCluster() + " is being initialized ...");
+				log.debug(getConnectionId() + " is being initialized ...");
 
-			getThreadContext().getVariables().putObject(getCluster(), riakClient);
+			getThreadContext().getVariables().putObject(getConnectionId(), riakClient);
 		}
 	}
 
@@ -164,7 +165,14 @@ implements ConfigElement, TestStateListener, TestBean {
 		return protocolName;
 	}
 
+	public String getConnectionId() {
+		return getPropertyAsString(CONNECTION_ID);
+	}
 
+	public void setConnectionId(String connectionId) {
+		setProperty(CONNECTION_ID, connectionId);
+	}
+	
 	public String getHost() {
 		return getPropertyAsString(HOST);
 	}

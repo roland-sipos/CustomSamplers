@@ -112,6 +112,7 @@ public class RiakLinkQueryHandler implements QueryHandler {
 			b.store(tObj).returnBody(false).execute();
 
 		} catch (RiakRetryFailedException e) {
+			e.printStackTrace();
 			throw new CustomSamplersException("RiakRetryFailedException occured. Details: " + e.toString());
 		} catch (UnresolvedConflictException e) {
 			throw new CustomSamplersException("UnresolvedConflictException occured. Details: " + e.toString());
@@ -202,12 +203,19 @@ public class RiakLinkQueryHandler implements QueryHandler {
 			b.store(tObj).returnBody(false).execute();
 
 		} catch (RiakRetryFailedException e) {
+			e.printStackTrace();
 			throw new CustomSamplersException("RiakRetryFailedException occured. Details: " + e.toString());
 		} catch (UnresolvedConflictException e) {
 			throw new CustomSamplersException("UnresolvedConflictException occured. Details: " + e.toString());
 		} catch (ConversionException e) {
 			throw new CustomSamplersException("ConversionException occured. Details: " + e.toString());
 		}
+	}
+
+	@Override
+	public void closeResources() throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		
 	}
 
 

@@ -13,10 +13,14 @@ public class RiakConfigElementBeanInfo extends BeanInfoSupport {
 	public RiakConfigElementBeanInfo() {
 		super(RiakConfigElement.class);
 
-		createPropertyGroup("riak", new String[] {"host", "port", "cluster", "username", "password"});
+		createPropertyGroup("riak", new String[] {
+				"connectionId", "host", "port", "cluster", "username", "password"});
 		createPropertyGroup("options", new String[] {"protocol", "maxConnection", "timeout"});
 
-		PropertyDescriptor p = property("host");
+		PropertyDescriptor p = property("connectionId");
+		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
+		p.setValue(DEFAULT, "riakConn");
+		p = property("host");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "188.184.20.73:188.184.20.74:137.138.241.22:137.138.241.69");
 		p = property("port");

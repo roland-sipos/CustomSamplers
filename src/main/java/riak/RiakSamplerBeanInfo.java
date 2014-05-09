@@ -13,15 +13,14 @@ public class RiakSamplerBeanInfo extends BeanInfoSupport {
 	public RiakSamplerBeanInfo() {
 		super(RiakSampler.class);
 
-		createPropertyGroup("riak", new String[] {"cluster"});
+		createPropertyGroup("riak", new String[] {"connectionId"});
 		createPropertyGroup("sampler",
 				new String[] {"assignmentInfo", "useChunks", "kryoMethod", "useLinks"});
-		createPropertyGroup("reading", new String[] {"doRead", "checkRead"});
-		createPropertyGroup("writing", new String[] {"doWrite"});
+		createPropertyGroup("io", new String[] {"requestType", "validateOperation"});
 
-		PropertyDescriptor p = property("cluster");
+		PropertyDescriptor p = property("connectionId");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, "test");
+		p.setValue(DEFAULT, "riakConn");
 
 		p = property("assignmentInfo");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
@@ -36,16 +35,15 @@ public class RiakSamplerBeanInfo extends BeanInfoSupport {
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, Boolean.FALSE);
 
-		p = property("doRead");
+		p = property("requestType");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, Boolean.TRUE);
-		p = property("checkRead");
+		p.setValue(TAGS, new String[] {"read", "write"});
+		p.setValue(DEFAULT, "read");
+		p = property("validateOperation");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, Boolean.FALSE);
-
-		p = property("doWrite");
-		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, Boolean.FALSE);
+		p.setValue(TAGS, new String[] {"True", "False"});
+		p.setValue(NOT_OTHER, new String[] {"True", "False"});
+		p.setValue(DEFAULT, "False");
 
 		if(log.isDebugEnabled()) {
 			for (PropertyDescriptor pd : getPropertyDescriptors()) {

@@ -17,90 +17,103 @@ import utils.QueryHandler;
 
 public class RiakSampler extends AbstractSampler implements TestBean {
 
+	/** Generated UID. */
 	private static final long serialVersionUID = 8935021647941079090L;
+	/** Static logger from JMeter. */
 	private static final Logger log = LoggingManager.getLoggerForClass();
 
-	public final static String CLUSTER = "RiakSampler.cluster";
-	public final static String ASSIGNMENTINFO = "RiakSampler.assignmentInfo";
-	public final static String USECHUNKS = "RiakSampler.useChunks";
+	/** This field indicates which CustomJDBC ConfigElement will be used for the sampling. */
+	public final static String CONNECTION_ID = "RiakSampler.connectionId";
+	/** This field indicates which Assignment ConfigElement will be used for the sampling. */
+	public final static String ASSIGNMENT_INFO = "RiakSampler.assignmentInfo";
+	/** This field indicates, if the sampling will use chunks of the payloads. */
+	public final static String USE_CHUNKS = "RiakSampler.useChunks";
+	/** This field indicates, if the sampler will use the Kryo Method.*/
 	public final static String KRYO_METHOD = "RiakSampler.kryoMethod";
-	public final static String USELINKS = "RiakSampler.useLinks";
-	public final static String DOREAD = "RiakSampler.doRead";
-	public final static String CHECKREAD = "RiakSampler.checkRead";
-	public final static String DOWRITE = "RiakSampler.doWrite";
+	/** Option for using RIAK links (relation like method) or not.*/
+	public final static String USE_LINKS = "RiakSampler.useLinks";
+	/** This field indicates, which I/O operation the sampling will do. */
+	public final static String REQUEST_TYPE = "RiakSampler.requestType";
+	/** This field indicates, if the sampling will validate the operations. */
+	public final static String VALIDATE_OPERATION = "RiakSampler.validateOperation";
 
 	@Override
 	public SampleResult sample(Entry arg0) {
-		int threadID = CustomSamplerUtils.getThreadID(Thread.currentThread().getName());
-		trace("sample() ThreadID: " + threadID);
+		trace("sample() ThreadID: " + Thread.currentThread().getName());
 
-		// Get Assignment and QueryHandler instances.
-		Assignment assignment = null;
+		/** Fetch Assignment and QueryHandler instances. */
 		QueryHandler queryHandler = null;
+		Assignment assignment = null;
 		try {
 			assignment = AssignmentConfigElement.getAssignments(getAssignmentInfo());
 			// TODO: IF KRYO METHOD, KRYO QueryHandler!!!!!
 			if (Boolean.parseBoolean(getKryoMethod())) {
 				//queryHandler = new RiakKryoQueryHandler(getCluster());
 			} else if (Boolean.parseBoolean(getUseLinks())) {
-				queryHandler = new RiakLinkQueryHandler(getCluster());
+				queryHandler = new RiakLinkQueryHandler(getConnectionId());
 			} else {
-				queryHandler = new RiakQueryHandler(getCluster());
+				queryHandler = new RiakQueryHandler(getConnectionId());
 			}
 		} catch (Exception e) {
 			log.error("Failed to create RiakSampler prerequisites for the " + 
 					Thread.currentThread().getName() + " sampler. Details:" + e.toString());
+			return CustomSamplerUtils.getExceptionSampleResult(e);
 		}
 
-		// Get an initial SampleResult and parse options.
+		/** Get an initial SampleResult and parse user options. */
 		SampleResult res = CustomSamplerUtils.getInitialSampleResult(getTitle());
 		HashMap<String, Boolean> options = prepareOptions();
 
-		if (options.get("doRead")) { // DO THE READ
+		/** Start the request, then return with the modified SampleResult. */
+		if(getRequestType().equals("read")) {
 			CustomSamplerUtils.readWith(queryHandler, assignment, res, options);
-		} else if (options.get("doWrite")) { // DO THE WRITE
+		} else if (getRequestType().equals("write")) {
 			CustomSamplerUtils.writeWith(queryHandler, assignment, res, options);
 		}
-
 		return res;
 	}
 
+	/**
+	 * This function parses the user options into a map.
+	 * @return  HashMap<String, Boolean>  a map that contains the user options
+	 * */
 	private HashMap<String, Boolean> prepareOptions() {
 		HashMap<String, Boolean> options = new HashMap<String, Boolean>();
-		options.put("doRead", Boolean.parseBoolean(getDoRead()));
-		options.put("doWrite", Boolean.parseBoolean(getDoWrite()));
-		options.put("useChunks", Boolean.parseBoolean(getUseChunks()));
-		options.put("isCheckRead", Boolean.parseBoolean(getCheckRead()));
-		options.put("isSpecial", Boolean.parseBoolean(getKryoMethod()));
+		String cProp = getUseChunks();
+		options.put("useChunks", cProp.equals(String.valueOf(Boolean.TRUE)));
+		options.put("validateOperation", Boolean.parseBoolean(getValidateOperation()));
 		return options;
 	}
 
+	/**
+	 * Utility function for logging in the Sampler.
+	 * @param  s  trace message
+	 * */
 	private void trace(String s) {
-		if(log.isDebugEnabled()) {
+		if(log.isDebugEnabled())
 			log.debug(Thread.currentThread().getName() + " (" + getTitle() + " " + s + " " + this.toString());
-		}
 	}
 
 	public String getTitle() {
 		return this.getName();
 	}
-	public String getCluster() {
-		return getPropertyAsString(CLUSTER);
+	public String getConnectionId() {
+		return getPropertyAsString(CONNECTION_ID);
 	}
-	public void setCluster(String cluster) {
-		setProperty(CLUSTER, cluster);
+	public void setConnectionId(String cluster) {
+		setProperty(CONNECTION_ID, cluster);
 	}
 	public String getAssignmentInfo() {
-		return getPropertyAsString(ASSIGNMENTINFO);
+		return getPropertyAsString(ASSIGNMENT_INFO);
 	}
 	public void setAssignmentInfo(String assignmentInfo) {
-		setProperty(ASSIGNMENTINFO, assignmentInfo);
+		setProperty(ASSIGNMENT_INFO, assignmentInfo);
 	}
 	public String getUseChunks() {
-		return getPropertyAsString(USECHUNKS);
+		return getPropertyAsString(USE_CHUNKS);
 	}
 	public void setUseChunks(String useChunks) {
-		setProperty(USECHUNKS, useChunks);
+		setProperty(USE_CHUNKS, useChunks);
 	}
 	public String getKryoMethod() {
 		return getPropertyAsString(KRYO_METHOD);
@@ -109,28 +122,22 @@ public class RiakSampler extends AbstractSampler implements TestBean {
 		setProperty(KRYO_METHOD, kryoMethod);
 	}
 	public String getUseLinks() {
-		return getPropertyAsString(USELINKS);
+		return getPropertyAsString(USE_LINKS);
 	}
 	public void setUseLinks(String useLinks) {
-		setProperty(USELINKS, useLinks);
+		setProperty(USE_LINKS, useLinks);
 	}
-	public String getCheckRead() {
-		return getPropertyAsString(CHECKREAD);
+	public String getRequestType() {
+		return getPropertyAsString(REQUEST_TYPE);
 	}
-	public void setCheckRead(String checkRead) {
-		setProperty(CHECKREAD, checkRead);
+	public void setRequestType(String requestType) {
+		setProperty(REQUEST_TYPE, requestType);
 	}
-	public String getDoRead() {
-		return getPropertyAsString(DOREAD);
+	public String getValidateOperation() {
+		return getPropertyAsString(VALIDATE_OPERATION);
 	}
-	public void setDoRead(String doRead) {
-		setProperty(DOREAD, doRead);
-	}
-	public String getDoWrite() {
-		return getPropertyAsString(DOWRITE);
-	}
-	public void setDoWrite(String doWrite) {
-		setProperty(DOWRITE, doWrite);
+	public void setValidateOperation(String validateOperation) {
+		setProperty(VALIDATE_OPERATION, validateOperation);
 	}
 
 }
