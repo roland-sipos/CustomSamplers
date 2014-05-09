@@ -13,7 +13,6 @@ import org.apache.jmeter.samplers.SampleResult;
 
 import assignment.Assignment;
 import binaryinfo.BinaryFileInfo;
-import binaryinfo.Readers;
 
 /**
  * This utility class has several static methods and functions to unify
@@ -157,7 +156,8 @@ public class CustomSamplerUtils {
 	private static boolean checkMatch(ByteArrayOutputStream result,
 			Assignment assignment, HashMap<String, String> meta) {
 		String binaryFullPath = assignment.getBinaryFileInfo().getFilePathList().get(meta.get("id"));
-		ByteArrayOutputStream payload = Readers.BinaryReader.read(binaryFullPath);
+		ByteArrayOutputStream payload = assignment.getReader().read(binaryFullPath);
+				//Readers.BinaryReader.read(binaryFullPath);
 		return Arrays.equals(result.toByteArray(), payload.toByteArray());
 	}
 
@@ -227,7 +227,9 @@ public class CustomSamplerUtils {
 				}
 			}
 		} catch (CustomSamplersException ex) {
-			finalizeResponse(res, false, "500", ex.toString());
+			ex.printStackTrace();
+			finalizeResponse(res, false, "500", "Could not read Payload: " + meta.get("id")
+					+ " Reason:" + ex.getMessage());
 		} finally {
 			res.sampleEnd();
 		}
@@ -254,12 +256,12 @@ public class CustomSamplerUtils {
 		BinaryFileInfo binInfo = assignment.getBinaryFileInfo();
 
 		String streamerInfoFullPath = binInfo.getPathForStreamerInfo(binaryID);
-		ByteArrayOutputStream streamerInfo = Readers.BinaryReader.read(streamerInfoFullPath);
+		ByteArrayOutputStream streamerInfo = assignment.getReader().read(streamerInfoFullPath);
 
 		if (options.get("useChunks")) { // Write the chunks, not the big file.
 			try {
 				List<ByteArrayOutputStream> chunks =
-						Readers.BinaryReader.readChunks(binInfo.getChunkPathList().get(binaryID));
+						assignment.getReader().readChunks(binInfo.getChunkPathList().get(binaryID));
 				res.sampleStart();
 				queryHandler.putChunks(meta, chunks);
 				res.samplePause();
@@ -271,7 +273,7 @@ public class CustomSamplerUtils {
 			}
 		} else { // Write the big file, not it's chunks.
 			String binaryFullPath = binInfo.getAbsolutePathFor(binaryID);
-			ByteArrayOutputStream payload = Readers.BinaryReader.read(binaryFullPath);
+			ByteArrayOutputStream payload = assignment.getReader().read(binaryFullPath);
 			res.setBytes(payload.size());
 			try {
 				res.sampleStart();

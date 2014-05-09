@@ -14,6 +14,12 @@ import java.util.Map;
  * */
 public interface QueryHandler {
 
+	/** 
+	 * The implementation of this method should close all fetched resources that
+	 * were used during the handling of a given query.
+	 * @throws  CustomSamplersException  if the closing of resources failed. */
+	public void closeResources() throws CustomSamplersException;
+
 	/**
 	 * The implementation of this method should return a ByteArrayOutputStream 
 	 * object that contains the data, read from a given database that the
