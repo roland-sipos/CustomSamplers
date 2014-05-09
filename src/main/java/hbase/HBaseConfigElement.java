@@ -28,13 +28,15 @@ implements ConfigElement, TestStateListener, TestBean {
 	private static final long serialVersionUID = 5124107244481246716L;
 	private static final Logger log = LoggingManager.getLoggerForClass();
 
-	public final static String CLUSTERID = "HBaseConfigElement.clusterid";
-	public final static String TABLELIST = "HBaseConfigElement.tableList";
-	public final static String MASTERHOST = "HBaseConfigElement.masterHost";
-	public final static String MASTERPORT = "HBaseConfigElement.masterPort";
-	public final static String ZOOKEEPERQUORUM = "HbaseConfigElement.zookeeperQuorum";
-	public final static String ZOOKEEPERCLIENTPORT = "HBaseConfigElement.zookeeperClientPort";
-	public final static String MAXKVSIZE = "HBaseConfigElement.maxKvSize";
+	/** The ID of the JDBC Connection object. */
+	public final static String CONNECTION_ID = "HBaseConfigElement.connectionId";
+	public final static String CLUSTER_NAME = "HBaseConfigElement.clusterName";
+	public final static String TABLE_LIST = "HBaseConfigElement.tableList";
+	public final static String MASTER_HOST = "HBaseConfigElement.masterHost";
+	public final static String MASTER_PORT = "HBaseConfigElement.masterPort";
+	public final static String ZOOKEEPER_QUORUM = "HbaseConfigElement.zookeeperQuorum";
+	public final static String ZOOKEEPER_CLIENT_PORT = "HBaseConfigElement.zookeeperClientPort";
+	public final static String MAX_KV_SIZE = "HBaseConfigElement.maxKvSize";
 
 
 	public static Configuration getHBaseConfiguration(String clusterId)
@@ -106,20 +108,20 @@ implements ConfigElement, TestStateListener, TestBean {
 		}
 
 		JMeterVariables jMeterVars = getThreadContext().getVariables();
-		if (jMeterVars.getObject(getClusterId()) != null 
-				|| jMeterVars.getObject(getClusterId().concat("-HTables")) != null ) {
+		if (jMeterVars.getObject(getConnectionId()) != null 
+				|| jMeterVars.getObject(getConnectionId().concat("-HTables")) != null ) {
 			if (log.isWarnEnabled()) {
-				log.warn(getClusterId() + " objects are already defined!");
+				log.warn(getConnectionId() + " objects are already defined!");
 			}
 		}
 		else {
 			if (log.isDebugEnabled()) {
-				log.debug(getClusterId() + " objects are being defined...");
+				log.debug(getConnectionId() + " objects are being defined...");
 			}
 			// Put the HBase Configuration element into the ThreadContext.
-			jMeterVars.putObject(getClusterId(), hbaseConfig);
+			jMeterVars.putObject(getConnectionId(), hbaseConfig);
 			// Put the HBase HTable elements into the ThreadContext.
-			jMeterVars.putObject(getClusterId().concat("-HTables"), hTables);
+			jMeterVars.putObject(getConnectionId().concat("-HTables"), hTables);
 
 		}
 
@@ -136,10 +138,10 @@ implements ConfigElement, TestStateListener, TestBean {
 		if (log.isDebugEnabled()) {
 			log.debug(getTitle() + " test ended.");
 		}
-		getThreadContext().getVariables().putObject(getClusterId(), null);
+		getThreadContext().getVariables().putObject(getConnectionId(), null);
 
 		Object hTables = JMeterContextService.getContext().getVariables()
-				.getObject(getClusterId().concat("-HTables"));
+				.getObject(getConnectionId().concat("-HTables"));
 		HashMap<String, HTable> hTableMap = null;
 		if (hTables == null) {
 			log.error("HBase HTables object is null!");
@@ -183,53 +185,61 @@ implements ConfigElement, TestStateListener, TestBean {
 		return this.getName();
 	}
 
-	public String getClusterId() {
-		return getPropertyAsString(CLUSTERID);
+	public String getConnectionId() {
+		return getPropertyAsString(CONNECTION_ID);
 	}
-	public void setClusterId(String clusterId) {
-		setProperty(CLUSTERID, clusterId);
+
+	public void setConnectionId(String connectionId) {
+		setProperty(CONNECTION_ID, connectionId);
+	}
+
+	public String getClusterName() {
+		return getPropertyAsString(CLUSTER_NAME);
+	}
+	public void setClusterName(String clusterName) {
+		setProperty(CLUSTER_NAME, clusterName);
 	}
 
 	public String getTableList() {
-		return getPropertyAsString(TABLELIST);
+		return getPropertyAsString(TABLE_LIST);
 	}
 	public void setTableList(String tableList) {
-		setProperty(TABLELIST, tableList);
+		setProperty(TABLE_LIST, tableList);
 	}
 
 	public String getMasterHost() {
-		return getPropertyAsString(MASTERHOST);
+		return getPropertyAsString(MASTER_HOST);
 	}
 	public void setMasterHost(String masterHost) {
-		setProperty(MASTERHOST, masterHost);
+		setProperty(MASTER_HOST, masterHost);
 	}
 
 	public String getMasterPort() {
-		return getPropertyAsString(MASTERPORT);
+		return getPropertyAsString(MASTER_PORT);
 	}
 	public void setMasterPort(String masterPort) {
-		setProperty(MASTERPORT, masterPort);
+		setProperty(MASTER_PORT, masterPort);
 	}
 
 	public String getZookeeperQuorum() {
-		return getPropertyAsString(ZOOKEEPERQUORUM);
+		return getPropertyAsString(ZOOKEEPER_QUORUM);
 	}
 	public void setZookeeperQuorum(String zookeeperQuorum) {
-		setProperty(ZOOKEEPERQUORUM, zookeeperQuorum);
+		setProperty(ZOOKEEPER_QUORUM, zookeeperQuorum);
 	}
 
 	public String getZookeeperClientPort() {
-		return getPropertyAsString(ZOOKEEPERCLIENTPORT);
+		return getPropertyAsString(ZOOKEEPER_CLIENT_PORT);
 	}
 	public void setZookeeperClientPort(String zookeeperClientPort) {
-		setProperty(ZOOKEEPERCLIENTPORT, zookeeperClientPort);
+		setProperty(ZOOKEEPER_CLIENT_PORT, zookeeperClientPort);
 	}
 
 	public String getMaxKvSize() {
-		return getPropertyAsString(MAXKVSIZE);
+		return getPropertyAsString(MAX_KV_SIZE);
 	}
 	public void setMaxKvSize(String maxKvSize) {
-		setProperty(MAXKVSIZE, maxKvSize);
+		setProperty(MAX_KV_SIZE, maxKvSize);
 	}
 
 }

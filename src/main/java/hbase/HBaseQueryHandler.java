@@ -191,5 +191,11 @@ public class HBaseQueryHandler implements QueryHandler {
 		}
 	}
 
+	@Override
+	public void closeResources() throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
 

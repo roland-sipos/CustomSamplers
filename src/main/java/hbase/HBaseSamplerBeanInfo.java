@@ -13,33 +13,31 @@ public class HBaseSamplerBeanInfo extends BeanInfoSupport {
 	public HBaseSamplerBeanInfo() {
 		super(HBaseSampler.class);
 
-		createPropertyGroup("hbase", new String[] {"cluster"});
+		createPropertyGroup("hbase", new String[] {"connectionId"});
 		createPropertyGroup("sampler", new String[] {"assignmentInfo", "useChunks"});
-		createPropertyGroup("reading", new String[] {"doRead", "checkRead"});
-		createPropertyGroup("writing", new String[] {"doWrite"});
+		createPropertyGroup("io", new String[] {"requestType", "validateOperation"});
 
-		PropertyDescriptor p = property("cluster");
+		PropertyDescriptor p = property("connectionId");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, "TestHBase");
+		p.setValue(DEFAULT, "mysqlConn");
 
 		p = property("assignmentInfo");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "assignInfo");
 		p = property("useChunks");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(TAGS, new String[] {"true", "false", "bulk"});
-		p.setValue(DEFAULT, "false");
+		p.setValue(TAGS, new String[] {"True", "False"});
+		p.setValue(DEFAULT, "False");
 
-		p = property("doRead");
+		p = property("requestType");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, Boolean.FALSE);
-		p = property("checkRead");
+		p.setValue(TAGS, new String[] {"read", "write"});
+		p.setValue(DEFAULT, "read");
+		p = property("validateOperation");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, Boolean.FALSE);
-
-		p = property("doWrite");
-		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, Boolean.FALSE);
+		p.setValue(TAGS, new String[] {"True", "False"});
+		p.setValue(NOT_OTHER, new String[] {"True", "False"});
+		p.setValue(DEFAULT, "False");
 
 		if(log.isDebugEnabled()) {
 			for (PropertyDescriptor pd : getPropertyDescriptors()) {

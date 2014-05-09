@@ -1,7 +1,14 @@
 package hbase;
 
 import java.io.IOException;
+import java.util.HashMap;
 
+import org.apache.commons.cli.BasicParser;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
@@ -13,16 +20,17 @@ import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
 
+import utils.DeployerOptions;
 import utils.EnvironmentDeployer;
 
 public class HBaseDeployer {
 
-	private static class HBaseTestEnvironmentDeployer extends EnvironmentDeployer {
+	private static class HBaseEnvironmentDeployer extends EnvironmentDeployer {
 
 		private static Configuration hbaseConf;
 		private static HBaseAdmin hbaseAdmin;
 
-		public HBaseTestEnvironmentDeployer(String host, String port,
+		public HBaseEnvironmentDeployer(String host, String port,
 				String databaseName, String username, String password) {
 			super(host, port, databaseName, username, password);
 		}
@@ -64,6 +72,7 @@ public class HBaseDeployer {
 		@SuppressWarnings("resource")
 		@Override
 		protected void setupEnvironment() {
+			System.out.println("----------- HBase environment setup ----------");
 			System.out.println(" setupEnvironment() -> Setting up the environment...");
 
 			try {
@@ -82,7 +91,7 @@ public class HBaseDeployer {
 				plDesc.addFamily(new HColumnDescriptor("DATA".getBytes()));
 				plDesc.addFamily(new HColumnDescriptor("META".getBytes()));
 				hbaseAdmin.createTable(plDesc);
-				System.out.println(" setupEnvironment() -> Payload HTable created...");
+				System.out.println(" setupEnvironment() -> PAYLOAD HTable created...");
 			} catch (IOException e) {
 				System.out.println("Exception occured. Details: " + e.toString());
 			}
@@ -119,6 +128,7 @@ public class HBaseDeployer {
 
 		@Override
 		protected void destroyEnvironment() {
+			System.out.println("------- HBase environment teardown -----------");
 			System.out.println(" destroyEnvironment() -> Destroying environment...");
 			try {
 				hbaseAdmin.disableTable("TAG");
@@ -135,20 +145,65 @@ public class HBaseDeployer {
 		}
 	}
 
+	/** The name of this class for the command line parser. */
+	private static final String CLASS_CMD = "HBaseDeployer [OPTIONS]";
+	/** The help header for the command line parser. */
+	private static final String CLP_HEADER = "This class helps you to deploy test environments on "
+			+ "HBase clusters. For this, one needs to pass connection details of the server.\n"
+			+ "The possible arguments are the following:";
+
 	/**
-	 * @param args
+	 * @param args command line arguments, parsed by utils.DeployerOptions.
 	 */
 	public static void main(String[] args) {
-		HBaseTestEnvironmentDeployer deployer =
-				new HBaseTestEnvironmentDeployer("hb-master-test.cern.ch", "2181",
-						"TestHBase", "testUser", "testPass");
+		/*HBaseEnvironmentDeployer deployer =
+				new HBaseEnvironmentDeployer("hb-master-test.cern.ch", "2181",
+						"TestHBase", "testUser", "testPass");*/
 
-		//System.out.println("-------- HBase environment setup ------------");
-		//deployer.deployTestEnvironment();
-		//System.out.println("------- HBase environment teardown -----------");
-		//deployer.destroyTestEnvironment();
-		System.out.println("-------- HBase environment teardown and setup ------------");
-		deployer.redeployEnvironment();
+		/** Get a basic apache.cli Options from DeployerOptions. */
+		Options depOps = new DeployerOptions().getDeployerOptions();
+		// HBase specific options are added manually here:
+		depOps.addOption("p", "port", true, "port of the host (HBase default: 2181)");
+
+		/** Help page creation. */
+		HelpFormatter formatter = new HelpFormatter();
+		if (args.length < 1) {
+			System.err.println("Arguments are required for deploying anything...\n");
+			formatter.printHelp(CLASS_CMD, CLP_HEADER, depOps, utils.Constants.SUPPORT_FOOTER);
+			return;
+		}
+
+		/** Start to parse the command line arguments. */
+		CommandLineParser parser = new BasicParser();
+		try {
+			CommandLine cl = parser.parse(depOps, args);
+			HashMap<String, String> optMap = DeployerOptions.mapCommandLine(cl);
+
+			if (optMap.containsKey("HELP")) {
+				System.out.println(optMap.get("HELP") + "\n");
+				formatter.printHelp(CLASS_CMD, CLP_HEADER, depOps, utils.Constants.SUPPORT_FOOTER);
+			} else {
+				/** Create an environment deployer with the parsed arguments. */
+				HBaseEnvironmentDeployer deployer =
+						new HBaseEnvironmentDeployer(optMap.get("HOST"), optMap.get("PORT"),
+								optMap.get("DB"), optMap.get("USER"), optMap.get("PASS"));
+				if (optMap.get("MODE").equals("deploy")) {
+					deployer.deployTestEnvironment();
+				} else if (optMap.get("MODE").equals("teardown")) {
+					deployer.destroyTestEnvironment();
+				} else if (optMap.get("MODE").equals("redeploy")) {
+					deployer.redeployEnvironment();
+				} else {
+					System.err.println("Unknown deployment mode: " + optMap.get("MODE"));
+					formatter.printHelp(CLASS_CMD, CLP_HEADER, depOps, utils.Constants.SUPPORT_FOOTER);
+				}
+			}
+
+		} catch (ParseException exp) {
+			System.err.println("Parsing failed. Details: " + exp.getMessage() + "\n");
+			formatter.printHelp(CLASS_CMD, CLP_HEADER, depOps, utils.Constants.SUPPORT_FOOTER);
+		}
+		
 	}
 
 }

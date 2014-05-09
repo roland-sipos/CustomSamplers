@@ -13,14 +13,17 @@ public class HBaseConfigElementBeanInfo extends BeanInfoSupport {
 	public HBaseConfigElementBeanInfo() {
 		super(HBaseConfigElement.class);
 
-		createPropertyGroup("hbase", new String[] { "clusterId", "tableList" });
+		createPropertyGroup("hbase", new String[] { "connectionId", "clusterName", "tableList" });
 
 		createPropertyGroup("hbaseConfig", new String[] {
 				"masterHost", "masterPort",
 				"zookeeperQuorum", "zookeeperClientPort",
 				"maxKvSize" });
 
-		PropertyDescriptor p = property("clusterId");
+		PropertyDescriptor p = property("connectionId");
+		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
+		p.setValue(DEFAULT, "hbaseConn");
+		p = property("clusterName");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "TestHBase");
 
