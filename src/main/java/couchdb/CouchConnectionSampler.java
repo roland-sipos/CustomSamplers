@@ -1,28 +1,28 @@
 package couchdb;
 
-import java.net.MalformedURLException;
 import java.sql.Connection;
 
-import org.apache.jmeter.config.ConfigElement;
+import org.apache.jmeter.samplers.AbstractSampler;
+import org.apache.jmeter.samplers.Entry;
+import org.apache.jmeter.samplers.SampleResult;
 import org.apache.jmeter.testbeans.TestBean;
-import org.apache.jmeter.testelement.AbstractTestElement;
-import org.apache.jmeter.testelement.TestStateListener;
-import org.apache.jmeter.threads.JMeterContextService;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
-
 import org.ektorp.CouchDbConnector;
-import org.ektorp.http.HttpClient;
-import org.ektorp.http.StdHttpClient;
-import org.ektorp.impl.StdCouchDbInstance;
 
-import utils.CustomSamplersException;
+import customjdbc.CustomJDBCConfigElement;
 
+import utils.CustomSamplerUtils;
 
-public class CouchConfigElement extends AbstractTestElement
-implements ConfigElement, TestStateListener, TestBean {
+/**
+ * This class is the Sampler for JDBC Connection creation.
+ * The member fields are the user options, set by the appropriate BeanInfo class.
+ * */
+public class CouchConnectionSampler extends AbstractSampler implements TestBean {
 
-	private static final long serialVersionUID = -6669728766687401677L;
+	/** Generated UID. */
+	private static final long serialVersionUID = -5887808618625615044L;
+	/** Static logger instance from JMeter. */
 	private static final Logger log = LoggingManager.getLoggerForClass();
 
 	/** The ID of the CouchDB Connection object that is managed by this ConfigElement. */
@@ -43,110 +43,52 @@ implements ConfigElement, TestStateListener, TestBean {
 	public final static String USE_EXPECT_CONTINUE = "CouchConfigElement.useExpectContinue";
 	public final static String CLEANUP_IDLE_CONNECTIONS = "CouchConfigElement.cleanupIdleConnections";
 
-	@Override
-	public void testEnded() {
-		if (log.isDebugEnabled()) {
-			log.debug(getTitle() + " test ended.");
-		}
-		getThreadContext().getVariables().putObject(getConnectionId(), null);
-	}
-
-	@Override
-	public void testEnded(String arg0) {
-		testEnded();
-	}
-
-	public static CouchDbConnector getCouchDB(String connectionId) throws CustomSamplersException {
-		Object couch = JMeterContextService.getContext().getVariables().getObject(connectionId);
-		if (couch == null) {
-			throw new CustomSamplersException("CouchDB object is null!");
-		}
-		else {
-			if (couch instanceof CouchDbConnector) {
-				return (CouchDbConnector)couch;
-			}
-			else {
-				throw new CustomSamplersException("Casting the object to CouchDBConnector failed!");
-			}
-		}
+	public CouchConnectionSampler() {
+		trace("CouchConnectionSampler()" + this.toString());
 	}
 
 	/**
-	 * A static function for creating CouchDbConnectors, based on given parameters.
+	 * The sample function is called by every thread that are defined in the current
+	 * JMeter ThreadGroup. It creates a CouchDB Connection and place it to the ThreadGroup's
+	 * current Thread's context as a variable. (So it's unique for every thread.) The
+	 * returned SampleResult contains the measured time to create the connection.
 	 * 
-	 * @param database the CouchDB database name
-	 * 
-	 * @return CouchDbConnector the set up CouchDB Connection
+	 * @param  arg0  the Entry for this sample
+	 * @return  SampleResult  the result of the sample
 	 * */
-	public static CouchDbConnector createCouchConnection(String database, String host, String port,
-			String maxConnections, String connectionTimeout, String socketTimeout, String caching,
-			String maxCacheEntries, String maxObjectSizeBytes, String useExpectContinue,
-			String cleanupIdleConnections, String createIfNotExists, String username, String password) {
-		CouchDbConnector couchDB = null;
+	@Override
+	public SampleResult sample(Entry arg0) {
+		SampleResult res = CustomSamplerUtils.getInitialSampleResult(getName());
 		try {
-			StdHttpClient.Builder builder = new StdHttpClient.Builder()
-				.url(host.concat(":").concat(port))
-				.maxConnections(Integer.valueOf(maxConnections))
-				.connectionTimeout(Integer.valueOf(connectionTimeout))
-				.socketTimeout(Integer.valueOf(socketTimeout))
-				.caching(Boolean.valueOf(caching))
-				.maxCacheEntries(Integer.valueOf(maxCacheEntries))
-				.maxObjectSizeBytes(Integer.valueOf(maxObjectSizeBytes))
-				.useExpectContinue(Boolean.valueOf(useExpectContinue))
-				.cleanupIdleConnections(Boolean.valueOf(cleanupIdleConnections));
-			if (username.equals("")) {
-				builder.username(username).password(password);
-			}
-			HttpClient client = builder.build();
-			StdCouchDbInstance dbInstance = new StdCouchDbInstance(client);
-			couchDB = dbInstance.createConnector(database,
-					Boolean.parseBoolean(createIfNotExists));
-		} catch (MalformedURLException e) {
-			log.error("MalformedURLException occured when creating CouchDB Instance...");
-			e.printStackTrace();
-		}
-		return couchDB;
-	}
-
-	@Override
-	public void testStarted() {
-		if (log.isDebugEnabled()) {
-			log.debug(this.getName() + " testStarted()");
-		}
-		
-		if (getThreadContext().getVariables().getObject(getConnectionId()) != null) {
-			log.warn(getConnectionId() + " has already initialized!");
-		} else {
-			if (log.isDebugEnabled()) {
-				log.debug(getConnectionId() + " is being initialized ...");
-			}
-
-			CouchDbConnector couchDB = createCouchConnection(getDatabase(), getHost(), getPort(),
-					getMaxConnections(), getConnectionTimeout(), getSocketTimeout(), getCaching(),
-					getMaxCacheEntries(), getMaxObjectSizeBytes(), getUseExpectContinue(),
-					getCleanupIdleConnections(), getCreateIfNotExists(), getUsername(), getPassword());
-
+			res.sampleStart();
+			CouchDbConnector couchDB = CouchConfigElement.createCouchConnection(getDatabase(),
+					getHost(), getPort(), getMaxConnections(), getConnectionTimeout(),
+					getSocketTimeout(), getCaching(), getMaxCacheEntries(), getMaxObjectSizeBytes(),
+					getUseExpectContinue(), getCleanupIdleConnections(), getCreateIfNotExists(),
+					getUsername(), getPassword());
+			res.samplePause();
 			getThreadContext().getVariables().putObject(getConnectionId(), couchDB);
+		} catch (Exception e) {
+			CustomSamplerUtils.finalizeResponse(res, false, "999",
+					"Exception occured in this sample: " + e.toString());
+		} finally {
+			CustomSamplerUtils.finalizeResponse(res, true, "200", "JDBC Object is placed successfully, "
+					+ "with ID: " + getDatabase());
+			res.sampleEnd();
+		}
+		return res;
+	}
+
+	/**
+	 * Utility function for logging in the Sampler.
+	 * @param  s  trace message
+	 * */
+	private void trace(String s) {
+		if(log.isDebugEnabled()) {
+			log.debug(Thread.currentThread().getName() + " (" + getTitle()
+					+ " " + s + " " + this.toString());
 		}
 	}
-
-	@Override
-	public void testStarted(String arg0) {
-		testStarted();
-	}
-
-	@Override
-	public void addConfigElement(ConfigElement arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public boolean expectsModification() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
 
 	public String getTitle() {
 		return this.getName();
@@ -271,6 +213,5 @@ implements ConfigElement, TestStateListener, TestBean {
 	public void setCleanupIdleConnections(String cleanupIdleConnections) {
 		setProperty(CLEANUP_IDLE_CONNECTIONS, cleanupIdleConnections);
 	}
-
 
 }

@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-//import org.apache.commons.codec.binary.Base64;
 import org.ektorp.CouchDbConnector;
 
 import utils.CustomSamplersException;
@@ -108,6 +107,12 @@ public class CouchQueryHandler implements QueryHandler {
 			throw new CustomSamplersException("Exception occured during write attempt to CouchDB! "
 					+ "Details: " + e.toString());
 		}
+	}
+
+	@Override
+	public void closeResources() throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		
 	}
 
 

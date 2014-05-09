@@ -144,4 +144,10 @@ public class CouchAttachmentQueryHandler implements QueryHandler {
 		}
 	}
 
+	@Override
+	public void closeResources() throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
