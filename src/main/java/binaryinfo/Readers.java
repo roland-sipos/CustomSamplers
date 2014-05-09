@@ -17,11 +17,24 @@ import org.apache.commons.codec.binary.Base64OutputStream;
 
 public class Readers {
 
-	public static class BinaryReader {
+	/**
+	 * An interface that describes, that a CustomReader in the project needs to implement
+	 * how a file, and a chunk of a file are read in the CustomSamplers project.
+	 * */
+	public interface CustomReader {
+		public List<ByteArrayOutputStream> readChunks(TreeMap<String, String> cPathList);
+		public ByteArrayOutputStream read(String fullFilePath);
+	}
 
-		public static List<ByteArrayOutputStream> readChunks(TreeMap<String, String> cPathList) {
+	/**
+	 * The BinaryReader just reads the files into normal byte arrays.
+	 * */
+	public static class BinaryReader implements CustomReader {
+
+		@Override
+		public List<ByteArrayOutputStream> readChunks(TreeMap<String, String> cPathList) {
 			int size = cPathList.entrySet().size();
-			
+
 			List<ByteArrayOutputStream> res = new ArrayList<ByteArrayOutputStream>(size);
 			for (int i = 0; i < size; ++i) {
 				res.add(i, null);
@@ -32,12 +45,13 @@ public class Readers {
 			}
 			return res;
 		}
-		
+
 		/** Read the given binary file, and return its contents as a byte array.
 		 * @param  inputFileName  the binary file name of the file to read in
 		 * @return  ByteArrayOutputStream  the file's content
 		 * */
-		public static ByteArrayOutputStream read(String fullFilePath) {
+		@Override
+		public ByteArrayOutputStream read(String fullFilePath) {
 			ByteArrayOutputStream bosr = new ByteArrayOutputStream();
 			File file = new File(fullFilePath);
 			byte[] result = new byte[(int)file.length()];
@@ -68,14 +82,30 @@ public class Readers {
 			}
 			return bosr;
 		}
+
 	}
 
-	public static class Base64Reader {
+	public static class Base64Reader implements CustomReader {
+
+		public List<ByteArrayOutputStream> readChunks(TreeMap<String, String> cPathList) {
+			int size = cPathList.entrySet().size();
+
+			List<ByteArrayOutputStream> res = new ArrayList<ByteArrayOutputStream>(size);
+			for (int i = 0; i < size; ++i) {
+				res.add(i, null);
+			}
+			for (Map.Entry<String, String> it : cPathList.entrySet()) {
+				int id = Integer.parseInt(it.getKey().replaceAll("[\\D]", ""));
+				res.set(id-1, read(it.getValue()));
+			}
+			return res;
+		}
+
 		/** Read the given binary file as Base64 string.
 		 * @param  inputFileName  the binary file name of the file to read in
 		 * @return  ByteArrayOutputStream  the file's content as Base64
 		 * */
-		public static ByteArrayOutputStream read(String inputFileName) {
+		public ByteArrayOutputStream read(String inputFileName) {
 			ByteArrayOutputStream res = null;
 			try {
 				int BUFFER_SIZE = 4096;
@@ -83,7 +113,10 @@ public class Readers {
 				InputStream input = new FileInputStream(inputFileName);
 
 				res = new ByteArrayOutputStream();
-				OutputStream output = new Base64OutputStream(res);
+
+				/* public Base64OutputStream(OutputStream out, boolean doEncode,
+				 * 		int lineLength, byte[] lineSeparator) */
+				OutputStream output = new Base64OutputStream(res, true, 0, new byte[1]);
 				//a.writeTo(result);
 				int n = input.read(buffer, 0, BUFFER_SIZE);
 				while (n >= 0) {
