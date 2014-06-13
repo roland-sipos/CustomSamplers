@@ -19,7 +19,7 @@ public class HBaseSamplerBeanInfo extends BeanInfoSupport {
 
 		PropertyDescriptor p = property("connectionId");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, "mysqlConn");
+		p.setValue(DEFAULT, "hbaseConn");
 
 		p = property("assignmentInfo");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);

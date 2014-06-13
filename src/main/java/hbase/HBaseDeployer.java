@@ -18,6 +18,7 @@ import org.apache.hadoop.hbase.ZooKeeperConnectionException;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.io.hfile.Compression;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import utils.DeployerOptions;
@@ -88,7 +89,11 @@ public class HBaseDeployer {
 				System.out.println(" setupEnvironment() -> IOV HTable created...");
 
 				HTableDescriptor plDesc = new HTableDescriptor("PAYLOAD");
-				plDesc.addFamily(new HColumnDescriptor("DATA".getBytes()));
+				HColumnDescriptor d = new HColumnDescriptor("DATA".getBytes());
+				d.setCompressionType(Compression.Algorithm.GZ);
+				d.setCompactionCompressionType(Compression.Algorithm.GZ);
+				plDesc.addFamily(d);
+
 				plDesc.addFamily(new HColumnDescriptor("META".getBytes()));
 				hbaseAdmin.createTable(plDesc);
 				System.out.println(" setupEnvironment() -> PAYLOAD HTable created...");
