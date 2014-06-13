@@ -32,7 +32,7 @@
           </elementProp>
           <elementProp name="host" elementType="Argument">
             <stringProp name="Argument.name">host</stringProp>
-            <stringProp name="Argument.value">cloud-mongo.cern.ch</stringProp>
+            <stringProp name="Argument.value">mongo-node1.cern.ch</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
             <stringProp name="Argument.desc">Host to connect to.</stringProp>
           </elementProp>
@@ -46,19 +46,21 @@
         <stringProp name="binaryInfo">binInfo</stringProp>
         <stringProp name="inputLocation">/testdata/out/</stringProp>
         <stringProp name="encoding">NO</stringProp>
+        <stringProp name="assignmentInputFile"></stringProp>
+        <stringProp name="assignmentOutputFile"></stringProp>
       </assignment.AssignmentConfigElement>
       <hashTree/>
       <mongodb.MongoConfigElement guiclass="TestBeanGUI" testclass="mongodb.MongoConfigElement" testname="Custom - MongoDB Connection Configuration" enabled="true">
         <stringProp name="autoConnectRetry">False</stringProp>
         <stringProp name="connectTimeout">0</stringProp>
-        <stringProp name="connectionsPerHost">10</stringProp>
+        <stringProp name="connectionsPerHost">100</stringProp>
         <stringProp name="database">test</stringProp>
-        <stringProp name="host">cloud-mongo.cern.ch</stringProp>
+        <stringProp name="host">mongo-node1.cern.ch</stringProp>
         <stringProp name="maxAutoConnectRetryTime">0</stringProp>
         <stringProp name="maxWaitTime">120000</stringProp>
         <stringProp name="password">testPass</stringProp>
         <stringProp name="port">27017</stringProp>
-        <stringProp name="socketKeepAlive">False</stringProp>
+        <stringProp name="socketKeepAlive">True</stringProp>
         <stringProp name="socketTimeout">0</stringProp>
         <stringProp name="threadsAllowedToBlockMultiplier">5</stringProp>
         <stringProp name="username">testUser</stringProp>

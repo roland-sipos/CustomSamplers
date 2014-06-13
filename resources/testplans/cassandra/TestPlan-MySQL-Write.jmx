@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jmeterTestPlan version="1.2" properties="2.4" jmeter="2.9 r1437961">
   <hashTree>
-    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="PostgreSQL-Random-LOBRead-1000-1000-1" enabled="true">
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Cassandra-Write-Sequence-600-1800-1" enabled="true">
       <stringProp name="TestPlan.comments"></stringProp>
       <boolProp name="TestPlan.functional_mode">false</boolProp>
       <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
@@ -15,24 +15,24 @@
         <collectionProp name="Arguments.arguments">
           <elementProp name="testPlanName" elementType="Argument">
             <stringProp name="Argument.name">testPlanName</stringProp>
-            <stringProp name="Argument.value">PostgreSQL-Random-LOBRead-1000-1000-1</stringProp>
+            <stringProp name="Argument.value">Cassandra-Write-Sequence-600-1800-1</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="numberOfThreads" elementType="Argument">
             <stringProp name="Argument.name">numberOfThreads</stringProp>
-            <stringProp name="Argument.value">1000</stringProp>
+            <stringProp name="Argument.value">600</stringProp>
             <stringProp name="Argument.desc">The number of threads.</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="rampUpTime" elementType="Argument">
             <stringProp name="Argument.name">rampUpTime</stringProp>
-            <stringProp name="Argument.value">1000</stringProp>
+            <stringProp name="Argument.value">1800</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
             <stringProp name="Argument.desc">Ramp up time [sec]</stringProp>
           </elementProp>
           <elementProp name="host" elementType="Argument">
             <stringProp name="Argument.name">host</stringProp>
-            <stringProp name="Argument.value">test-postgre.cern.ch</stringProp>
+            <stringProp name="Argument.value">cassandra-n1.cern.ch</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
             <stringProp name="Argument.desc">Host to connect to.</stringProp>
           </elementProp>
@@ -42,7 +42,7 @@
       <assignment.AssignmentConfigElement guiclass="TestBeanGUI" testclass="assignment.AssignmentConfigElement" testname="Custom - Assignment Configuration" enabled="true">
         <stringProp name="assignmentFile">unspecified</stringProp>
         <stringProp name="assignmentInfo">assignInfo</stringProp>
-        <stringProp name="assignmentMode">random</stringProp>
+        <stringProp name="assignmentMode">sequence</stringProp>
         <stringProp name="binaryInfo">binInfo</stringProp>
         <stringProp name="inputLocation">/testdata/out/</stringProp>
         <stringProp name="encoding">NO</stringProp>
@@ -50,22 +50,20 @@
         <stringProp name="assignmentOutputFile"></stringProp>
       </assignment.AssignmentConfigElement>
       <hashTree/>
-      <customjdbc.CustomJDBCConfigElement guiclass="TestBeanGUI" testclass="customjdbc.CustomJDBCConfigElement" testname="Custom - JDBC Connection Configuration" enabled="false">
-        <stringProp name="autocommit">True</stringProp>
-        <stringProp name="classname">com.mysql.jdbc.Driver</stringProp>
-        <stringProp name="database">testdb</stringProp>
-        <stringProp name="host">${host}</stringProp>
-        <stringProp name="jdbcname">jdbc:mysql</stringProp>
-        <stringProp name="password">testPass</stringProp>
-        <stringProp name="port">5432</stringProp>
-        <stringProp name="sid"></stringProp>
-        <stringProp name="username">testUser</stringProp>
-        <stringProp name="connectionId">postgreConn</stringProp>
-        <stringProp name="jdbcName">jdbc:postgresql</stringProp>
-        <stringProp name="className">org.postgresql.Driver</stringProp>
-        <stringProp name="autoCommit">True</stringProp>
-        <stringProp name="readOnly">True</stringProp>
-      </customjdbc.CustomJDBCConfigElement>
+      <cassandra.CassandraConfigElement guiclass="TestBeanGUI" testclass="cassandra.CassandraConfigElement" testname="Custom - Cassandra Connection Configuration" enabled="true">
+        <stringProp name="cluster">TestCluster</stringProp>
+        <stringProp name="host">cassandra-n1.cern.ch</stringProp>
+        <stringProp name="loadBalancingPolicy">leastActive</stringProp>
+        <stringProp name="maxWaitTimeIfExhausted">60000</stringProp>
+        <stringProp name="port">9160</stringProp>
+        <stringProp name="retryDownedHostDelaySec">30</stringProp>
+        <stringProp name="retryDownedHostQueueSize">128</stringProp>
+        <stringProp name="retryDownedHosts">True</stringProp>
+        <stringProp name="setAutoDiscoverHosts">True</stringProp>
+        <stringProp name="setHostTimeoutCounter">20</stringProp>
+        <stringProp name="thriftSocketTimeout">10000</stringProp>
+        <stringProp name="connectionId">cassConn</stringProp>
+      </cassandra.CassandraConfigElement>
       <hashTree/>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Iperf" enabled="true">
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
@@ -168,34 +166,13 @@
         <boolProp name="ThreadGroup.delayedStart">true</boolProp>
       </ThreadGroup>
       <hashTree>
-        <customjdbc.CustomJDBCConnectionSampler guiclass="TestBeanGUI" testclass="customjdbc.CustomJDBCConnectionSampler" testname="Custom - JDBC Connection Sampler" enabled="true">
-          <stringProp name="autoCommit">True</stringProp>
-          <stringProp name="className">org.postgresql.Driver</stringProp>
-          <stringProp name="connectionId">postgreConn_${__threadNum}</stringProp>
-          <stringProp name="database">testdb</stringProp>
-          <stringProp name="host">${host}</stringProp>
-          <stringProp name="jdbcName">jdbc:postgresql</stringProp>
-          <stringProp name="password">testPass</stringProp>
-          <stringProp name="port">5432</stringProp>
-          <stringProp name="sid"></stringProp>
-          <stringProp name="username">testUser</stringProp>
-          <stringProp name="readOnly">True</stringProp>
-        </customjdbc.CustomJDBCConnectionSampler>
-        <hashTree/>
-        <postgresql.PostgreSampler guiclass="TestBeanGUI" testclass="postgresql.PostgreSampler" testname="Custom - PostgeSQL Sampler" enabled="true">
+        <cassandra.CassandraSampler guiclass="TestBeanGUI" testclass="cassandra.CassandraSampler" testname="Custom - Cassandra Sampler" enabled="true">
           <stringProp name="assignmentInfo">assignInfo</stringProp>
-          <stringProp name="checkRead">False</stringProp>
-          <stringProp name="database">testdb</stringProp>
-          <stringProp name="doRead">True</stringProp>
-          <stringProp name="doWrite">False</stringProp>
-          <stringProp name="largeObjectMethod">False</stringProp>
+          <stringProp name="connectionId">cassCond</stringProp>
+          <stringProp name="requestType">write</stringProp>
           <stringProp name="useChunks">False</stringProp>
-          <stringProp name="connectionId">postgreConn_${__threadNum}</stringProp>
-          <stringProp name="lobApi">True</stringProp>
-          <stringProp name="requestType">read</stringProp>
           <stringProp name="validateOperation">False</stringProp>
-          <stringProp name="closeConnection">False</stringProp>
-        </postgresql.PostgreSampler>
+        </cassandra.CassandraSampler>
         <hashTree>
           <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer" enabled="true">
             <boolProp name="ResultCollector.error_logging">false</boolProp>
@@ -224,10 +201,9 @@
                 <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
                 <assertionsResultsToSave>0</assertionsResultsToSave>
                 <bytes>true</bytes>
-                <threadCounts>true</threadCounts>
               </value>
             </objProp>
-            <stringProp name="filename">./${testPlanName}/PostgreQueryHandlerSampleResults.csv</stringProp>
+            <stringProp name="filename">./${testPlanName}/CassandraQueryHandlerSampleResults.csv</stringProp>
           </ResultCollector>
           <hashTree/>
         </hashTree>

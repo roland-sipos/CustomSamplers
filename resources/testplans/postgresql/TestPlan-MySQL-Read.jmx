@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jmeterTestPlan version="1.2" properties="2.4" jmeter="2.9 r1437961">
   <hashTree>
-    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="PostgreSQL-Random-LOBRead-1000-1000-1" enabled="true">
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="PostgreSQL-Random-Read-Results-1500-1000-1" enabled="true">
       <stringProp name="TestPlan.comments"></stringProp>
       <boolProp name="TestPlan.functional_mode">false</boolProp>
       <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
@@ -15,7 +15,7 @@
         <collectionProp name="Arguments.arguments">
           <elementProp name="testPlanName" elementType="Argument">
             <stringProp name="Argument.name">testPlanName</stringProp>
-            <stringProp name="Argument.value">PostgreSQL-Random-LOBRead-1000-1000-1</stringProp>
+            <stringProp name="Argument.value">PostgreSQL-Random-Read-1000-1000-1</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="numberOfThreads" elementType="Argument">
@@ -32,7 +32,7 @@
           </elementProp>
           <elementProp name="host" elementType="Argument">
             <stringProp name="Argument.name">host</stringProp>
-            <stringProp name="Argument.value">test-postgre.cern.ch</stringProp>
+            <stringProp name="Argument.value">cloud-mysql.cern.ch</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
             <stringProp name="Argument.desc">Host to connect to.</stringProp>
           </elementProp>
@@ -50,7 +50,7 @@
         <stringProp name="assignmentOutputFile"></stringProp>
       </assignment.AssignmentConfigElement>
       <hashTree/>
-      <customjdbc.CustomJDBCConfigElement guiclass="TestBeanGUI" testclass="customjdbc.CustomJDBCConfigElement" testname="Custom - JDBC Connection Configuration" enabled="false">
+      <customjdbc.CustomJDBCConfigElement guiclass="TestBeanGUI" testclass="customjdbc.CustomJDBCConfigElement" testname="Custom - JDBC Connection Configuration" enabled="true">
         <stringProp name="autocommit">True</stringProp>
         <stringProp name="classname">com.mysql.jdbc.Driver</stringProp>
         <stringProp name="database">testdb</stringProp>
@@ -64,7 +64,6 @@
         <stringProp name="jdbcName">jdbc:postgresql</stringProp>
         <stringProp name="className">org.postgresql.Driver</stringProp>
         <stringProp name="autoCommit">True</stringProp>
-        <stringProp name="readOnly">True</stringProp>
       </customjdbc.CustomJDBCConfigElement>
       <hashTree/>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Iperf" enabled="true">
@@ -118,6 +117,38 @@
           <stringProp name="SystemSampler.stderr">./${testPlanName}/iperflog_${__threadNum}_${__machineName}_to_${host}.log</stringProp>
         </SystemSampler>
         <hashTree>
+          <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>true</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>true</code>
+                <message>true</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>true</assertions>
+                <subresults>true</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>false</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <bytes>true</bytes>
+              </value>
+            </objProp>
+            <stringProp name="filename"></stringProp>
+          </ResultCollector>
+          <hashTree/>
           <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer" enabled="true">
             <boolProp name="ResultCollector.error_logging">false</boolProp>
             <objProp>
@@ -168,20 +199,6 @@
         <boolProp name="ThreadGroup.delayedStart">true</boolProp>
       </ThreadGroup>
       <hashTree>
-        <customjdbc.CustomJDBCConnectionSampler guiclass="TestBeanGUI" testclass="customjdbc.CustomJDBCConnectionSampler" testname="Custom - JDBC Connection Sampler" enabled="true">
-          <stringProp name="autoCommit">True</stringProp>
-          <stringProp name="className">org.postgresql.Driver</stringProp>
-          <stringProp name="connectionId">postgreConn_${__threadNum}</stringProp>
-          <stringProp name="database">testdb</stringProp>
-          <stringProp name="host">${host}</stringProp>
-          <stringProp name="jdbcName">jdbc:postgresql</stringProp>
-          <stringProp name="password">testPass</stringProp>
-          <stringProp name="port">5432</stringProp>
-          <stringProp name="sid"></stringProp>
-          <stringProp name="username">testUser</stringProp>
-          <stringProp name="readOnly">True</stringProp>
-        </customjdbc.CustomJDBCConnectionSampler>
-        <hashTree/>
         <postgresql.PostgreSampler guiclass="TestBeanGUI" testclass="postgresql.PostgreSampler" testname="Custom - PostgeSQL Sampler" enabled="true">
           <stringProp name="assignmentInfo">assignInfo</stringProp>
           <stringProp name="checkRead">False</stringProp>
@@ -190,11 +207,6 @@
           <stringProp name="doWrite">False</stringProp>
           <stringProp name="largeObjectMethod">False</stringProp>
           <stringProp name="useChunks">False</stringProp>
-          <stringProp name="connectionId">postgreConn_${__threadNum}</stringProp>
-          <stringProp name="lobApi">True</stringProp>
-          <stringProp name="requestType">read</stringProp>
-          <stringProp name="validateOperation">False</stringProp>
-          <stringProp name="closeConnection">False</stringProp>
         </postgresql.PostgreSampler>
         <hashTree>
           <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer" enabled="true">
@@ -227,7 +239,7 @@
                 <threadCounts>true</threadCounts>
               </value>
             </objProp>
-            <stringProp name="filename">./${testPlanName}/PostgreQueryHandlerSampleResults.csv</stringProp>
+            <stringProp name="filename">./${testPlanName}/MySQLQueryHandlerSampleResults.csv</stringProp>
           </ResultCollector>
           <hashTree/>
         </hashTree>

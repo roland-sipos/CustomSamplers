@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jmeterTestPlan version="1.2" properties="2.4" jmeter="2.9 r1437961">
   <hashTree>
-    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="MongoDB-GFS-Random-Read-2000-1000-1" enabled="true">
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="MongoDB-GFS-Random-Read-1000-1000-1" enabled="true">
       <stringProp name="TestPlan.comments"></stringProp>
       <boolProp name="TestPlan.functional_mode">false</boolProp>
       <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
@@ -15,24 +15,24 @@
         <collectionProp name="Arguments.arguments">
           <elementProp name="testPlanName" elementType="Argument">
             <stringProp name="Argument.name">testPlanName</stringProp>
-            <stringProp name="Argument.value">MongoDB-GFS-Random-Read-2000-1000-1</stringProp>
+            <stringProp name="Argument.value">MongoDB-GFS-Random-Read-600-300-1</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="numberOfThreads" elementType="Argument">
             <stringProp name="Argument.name">numberOfThreads</stringProp>
-            <stringProp name="Argument.value">2000</stringProp>
+            <stringProp name="Argument.value">600</stringProp>
             <stringProp name="Argument.desc">The number of threads.</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="rampUpTime" elementType="Argument">
             <stringProp name="Argument.name">rampUpTime</stringProp>
-            <stringProp name="Argument.value">1000</stringProp>
+            <stringProp name="Argument.value">300</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
             <stringProp name="Argument.desc">Ramp up time [sec]</stringProp>
           </elementProp>
           <elementProp name="host" elementType="Argument">
             <stringProp name="Argument.name">host</stringProp>
-            <stringProp name="Argument.value">cloud-mongo.cern.ch</stringProp>
+            <stringProp name="Argument.value">mongo-n1.cern.ch</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
             <stringProp name="Argument.desc">Host to connect to.</stringProp>
           </elementProp>
@@ -46,6 +46,8 @@
         <stringProp name="binaryInfo">binInfo</stringProp>
         <stringProp name="inputLocation">/testdata/out/</stringProp>
         <stringProp name="encoding">NO</stringProp>
+        <stringProp name="assignmentInputFile"></stringProp>
+        <stringProp name="assignmentOutputFile"></stringProp>
       </assignment.AssignmentConfigElement>
       <hashTree/>
       <mongodb.MongoConfigElement guiclass="TestBeanGUI" testclass="mongodb.MongoConfigElement" testname="Custom - MongoDB Connection Configuration" enabled="true">
@@ -53,7 +55,7 @@
         <stringProp name="connectTimeout">0</stringProp>
         <stringProp name="connectionsPerHost">100</stringProp>
         <stringProp name="database">test</stringProp>
-        <stringProp name="host">cloud-mongo.cern.ch</stringProp>
+        <stringProp name="host">mongo-n1.cern.ch</stringProp>
         <stringProp name="maxAutoConnectRetryTime">0</stringProp>
         <stringProp name="maxWaitTime">120000</stringProp>
         <stringProp name="password">testPass</stringProp>
@@ -65,7 +67,7 @@
         <stringProp name="connectionId">mongoConn</stringProp>
       </mongodb.MongoConfigElement>
       <hashTree/>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Iperf" enabled="false">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Iperf" enabled="true">
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
           <boolProp name="LoopController.continue_forever">false</boolProp>

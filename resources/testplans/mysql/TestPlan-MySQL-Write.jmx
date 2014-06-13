@@ -46,6 +46,8 @@
         <stringProp name="binaryInfo">binInfo</stringProp>
         <stringProp name="inputLocation">/testdata/out/</stringProp>
         <stringProp name="encoding">NO</stringProp>
+        <stringProp name="assignmentInputFile"></stringProp>
+        <stringProp name="assignmentOutputFile"></stringProp>
       </assignment.AssignmentConfigElement>
       <hashTree/>
       <customjdbc.CustomJDBCConfigElement guiclass="TestBeanGUI" testclass="customjdbc.CustomJDBCConfigElement" testname="Custom - JDBC Connection Configuration" enabled="true">
@@ -59,6 +61,9 @@
         <stringProp name="sid"></stringProp>
         <stringProp name="username">testUser</stringProp>
         <stringProp name="connectionId">mysqlConn</stringProp>
+        <stringProp name="jdbcName">jdbc:mysql</stringProp>
+        <stringProp name="className">com.mysql.jdbc.Driver</stringProp>
+        <stringProp name="autoCommit">True</stringProp>
       </customjdbc.CustomJDBCConfigElement>
       <hashTree/>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Iperf" enabled="true">

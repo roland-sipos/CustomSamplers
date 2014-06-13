@@ -32,7 +32,7 @@
           </elementProp>
           <elementProp name="host" elementType="Argument">
             <stringProp name="Argument.name">host</stringProp>
-            <stringProp name="Argument.value">cloud-couch.cern.ch</stringProp>
+            <stringProp name="Argument.value">test-couchdb.cern.ch</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
             <stringProp name="Argument.desc">Host to connect to.</stringProp>
           </elementProp>
@@ -46,6 +46,8 @@
         <stringProp name="binaryInfo">binInfo</stringProp>
         <stringProp name="inputLocation">/testdata/out/</stringProp>
         <stringProp name="encoding">NO</stringProp>
+        <stringProp name="assignmentInputFile"></stringProp>
+        <stringProp name="assignmentOutputFile"></stringProp>
       </assignment.AssignmentConfigElement>
       <hashTree/>
       <couchdb.CouchConfigElement guiclass="TestBeanGUI" testclass="couchdb.CouchConfigElement" testname="Custom - CouchDB Connection Configuration" enabled="true">
@@ -54,7 +56,7 @@
         <stringProp name="connectionTimeout">30000</stringProp>
         <stringProp name="createIfNotExists">False</stringProp>
         <stringProp name="database">testdb</stringProp>
-        <stringProp name="host">http://cloud-couch.cern.ch</stringProp>
+        <stringProp name="host">http://test-couchdb.cern.ch</stringProp>
         <stringProp name="maxCacheEntries">1000</stringProp>
         <stringProp name="maxConnections">100</stringProp>
         <stringProp name="maxObjectSizeBytes">104857600</stringProp>
