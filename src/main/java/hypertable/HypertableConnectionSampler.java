@@ -25,7 +25,7 @@ public class HypertableConnectionSampler extends AbstractSampler implements Test
 
 
 	@Override
-	public SampleResult sample(Entry arg0) {
+	public synchronized SampleResult sample(Entry arg0) {
 		SampleResult res = CustomSamplerUtils.getInitialSampleResult(getName());
 		try {
 			ThriftClient hyperTClient = null;
