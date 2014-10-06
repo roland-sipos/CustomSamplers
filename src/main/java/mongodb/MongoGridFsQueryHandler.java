@@ -1,19 +1,22 @@
 package mongodb;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.TreeMap;
+
+import org.bson.types.ObjectId;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.gridfs.GridFS;
 import com.mongodb.gridfs.GridFSDBFile;
 import com.mongodb.gridfs.GridFSInputFile;
 
+import utils.CustomByteArrayOutputStream;
 import utils.CustomSamplersException;
 import utils.QueryHandler;
 
@@ -29,43 +32,41 @@ public class MongoGridFsQueryHandler implements QueryHandler {
 	private static DBCollection iovCollection;
 	/** The GridFS object, that is defined on the PAYLOAD collection. */
 	private static GridFS payloadGridFS;
-	
-	public MongoGridFsQueryHandler(String databaseName) 
+
+	private static int chunkSize = 255; // default
+
+	public MongoGridFsQueryHandler(String connectionId, int cSize) 
 			throws CustomSamplersException {
-		mongo = MongoConfigElement.getMongoDB(databaseName);
+		mongo = MongoConfigElement.getMongoDB(connectionId);
+		payloadGridFS = MongoConfigElement.getGridFS(connectionId);
 		iovCollection = mongo.getCollection("IOV");
-		payloadGridFS = new GridFS(mongo, "PAYLOAD");
-		if (mongo == null)
-			throw new CustomSamplersException("MongoDB instance with name: " + databaseName + " was not found in config!");
+		chunkSize = cSize;
+		if (mongo == null || payloadGridFS == null)
+			throw new CustomSamplersException("MongoDB objects with id: " + connectionId
+					+ " were not found in config!");
 		if (iovCollection == null)
-			throw new CustomSamplersException("Collection IOV not found in the " + databaseName + " database!");
+			throw new CustomSamplersException("Collection IOV not found in the "
+					+ connectionId + " database!");
 	}
 
 	@Override
-	public ByteArrayOutputStream getData(String tagName, long since)
+	public ByteBuffer getData(String tagName, long since)
 			throws CustomSamplersException {
-		ByteArrayOutputStream result = new ByteArrayOutputStream();
 		try {
-			BasicDBObject idToFind = new BasicDBObject();
-			idToFind.put("tag", tagName);
-			idToFind.put("since", String.valueOf(since));
+			BasicDBObject idxToFind = new BasicDBObject();
+			idxToFind.put("tag", tagName);
+			idxToFind.put("since", since);
+			DBObject iovDoc = iovCollection.findOne(idxToFind);
 
-			BasicDBObject query = new BasicDBObject();
-			query.put("_id", idToFind);
-			DBCursor cursor = iovCollection.find(query);
-			if (cursor.count() > 1) {
-				throw new CustomSamplersException("More than one result found for"
-						+ " tagName:" + tagName
-						+ " since:" + since + " ! This should never happen!");
-			}
-			DBObject object = cursor.next();
-			GridFSDBFile binaryFile = payloadGridFS.findOne(object.get("hash").toString());
-			binaryFile.writeTo(result);
+			GridFSDBFile binaryFile = //payloadGridFS.findOne(iovDoc.get("hash").toString());
+					payloadGridFS.findOne(new ObjectId(iovDoc.get("files_id").toString()));
+			CustomByteArrayOutputStream cbaos = new CustomByteArrayOutputStream();
+			binaryFile.writeTo(cbaos);
+			return ByteBuffer.wrap(cbaos.getByteBuffer());
 		} catch (Exception e) {
 			throw new CustomSamplersException("Exception occured during Mongo GridFS read: "
-					+ e.toString());
+					+ e.toString(), e);
 		}
-		return result;
 	}
 
 	@Override
@@ -73,28 +74,30 @@ public class MongoGridFsQueryHandler implements QueryHandler {
 			ByteArrayOutputStream payload, ByteArrayOutputStream streamerInfo)
 			throws CustomSamplersException {
 		try {
-			BasicDBObject id = new BasicDBObject();
-			id.put("tag", metaInfo.get("tag_name"));
-			id.put("since", metaInfo.get("since"));
+			GridFSInputFile plGfsFile = payloadGridFS.createFile(payload.toByteArray());
+			Object fileID = plGfsFile.getId();
+			plGfsFile.setFilename(metaInfo.get("payload_hash"));
+			plGfsFile.setChunkSize((int)(chunkSize * 1024));
+			plGfsFile.save();
 
 			BasicDBObject iovDoc = new BasicDBObject();
-			iovDoc.put("_id", id);
+			iovDoc.put("tag", metaInfo.get("tag_name"));
+			iovDoc.put("since", Long.valueOf(metaInfo.get("since")));
 			iovDoc.put("hash", metaInfo.get("payload_hash"));
+			iovDoc.put("files_id", fileID);
 			iovCollection.save(iovDoc);
-
-			GridFSInputFile plGfsFile = payloadGridFS.createFile(payload.toByteArray());
-			plGfsFile.setFilename(metaInfo.get("payload_hash"));
-			plGfsFile.save();
 		} catch (Exception e) {
 			throw new CustomSamplersException("Exception occured during MongoDB GridFS write:"
-					+ e.toString());
+					+ e.toString(), e);
 		}
 	}
 
 	@Override
-	public Map<Integer, ByteArrayOutputStream> getChunks(String tagName,
+	public TreeMap<Integer, ByteBuffer> getChunks(String tagName,
 			long since) throws CustomSamplersException {
-		Map<Integer, ByteArrayOutputStream> result = new HashMap<Integer, ByteArrayOutputStream>();
+		throw new CustomSamplersException("Chunk read, using GridFS doesn't make sense. "
+				+ "The driver does it for you...");
+		/*TreeMap<Integer, ByteBuffer> result = new TreeMap<Integer, ByteBuffer>();
 		try {
 			BasicDBObject idToFind = new BasicDBObject();
 			idToFind.put("tag", tagName);
@@ -102,32 +105,29 @@ public class MongoGridFsQueryHandler implements QueryHandler {
 
 			BasicDBObject query = new BasicDBObject();
 			query.put("_id", idToFind);
-			DBCursor cursor = iovCollection.find(query);
-			if (cursor.count() > 1) {
-				throw new CustomSamplersException("More than one result found for"
-						+ " tagName:" + tagName
-						+ " since:" + since + " ! This should never happen!");
-			}
-			DBObject object = cursor.next();
-			BasicDBObject hashes = (BasicDBObject)object.get("hashes");
+			DBObject iovObj = iovCollection.findOne(query);
+
+			BasicDBObject hashes = (BasicDBObject) iovObj.get("hashes");
 			for (int i = 0; i < hashes.size(); ++i) {
 				GridFSDBFile cFile = payloadGridFS.findOne(hashes.getString(String.valueOf(i+1)));
-				ByteArrayOutputStream cBaos = new ByteArrayOutputStream();
+				CustomByteArrayOutputStream cBaos = new CustomByteArrayOutputStream();
 				cFile.writeTo(cBaos);
-				result.put(i+1, cBaos);
+				result.put(i+1, ByteBuffer.wrap(cBaos.getByteBuffer()));
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new CustomSamplersException("Exception occured during MongoDB GridFS chunk read:"
 					+ e.toString());
 		}
-		return result;
+		return result;*/
 	}
 
 	@Override
 	public void putChunks(HashMap<String, String> metaInfo,
 			List<ByteArrayOutputStream> chunks) throws CustomSamplersException {
-		try {
+		throw new CustomSamplersException("Chunk write, using GridFS doesn't make sense. "
+				+ "The driver does it for you...");
+		/*try {
 			BasicDBObject id = new BasicDBObject();
 			id.put("tag", metaInfo.get("tag_name"));
 			id.put("since", metaInfo.get("since"));
@@ -149,12 +149,11 @@ public class MongoGridFsQueryHandler implements QueryHandler {
 		} catch (Exception e) {
 			throw new CustomSamplersException("Exception occured during MongoDB GridFS chunk write:"
 					+ e.toString());
-		}
+		}*/
 	}
 
 	@Override
 	public void closeResources() throws CustomSamplersException {
-		// TODO Auto-generated method stub
 		
 	}
 

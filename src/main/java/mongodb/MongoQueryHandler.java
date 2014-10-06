@@ -1,9 +1,10 @@
 package mongodb;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.TreeMap;
 
 import utils.CustomSamplersException;
 import utils.QueryHandler;
@@ -38,9 +39,8 @@ public class MongoQueryHandler implements QueryHandler {
 	}
 
 	@Override
-	public ByteArrayOutputStream getData(String tagName, long since)
+	public ByteBuffer getData(String tagName, long since)
 			throws CustomSamplersException {
-		ByteArrayOutputStream result = new ByteArrayOutputStream();
 		try {
 			BasicDBObject idToFind = new BasicDBObject();
 			idToFind.put("tag", tagName);
@@ -64,12 +64,11 @@ public class MongoQueryHandler implements QueryHandler {
 						+ " since:" + since + " ! This should never happen!");
 			}
 			object = cursor.next();
-			result.write((byte[])object.get("data"));
+			return ByteBuffer.wrap((byte[])object.get("data"));
 		} catch (Exception e) {
 			throw new CustomSamplersException("Exception occured during Mongo GridFS read: "
 					+ e.toString());
 		}
-		return result;
 	}
 
 	@Override
@@ -96,9 +95,9 @@ public class MongoQueryHandler implements QueryHandler {
 	}
 
 	@Override
-	public Map<Integer, ByteArrayOutputStream> getChunks(String tagName, long since)
+	public TreeMap<Integer, ByteBuffer> getChunks(String tagName, long since)
 			throws CustomSamplersException {
-		Map<Integer, ByteArrayOutputStream> result = new HashMap<Integer, ByteArrayOutputStream>();
+		TreeMap<Integer, ByteBuffer> result = new TreeMap<Integer, ByteBuffer>();
 		try {
 			BasicDBObject idToFind = new BasicDBObject();
 			idToFind.put("tag", tagName);
@@ -118,9 +117,7 @@ public class MongoQueryHandler implements QueryHandler {
 			for (int i = 0; i < hashes.size(); ++i) {
 				query.put("_id", hashes.getString(String.valueOf(i+1)));
 				BasicDBObject chunk = (BasicDBObject)payloadCollection.findOne(query);
-				ByteArrayOutputStream cBaos = new ByteArrayOutputStream();
-				cBaos.write((byte[])chunk.get("data"));
-				result.put(i+1, cBaos);
+				result.put(i+1, ByteBuffer.wrap( (byte[])chunk.get("data") ));
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

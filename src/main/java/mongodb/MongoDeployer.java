@@ -1,6 +1,8 @@
 package mongodb;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -9,11 +11,16 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
+import com.mongodb.CommandResult;
 import com.mongodb.DB;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
+import com.mongodb.ReadPreference;
 import com.mongodb.ServerAddress;
+import com.mongodb.gridfs.GridFS;
+import com.mongodb.gridfs.GridFSInputFile;
 
 import utils.DeployerOptions;
 import utils.EnvironmentDeployer;
@@ -33,6 +40,10 @@ public class MongoDeployer {
 		/** The MongoDB database object. */
 		DB mongoDB = null;
 
+		String isSharded = "false";
+		
+		List<ServerAddress> addresses = null;
+		
 		/** Constructor
 		 * @param host target host for deployment (passed for super EnvironmentDeployer)
 		 * @param port port of target host (passed for super)
@@ -41,8 +52,9 @@ public class MongoDeployer {
 		 * @param password the user's password for target authentication (passed for super)
 		 * */
 		public MongoEnvironmentDeployer(String host, String port,
-				String databaseName, String username, String password) {
+				String databaseName, String username, String password, String sharded) {
 			super(host, port, databaseName, username, password);
+			isSharded = sharded;
 		}
 
 		/** Initialize function for MongoDB. */
@@ -51,8 +63,19 @@ public class MongoDeployer {
 			System.out.println("-------- MongoDB connection initialization -------");
 			System.out.println(" initialize -> Initialization started...");
 			try {
-				ServerAddress address = new ServerAddress(getHost(), Integer.parseInt(getPort()));
-				client = new MongoClient(address);
+				if (getHost().contains(",")) {
+					Integer port = Integer.parseInt(getPort());
+					String hosts[] = getHost().split(",");
+					addresses = new ArrayList<ServerAddress>();
+					for (int i = 0; i < hosts.length; ++i) {
+						addresses.add(new ServerAddress(hosts[i], port));
+					}
+					client = new MongoClient(addresses);
+					client.setReadPreference(ReadPreference.nearest());
+				} else {
+					ServerAddress address = new ServerAddress(getHost(), Integer.parseInt(getPort()));
+					client = new MongoClient(address);
+				}
 			} catch (Exception e) {
 				System.out.println(" initialize -> Exception occured: " + e.toString());
 			}
@@ -90,21 +113,74 @@ public class MongoDeployer {
 		@Override
 		protected void setupEnvironment() {
 			System.out.println("--------- MongoDB environment setup ------------");
+			if (isSharded.equals("true")) {
+				System.out.println(" setupEnvironment -> Sharding options requested...");
+				DB adminDB = client.getDB("admin");
+				if (getHost().contains(",")) {
+					String hosts[] = getHost().split(",");
+					for (int i = 0; i < hosts.length; ++i) {
+						DBObject cmd = new BasicDBObject();
+						cmd.put("addShard", new String(hosts[i]).concat(":27019"));
+						CommandResult res = adminDB.command(cmd);
+						System.out.println(" setupEnvironment -> Adding shard: " + hosts[i]
+								+ " Result: " + res.getErrorMessage());
+					}
+				}
+			}
+
 			System.out.println(" setupEnvironment -> Enviroment setup started...");
 			System.out.println("  -> DBObject options = BasicDBObjectBuilder.start()"
-					+ ".add(\"capped\", true) "
-					+ ".add(\"size\", 5242880)"
-					+ ".add(\"max\", 1000).get();");
+					+ ".add(\"capped\", false).get();");
 			DBObject options = BasicDBObjectBuilder.start()
-					.add("capped", true)
-					.add("size", 5242880)
-					.add("max", 1000).get();
+					.add("capped", false).get();
 			System.out.println("  -> mongoDB.createCollection(\"TAG\", options);");
 			mongoDB.createCollection("TAG", options);
+			BasicDBObject tagIdx = new BasicDBObject();
+			tagIdx.put("tag", 1);
+			System.out.println("  -> Ensuring index on TAG with: " + tagIdx.toString());
+			mongoDB.getCollection("TAG").ensureIndex(tagIdx);
+
 			System.out.println("  -> mongoDB.createCollection(\"IOV\", options);");
 			mongoDB.createCollection("IOV", options);
+			BasicDBObject iovIdx = new BasicDBObject();
+			iovIdx.put("tag", 1);
+			iovIdx.put("since", 1);
+			System.out.println("  -> Ensuring index on IOV with: " + iovIdx.toString());
+			mongoDB.getCollection("IOV").ensureIndex(iovIdx);
+
 			System.out.println("  -> mongoDB.createCollection(\"PAYLOAD\", options);");
 			mongoDB.createCollection("PAYLOAD", options);
+			BasicDBObject plIdx = new BasicDBObject();
+			plIdx.put("hash", 1);
+			System.out.println("  -> Ensuring index on PAYLOAD with: " + plIdx.toString());
+			mongoDB.getCollection("PAYLOAD").ensureIndex(plIdx);
+			System.out.println(" --> Adding dummy PAYLOAD...");
+			GridFS gridFS = new GridFS(mongoDB, "PAYLOAD");
+			GridFSInputFile plGfsFile = gridFS.createFile("This is a dummy payload".getBytes());
+			plGfsFile.setFilename("blablahash");
+			plGfsFile.save();
+
+			if (isSharded.equals("true")) {
+				System.out.println(" setupEnvironment -> Sharding DB and Collection...");
+				DB adminDB = client.getDB("admin");
+
+				DBObject enableCmd = new BasicDBObject();
+				enableCmd.put("enablesharding", getDatabase());
+				CommandResult res = adminDB.command(enableCmd);
+				System.out.println(" setupEnvironment -> Enable sharding result: "
+						+ res.getErrorMessage());
+
+				DBObject cmd = new BasicDBObject();
+				cmd.put("shardCollection", getDatabase().concat(".PAYLOAD.chunks"));
+				BasicDBObject keys = new BasicDBObject();
+				keys.put("files_id", 1);
+				keys.put("n", 1);
+				cmd.put("key", keys);
+				res = adminDB.command(cmd);
+				System.out.println(" setupEnvironment -> Sharding PAYLOAD.chunks result: "
+						+ res.getErrorMessage());
+			}
+
 			System.out.println(" setupEnvironment -> Environment setup successfull!\n");
 		}
 
@@ -143,6 +219,7 @@ public class MongoDeployer {
 		Options depOps = new DeployerOptions().getDeployerOptions();
 		// MongoDB specific options are added manually here:
 		depOps.addOption("p", "port", true, "port of the host (MongoDB default: 27017)");
+		depOps.addOption("s", "shard", true, "handle sharding on host (false or true)");
 
 		/** Help page creation. */
 		HelpFormatter formatter = new HelpFormatter();
@@ -158,6 +235,13 @@ public class MongoDeployer {
 			CommandLine line = parser.parse(depOps, args);
 			HashMap<String, String> optionMap = DeployerOptions.mapCommandLine(line);
 
+			if (line.hasOption('a')) {
+				optionMap.put("SHARD", line.getOptionValue('a'));
+			} else if (line.hasOption("shard")) {
+				optionMap.put("SHARD", line.getOptionValue("shard"));
+			} else {
+				optionMap.put("HELP", "Shard argument is missing!");
+			}
 			if (optionMap.containsKey("HELP")) {
 				System.out.println(optionMap.get("HELP") + "\n");
 				formatter.printHelp(CLASS_CMD, CLP_HEADER, depOps, utils.Constants.SUPPORT_FOOTER);
@@ -165,7 +249,8 @@ public class MongoDeployer {
 				/** Create an environment deployer with the parsed arguments. */
 				MongoEnvironmentDeployer deployer =
 						new MongoEnvironmentDeployer(optionMap.get("HOST"), optionMap.get("PORT"),
-								optionMap.get("DB"), optionMap.get("USER"), optionMap.get("PASS"));
+								optionMap.get("DB"), optionMap.get("USER"), optionMap.get("PASS"),
+								optionMap.get("SHARD"));
 				if (optionMap.get("MODE").equals("deploy")) {
 					deployer.deployTestEnvironment();
 				} else if (optionMap.get("MODE").equals("teardown")) {

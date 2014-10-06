@@ -1,5 +1,8 @@
 package mongodb;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.jmeter.config.ConfigElement;
 import org.apache.jmeter.testbeans.TestBean;
 import org.apache.jmeter.testelement.AbstractTestElement;
@@ -11,10 +14,15 @@ import org.apache.log.Logger;
 import utils.CustomSamplersException;
 
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.CommandResult;
 import com.mongodb.DB;
+import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoClientOptions.Builder;
+import com.mongodb.ReadPreference;
+import com.mongodb.gridfs.GridFS;
 import com.mongodb.ServerAddress;
 
 /**
@@ -100,6 +108,22 @@ implements ConfigElement, TestStateListener, TestBean {
 		}
 	}
 
+	public static GridFS getGridFS(String connectionId) throws CustomSamplersException {
+		Object gfs = JMeterContextService.getContext().getVariables()
+				.getObject(connectionId.concat("-GFS"));
+		if (gfs == null) {
+			throw new CustomSamplersException("GridFS object is null!");
+		}
+		else {
+			if (gfs instanceof GridFS) {
+				return (GridFS)gfs;
+			}
+			else {
+				throw new CustomSamplersException("Casting the object to GridFS failed!");
+			}
+		}
+	}
+
 	@Override
 	public void testStarted() {
 		if (log.isDebugEnabled()) {
@@ -122,6 +146,7 @@ implements ConfigElement, TestStateListener, TestBean {
 			mongoConf.socketTimeout(Integer.parseInt(getSocketTimeout()));
 			mongoConf.socketKeepAlive(Boolean.parseBoolean(getSocketKeepAlive()));
 			mongoConf.threadsAllowedToBlockForConnectionMultiplier(Integer.parseInt(getThreadsAllowedToBlockMultiplier()));
+			mongoConf.readPreference(ReadPreference.nearest());
 		} catch (NumberFormatException e) {
 			log.error("Some of the config value parsing was failed: " + e);
 		}
@@ -139,13 +164,33 @@ implements ConfigElement, TestStateListener, TestBean {
 
 			MongoClient mongoClient = null;
 			try {
-				ServerAddress address = new ServerAddress(getHost(), Integer.parseInt(getPort()));
-				mongoClient = new MongoClient(address, mongoConf.build());
+				if (getHost().contains(",")) {
+					Integer port = Integer.parseInt(getPort());
+					String hosts[] = getHost().split(",");
+					List<ServerAddress> addresses = new ArrayList<ServerAddress>();
+					for (int i = 0; i < hosts.length; ++i) {
+						addresses.add(new ServerAddress(hosts[i], port));
+					}
+					mongoClient = new MongoClient(addresses, mongoConf.build());
+				} else {
+					ServerAddress address = new ServerAddress(getHost(), Integer.parseInt(getPort()));
+					mongoClient = new MongoClient(address, mongoConf.build());
+				}
 			} catch (Exception e) {
 				log.error("MongoClient initialization failed due to: " + e.toString());
 			}
 
 			DB mongoDB = mongoClient.getDB(getDatabase());
+			DBObject isMCmd = new BasicDBObject();
+			isMCmd.put("isMaster", 1);
+			CommandResult cmdRes = mongoDB.command(isMCmd);
+			System.out.println("MongoClient under:" + this.toString()
+					+ " -> isMaster() result: "+ cmdRes.getString("msg"));
+			System.out.println(" -> Connect point: " + mongoClient.getConnectPoint());
+			System.out.println(" -> Read preference: " + mongoClient.getReadPreference());
+			System.out.println(" -> ReplSet status: " + mongoClient.getReplicaSetStatus());
+			System.out.println(" ");
+			GridFS gridFS = new GridFS(mongoDB, "PAYLOAD");
 			boolean auth = mongoDB.isAuthenticated();
 			if (!auth) {
 				if (!getUsername().equals("")) {
@@ -158,6 +203,7 @@ implements ConfigElement, TestStateListener, TestBean {
 				}
 			}
 			getThreadContext().getVariables().putObject(getConnectionId(), mongoDB);
+			getThreadContext().getVariables().putObject(getConnectionId().concat("-GFS"), gridFS);
 		}
 	}
 

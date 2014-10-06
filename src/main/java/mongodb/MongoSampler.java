@@ -66,7 +66,8 @@ public class MongoSampler extends AbstractSampler implements TestBean {
 		try {
 			assignment = AssignmentConfigElement.getAssignments(getAssignmentInfo());
 			if (Boolean.parseBoolean(getGridFsMethod())) {
-				queryHandler = new MongoGridFsQueryHandler(getConnectionId());
+				// TODO: ADD CHUNK SIZE AS POSSIBLE CONFIG.
+				queryHandler = new MongoGridFsQueryHandler(getConnectionId(), 2048);
 			} else {
 				queryHandler = new MongoQueryHandler(getConnectionId());
 			}
@@ -85,6 +86,14 @@ public class MongoSampler extends AbstractSampler implements TestBean {
 		} else if (getRequestType().equals("write")) {
 			CustomSamplerUtils.writeWith(queryHandler, assignment, res, options);
 		}
+
+		/** Close resources if necessary. */
+		/*try {
+			queryHandler.closeResources();
+		} catch (CustomSamplersException e) {
+			log.error("Failed to close resources in QueryHandler for " + 
+					Thread.currentThread().getName() + " sampler. Details:" + e.toString());
+		}*/
 
 		return res;
 	}
