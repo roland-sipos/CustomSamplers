@@ -32,13 +32,110 @@
           </elementProp>
           <elementProp name="host" elementType="Argument">
             <stringProp name="Argument.name">host</stringProp>
-            <stringProp name="Argument.value">cloud-mongo.cern.ch</stringProp>
+            <stringProp name="Argument.value">cloudssd-mongo.cern.ch</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
             <stringProp name="Argument.desc">Host to connect to.</stringProp>
+          </elementProp>
+          <elementProp name="database" elementType="Argument">
+            <stringProp name="Argument.name">database</stringProp>
+            <stringProp name="Argument.value">conddb</stringProp>
+            <stringProp name="Argument.desc">Database name</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="data" elementType="Argument">
+            <stringProp name="Argument.name">data</stringProp>
+            <stringProp name="Argument.value">/mnt/testdata/</stringProp>
+            <stringProp name="Argument.desc">Path for testdata.</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
         </collectionProp>
       </Arguments>
       <hashTree/>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Iperf" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <longProp name="ThreadGroup.start_time">1392294966000</longProp>
+        <longProp name="ThreadGroup.end_time">1392294966000</longProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <SystemSampler guiclass="SystemSamplerGui" testclass="SystemSampler" testname="Iperf Sampler" enabled="true">
+          <boolProp name="SystemSampler.checkReturnCode">true</boolProp>
+          <stringProp name="SystemSampler.expectedReturnCode">0</stringProp>
+          <stringProp name="SystemSampler.command">iperf</stringProp>
+          <elementProp name="SystemSampler.arguments" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="Argument">
+                <stringProp name="Argument.name"></stringProp>
+                <stringProp name="Argument.value">-c</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Argument">
+                <stringProp name="Argument.name"></stringProp>
+                <stringProp name="Argument.value">${host}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Argument">
+                <stringProp name="Argument.name"></stringProp>
+                <stringProp name="Argument.value">-t 1</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Argument">
+                <stringProp name="Argument.name"></stringProp>
+                <stringProp name="Argument.value">-P 10</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <elementProp name="SystemSampler.environment" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="SystemSampler.directory"></stringProp>
+          <stringProp name="SystemSampler.stdout">./${testPlanName}/iperflog_${__threadNum}_${__machineName}_to_${host}.log</stringProp>
+          <stringProp name="SystemSampler.stderr">./${testPlanName}/iperflog_${__threadNum}_${__machineName}_to_${host}.log</stringProp>
+        </SystemSampler>
+        <hashTree>
+          <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>false</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>false</code>
+                <message>false</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>false</assertions>
+                <subresults>false</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>true</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <hostname>true</hostname>
+              </value>
+            </objProp>
+            <stringProp name="filename">./${testPlanName}/iperfSampleResults.csv</stringProp>
+          </ResultCollector>
+          <hashTree/>
+        </hashTree>
+      </hashTree>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="QueryHandlers" enabled="true">
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
@@ -59,16 +156,16 @@
           <stringProp name="autoConnectRetry">False</stringProp>
           <stringProp name="connectTimeout">0</stringProp>
           <stringProp name="connectionId">mongoConn</stringProp>
-          <stringProp name="connectionsPerHost">10</stringProp>
-          <stringProp name="database">testdb</stringProp>
-          <stringProp name="host">cloud-mongo.cern.ch</stringProp>
+          <stringProp name="connectionsPerHost">100</stringProp>
+          <stringProp name="database">${database}</stringProp>
+          <stringProp name="host">${host}</stringProp>
           <stringProp name="maxAutoConnectRetryTime">0</stringProp>
           <stringProp name="maxWaitTime">120000</stringProp>
           <stringProp name="password">testPass</stringProp>
           <stringProp name="port">27017</stringProp>
-          <stringProp name="socketKeepAlive">False</stringProp>
+          <stringProp name="socketKeepAlive">True</stringProp>
           <stringProp name="socketTimeout">0</stringProp>
-          <stringProp name="threadsAllowedToBlockMultiplier">5</stringProp>
+          <stringProp name="threadsAllowedToBlockMultiplier">50</stringProp>
           <stringProp name="username"></stringProp>
         </mongodb.MongoConfigElement>
         <hashTree/>
@@ -77,10 +174,11 @@
           <stringProp name="assignmentInfo">assignInfo</stringProp>
           <stringProp name="assignmentMode">random</stringProp>
           <stringProp name="binaryInfo">binInfo</stringProp>
-          <stringProp name="inputLocation">/testdata/out/</stringProp>
-          <stringProp name="encoding">NO</stringProp>
+          <stringProp name="inputLocation">${data}</stringProp>
+          <stringProp name="encoding">binary</stringProp>
           <stringProp name="assignmentInputFile"></stringProp>
           <stringProp name="assignmentOutputFile"></stringProp>
+          <stringProp name="numberOfAssignments">${numberOfThreads}</stringProp>
         </assignment.AssignmentConfigElement>
         <hashTree/>
         <mongodb.MongoSampler guiclass="TestBeanGUI" testclass="mongodb.MongoSampler" testname="Custom - MongoDB Sampler" enabled="true">
@@ -99,12 +197,12 @@
           <boolProp name="LoopController.continue_forever">false</boolProp>
           <stringProp name="LoopController.loops">1</stringProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">1000</stringProp>
-        <stringProp name="ThreadGroup.ramp_time">750</stringProp>
+        <stringProp name="ThreadGroup.num_threads">1950</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1300</stringProp>
         <longProp name="ThreadGroup.start_time">1385029359000</longProp>
         <longProp name="ThreadGroup.end_time">1385029359000</longProp>
         <boolProp name="ThreadGroup.scheduler">true</boolProp>
-        <stringProp name="ThreadGroup.duration">1000</stringProp>
+        <stringProp name="ThreadGroup.duration">1500</stringProp>
         <stringProp name="ThreadGroup.delay">200</stringProp>
         <boolProp name="ThreadGroup.delayedStart">true</boolProp>
       </ThreadGroup>
@@ -113,16 +211,16 @@
           <stringProp name="autoConnectRetry">False</stringProp>
           <stringProp name="connectTimeout">0</stringProp>
           <stringProp name="connectionId">mongoConn1</stringProp>
-          <stringProp name="connectionsPerHost">10</stringProp>
-          <stringProp name="database">testdb</stringProp>
-          <stringProp name="host">cloud-mongo.cern.ch</stringProp>
+          <stringProp name="connectionsPerHost">100</stringProp>
+          <stringProp name="database">${database}</stringProp>
+          <stringProp name="host">${host}</stringProp>
           <stringProp name="maxAutoConnectRetryTime">0</stringProp>
           <stringProp name="maxWaitTime">120000</stringProp>
           <stringProp name="password">testPass</stringProp>
           <stringProp name="port">27017</stringProp>
-          <stringProp name="socketKeepAlive">False</stringProp>
+          <stringProp name="socketKeepAlive">True</stringProp>
           <stringProp name="socketTimeout">0</stringProp>
-          <stringProp name="threadsAllowedToBlockMultiplier">5</stringProp>
+          <stringProp name="threadsAllowedToBlockMultiplier">50</stringProp>
           <stringProp name="username"></stringProp>
         </mongodb.MongoConfigElement>
         <hashTree/>
@@ -131,13 +229,14 @@
           <stringProp name="assignmentInfo">assignInfo1</stringProp>
           <stringProp name="assignmentMode">random</stringProp>
           <stringProp name="binaryInfo">binInfo</stringProp>
-          <stringProp name="inputLocation">/testdata/out/</stringProp>
-          <stringProp name="encoding">NO</stringProp>
+          <stringProp name="inputLocation">${data}</stringProp>
+          <stringProp name="encoding">binary</stringProp>
           <stringProp name="assignmentInputFile"></stringProp>
           <stringProp name="assignmentOutputFile"></stringProp>
+          <stringProp name="numberOfAssignments">1950</stringProp>
         </assignment.AssignmentConfigElement>
         <hashTree/>
-        <mongodb.MongoSampler guiclass="TestBeanGUI" testclass="mongodb.MongoSampler" testname="Custom - MongoDB Sampler1" enabled="true">
+        <mongodb.MongoSampler guiclass="TestBeanGUI" testclass="mongodb.MongoSampler" testname="Custom - MongoDB Sampler - 1" enabled="true">
           <stringProp name="assignmentInfo">assignInfo1</stringProp>
           <stringProp name="connectionId">mongoConn1</stringProp>
           <stringProp name="gridFsMethod">True</stringProp>
@@ -153,12 +252,12 @@
           <boolProp name="LoopController.continue_forever">false</boolProp>
           <stringProp name="LoopController.loops">1</stringProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">1000</stringProp>
-        <stringProp name="ThreadGroup.ramp_time">500</stringProp>
+        <stringProp name="ThreadGroup.num_threads">1650</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1100</stringProp>
         <longProp name="ThreadGroup.start_time">1385029359000</longProp>
         <longProp name="ThreadGroup.end_time">1385029359000</longProp>
         <boolProp name="ThreadGroup.scheduler">true</boolProp>
-        <stringProp name="ThreadGroup.duration">1000</stringProp>
+        <stringProp name="ThreadGroup.duration">1500</stringProp>
         <stringProp name="ThreadGroup.delay">400</stringProp>
         <boolProp name="ThreadGroup.delayedStart">true</boolProp>
       </ThreadGroup>
@@ -167,16 +266,16 @@
           <stringProp name="autoConnectRetry">False</stringProp>
           <stringProp name="connectTimeout">0</stringProp>
           <stringProp name="connectionId">mongoConn2</stringProp>
-          <stringProp name="connectionsPerHost">10</stringProp>
-          <stringProp name="database">testdb</stringProp>
-          <stringProp name="host">cloud-mongo.cern.ch</stringProp>
+          <stringProp name="connectionsPerHost">100</stringProp>
+          <stringProp name="database">${database}</stringProp>
+          <stringProp name="host">${host}</stringProp>
           <stringProp name="maxAutoConnectRetryTime">0</stringProp>
           <stringProp name="maxWaitTime">120000</stringProp>
           <stringProp name="password">testPass</stringProp>
           <stringProp name="port">27017</stringProp>
-          <stringProp name="socketKeepAlive">False</stringProp>
+          <stringProp name="socketKeepAlive">True</stringProp>
           <stringProp name="socketTimeout">0</stringProp>
-          <stringProp name="threadsAllowedToBlockMultiplier">5</stringProp>
+          <stringProp name="threadsAllowedToBlockMultiplier">50</stringProp>
           <stringProp name="username"></stringProp>
         </mongodb.MongoConfigElement>
         <hashTree/>
@@ -185,13 +284,14 @@
           <stringProp name="assignmentInfo">assignInfo2</stringProp>
           <stringProp name="assignmentMode">random</stringProp>
           <stringProp name="binaryInfo">binInfo</stringProp>
-          <stringProp name="inputLocation">/testdata/out/</stringProp>
-          <stringProp name="encoding">NO</stringProp>
+          <stringProp name="inputLocation">${data}</stringProp>
+          <stringProp name="encoding">binary</stringProp>
           <stringProp name="assignmentInputFile"></stringProp>
           <stringProp name="assignmentOutputFile"></stringProp>
+          <stringProp name="numberOfAssignments">1650</stringProp>
         </assignment.AssignmentConfigElement>
         <hashTree/>
-        <mongodb.MongoSampler guiclass="TestBeanGUI" testclass="mongodb.MongoSampler" testname="Custom - MongoDB Sampler" enabled="true">
+        <mongodb.MongoSampler guiclass="TestBeanGUI" testclass="mongodb.MongoSampler" testname="Custom - MongoDB Sampler - 2" enabled="true">
           <stringProp name="assignmentInfo">assignInfo2</stringProp>
           <stringProp name="connectionId">mongoConn2</stringProp>
           <stringProp name="gridFsMethod">True</stringProp>
@@ -201,93 +301,60 @@
         </mongodb.MongoSampler>
         <hashTree/>
       </hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Sudden QueryHandlers3" enabled="false">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Sudden QueryHandlers3" enabled="true">
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
           <boolProp name="LoopController.continue_forever">false</boolProp>
           <stringProp name="LoopController.loops">1</stringProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">500</stringProp>
-        <stringProp name="ThreadGroup.ramp_time">250</stringProp>
+        <stringProp name="ThreadGroup.num_threads">1350</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">900</stringProp>
         <longProp name="ThreadGroup.start_time">1385029359000</longProp>
         <longProp name="ThreadGroup.end_time">1385029359000</longProp>
         <boolProp name="ThreadGroup.scheduler">true</boolProp>
-        <stringProp name="ThreadGroup.duration">1000</stringProp>
+        <stringProp name="ThreadGroup.duration">1500</stringProp>
         <stringProp name="ThreadGroup.delay">600</stringProp>
         <boolProp name="ThreadGroup.delayedStart">true</boolProp>
       </ThreadGroup>
       <hashTree>
-        <customjdbc.CustomJDBCConfigElement guiclass="TestBeanGUI" testclass="customjdbc.CustomJDBCConfigElement" testname="Custom - JDBC Connection Configuration" enabled="true">
-          <stringProp name="autocommit">True</stringProp>
-          <stringProp name="classname">com.mysql.jdbc.Driver</stringProp>
-          <stringProp name="database">testdb</stringProp>
+        <mongodb.MongoConfigElement guiclass="TestBeanGUI" testclass="mongodb.MongoConfigElement" testname="Custom - MongoDB Connection Configuration" enabled="true">
+          <stringProp name="autoConnectRetry">False</stringProp>
+          <stringProp name="connectTimeout">0</stringProp>
+          <stringProp name="connectionId">mongoConn3</stringProp>
+          <stringProp name="connectionsPerHost">100</stringProp>
+          <stringProp name="database">${database}</stringProp>
           <stringProp name="host">${host}</stringProp>
-          <stringProp name="jdbcname">jdbc:mysql</stringProp>
+          <stringProp name="maxAutoConnectRetryTime">0</stringProp>
+          <stringProp name="maxWaitTime">120000</stringProp>
           <stringProp name="password">testPass</stringProp>
-          <stringProp name="port">3306</stringProp>
-          <stringProp name="sid"></stringProp>
-          <stringProp name="username">testUser</stringProp>
-          <stringProp name="connectionId">mysqlConn4</stringProp>
-          <stringProp name="jdbcName">jdbc:mysql</stringProp>
-          <stringProp name="className">com.mysql.jdbc.Driver</stringProp>
-          <stringProp name="autoCommit">True</stringProp>
-          <stringProp name="readOnly">True</stringProp>
-        </customjdbc.CustomJDBCConfigElement>
+          <stringProp name="port">27017</stringProp>
+          <stringProp name="socketKeepAlive">True</stringProp>
+          <stringProp name="socketTimeout">0</stringProp>
+          <stringProp name="threadsAllowedToBlockMultiplier">50</stringProp>
+          <stringProp name="username"></stringProp>
+        </mongodb.MongoConfigElement>
         <hashTree/>
         <assignment.AssignmentConfigElement guiclass="TestBeanGUI" testclass="assignment.AssignmentConfigElement" testname="Custom - Assignment Configuration" enabled="true">
           <stringProp name="assignmentFile">unspecified</stringProp>
-          <stringProp name="assignmentInfo">assignInfo</stringProp>
+          <stringProp name="assignmentInfo">assignInfo3</stringProp>
           <stringProp name="assignmentMode">random</stringProp>
           <stringProp name="binaryInfo">binInfo</stringProp>
-          <stringProp name="inputLocation">/testdata/out/</stringProp>
-          <stringProp name="encoding">NO</stringProp>
+          <stringProp name="inputLocation">${data}</stringProp>
+          <stringProp name="encoding">binary</stringProp>
           <stringProp name="assignmentInputFile"></stringProp>
           <stringProp name="assignmentOutputFile"></stringProp>
+          <stringProp name="numberOfAssignments">1350</stringProp>
         </assignment.AssignmentConfigElement>
         <hashTree/>
-        <mysql.MysqlSampler guiclass="TestBeanGUI" testclass="mysql.MysqlSampler" testname="Custom - MySQL Sampler4" enabled="true">
-          <stringProp name="assignmentInfo">assignInfo</stringProp>
-          <stringProp name="database">testdb</stringProp>
+        <mongodb.MongoSampler guiclass="TestBeanGUI" testclass="mongodb.MongoSampler" testname="Custom - MongoDB Sampler - 3" enabled="true">
+          <stringProp name="assignmentInfo">assignInfo3</stringProp>
+          <stringProp name="connectionId">mongoConn3</stringProp>
+          <stringProp name="gridFsMethod">True</stringProp>
           <stringProp name="requestType">read</stringProp>
           <stringProp name="useChunks">False</stringProp>
           <stringProp name="validateOperation">False</stringProp>
-          <stringProp name="connectionId">mysqlConn4</stringProp>
-        </mysql.MysqlSampler>
-        <hashTree>
-          <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer" enabled="false">
-            <boolProp name="ResultCollector.error_logging">false</boolProp>
-            <objProp>
-              <name>saveConfig</name>
-              <value class="SampleSaveConfiguration">
-                <time>true</time>
-                <latency>true</latency>
-                <timestamp>true</timestamp>
-                <success>true</success>
-                <label>true</label>
-                <code>true</code>
-                <message>true</message>
-                <threadName>true</threadName>
-                <dataType>true</dataType>
-                <encoding>false</encoding>
-                <assertions>false</assertions>
-                <subresults>false</subresults>
-                <responseData>false</responseData>
-                <samplerData>false</samplerData>
-                <xml>false</xml>
-                <fieldNames>true</fieldNames>
-                <responseHeaders>false</responseHeaders>
-                <requestHeaders>false</requestHeaders>
-                <responseDataOnError>false</responseDataOnError>
-                <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
-                <assertionsResultsToSave>0</assertionsResultsToSave>
-                <bytes>true</bytes>
-                <threadCounts>true</threadCounts>
-              </value>
-            </objProp>
-            <stringProp name="filename">./${testPlanName}/MySQLQueryHandlerSampleResults3.csv</stringProp>
-          </ResultCollector>
-          <hashTree/>
-        </hashTree>
+        </mongodb.MongoSampler>
+        <hashTree/>
       </hashTree>
       <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer" enabled="true">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
@@ -319,7 +386,7 @@
             <threadCounts>true</threadCounts>
           </value>
         </objProp>
-        <stringProp name="filename">./${testPlanName}/MySQLRandomReadComposite-ALL.csv</stringProp>
+        <stringProp name="filename">./${testPlanName}/MongoRandomReadComposite-ALL.csv</stringProp>
       </ResultCollector>
       <hashTree/>
     </hashTree>
