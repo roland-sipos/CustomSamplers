@@ -1,9 +1,10 @@
 package accumulo;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.accumulo.core.client.BatchWriter;
 import org.apache.accumulo.core.client.Connector;
@@ -49,7 +50,7 @@ public class AccumuloQueryHandler implements QueryHandler {
 	}
 
 	@Override
-	public ByteArrayOutputStream getData(String tagName, long since)
+	public ByteBuffer getData(String tagName, long since)
 			throws CustomSamplersException {
 		// TODO Auto-generated method stub
 		return null;
@@ -78,7 +79,7 @@ public class AccumuloQueryHandler implements QueryHandler {
 	}
 
 	@Override
-	public Map<Integer, ByteArrayOutputStream> getChunks(String tagName,
+	public TreeMap<Integer, ByteBuffer> getChunks(String tagName,
 			long since) throws CustomSamplersException {
 		// TODO Auto-generated method stub
 		return null;

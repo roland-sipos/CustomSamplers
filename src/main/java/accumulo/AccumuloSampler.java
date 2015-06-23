@@ -46,13 +46,7 @@ public class AccumuloSampler extends AbstractSampler implements TestBean {
 			Long bSize = Long.getLong(getBufferSize());
 			Long tOut = Long.getLong(getTimeout());
 			Integer nThread = Integer.getInteger(getNumThreads());
-			if (getUseChunks().equals("bulk")) {
-				queryHandler = new AccumuloBulkQueryHandler(getCluster(), bSize, tOut, nThread);
-			} else if (getUseChunks().equals("bigtable")){
-				queryHandler = new AccumuloBigtableQueryHandler(getCluster(), bSize, tOut, nThread);
-			} else {
-				queryHandler = new AccumuloQueryHandler(getCluster(), bSize, tOut, nThread);
-			}
+			queryHandler = new AccumuloQueryHandler(getCluster(), bSize, tOut, nThread);
 		} catch (Exception e) {
 			log.error("Failed to create AccumuloSampler prerequisites for the " + 
 					Thread.currentThread().getName() + " sampler. Details:" + e.toString());
