@@ -1,54 +1,52 @@
 package hbase;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.NavigableMap;
+import java.util.TreeMap;
 
-import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.HTable;
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.util.Bytes;
+import org.hbase.async.GetRequest;
+import org.hbase.async.HBaseClient;
+import org.hbase.async.KeyValue;
+import org.hbase.async.PutRequest;
 
 import utils.CustomSamplersException;
 import utils.QueryHandler;
 
 public class HBaseQueryHandler implements QueryHandler {
 
-	//private static Configuration hbaseConfig;
-	private static HTable iovTable;
-	private static HTable payloadTable;
+	private static HBaseClient hbaseClient;
 
-	public HBaseQueryHandler(String cluster) throws CustomSamplersException {
+	public HBaseQueryHandler(String connectionId) throws CustomSamplersException {
 		//hbaseConfig = HBaseConfigElement.getHBaseConfiguration(cluster);
-		iovTable = HBaseConfigElement.getHTable(cluster, "IOV");
-		payloadTable = HBaseConfigElement.getHTable(cluster, "PAYLOAD");
-	}
-
-	public void tearDown() throws CustomSamplersException {
-		try {
-			iovTable.close();
-		} catch (IOException e) {
-			throw new CustomSamplersException("IOException occured while closing the IOV HTable: "
-					+ " Details: " + e.toString());
-		}
-		try {
-			payloadTable.close();
-		} catch (IOException e) {
-			throw new CustomSamplersException("IOException occured while closing the PAYLOAD HTable: "
-					+ " Details: " + e.toString());
-		}
+		//iovTable = HBaseConfigElement.getHTable(cluster, "IOV");
+		//payloadTable = HBaseConfigElement.getHTable(cluster, "PAYLOAD");
+		hbaseClient = HBaseConfigElement.getHBaseClient(connectionId);
 	}
 
 	@Override
-	public ByteArrayOutputStream getData(String tagName, long since)
+	public ByteBuffer getData(String tagName, long since)
 			throws CustomSamplersException {
-		ByteArrayOutputStream result = new ByteArrayOutputStream();
+		String iovKey = tagName.concat("_").concat(String.valueOf(since));
+		try {
+			GetRequest iovGet = new GetRequest("IOV", iovKey.getBytes());
+			ArrayList<KeyValue> hashes = hbaseClient.get(iovGet).join();
+			//if (hashes.size() > 1) {
+			//	throw new CustomSamplersException("More than one payload hash found for key: " + iovKey);
+			//}
+
+			GetRequest plGet = new GetRequest("PAYLOAD", hashes.get(0).value());
+			ArrayList<KeyValue> payloads = hbaseClient.get(plGet).join();
+			return ByteBuffer.wrap(payloads.get(0).value());
+		} catch (InterruptedException e) {
+			throw new CustomSamplersException("InterruptedException during HBase getData.", e);
+		} catch (Exception e) {
+			throw new CustomSamplersException("Exception during HBase getData.", e);
+		}
+		
+		/*ByteArrayOutputStream result = new ByteArrayOutputStream();
 
 		String compositeIOVKey = tagName.concat("_").concat(String.valueOf(since));
 		Get iovGet = new Get(compositeIOVKey.getBytes());
@@ -75,53 +73,39 @@ public class HBaseQueryHandler implements QueryHandler {
 					+ " Get:" + plGet.toString()
 					+ " Details: " + e.toString());
 		}
-		return result;
+		return result;*/
 	}
 
 	@Override
 	public void putData(HashMap<String, String> metaInfo,
 			ByteArrayOutputStream payload, ByteArrayOutputStream streamerInfo)
 					throws CustomSamplersException {
-		String compositeIOVKey = metaInfo.get("tag_name").concat("_").concat(metaInfo.get("since"));
-		String hash = metaInfo.get("payload_hash");
-		Put iovPut = new Put(compositeIOVKey.getBytes());
-		iovPut.add("HASH".getBytes(), "payload_hash".getBytes(), hash.getBytes());
 		try {
-			iovTable.put(iovPut);
-		} catch (IOException e) {
-			throw new CustomSamplersException("IOException occured while writing into IOV HTable: "
-					+ " MetaInfo: " + metaInfo.toString()
-					+ "\n Exception details: " + e.toString());
+			String compIOVKey = metaInfo.get("tag_name").concat("_").concat(metaInfo.get("since"));
+			String plHash = metaInfo.get("payload_hash");
+			PutRequest iovPut = new PutRequest("IOV".getBytes(), compIOVKey.getBytes(),
+					"HASH".getBytes(), "hash".getBytes(), plHash.getBytes());
+			hbaseClient.put(iovPut).join();
+
+			ByteBuffer buff = ByteBuffer.wrap(payload.toByteArray());
+			PutRequest plPut = new PutRequest("PAYLOAD".getBytes(), plHash.getBytes(),
+					"DATA".getBytes(), "data".getBytes(), buff.array());
+			hbaseClient.put(plPut).join();
+			buff.clear();
+		} catch (InterruptedException ie) {
+			throw new CustomSamplersException("InterruptedException occured during PAYLOAD PUT: "
+					+ ie.toString() +  " Message: " + ie.getMessage());
+		} catch (Exception e) {
+			throw new CustomSamplersException("Exception occured during PAYLOAD PUT: "
+					+ e.toString() +  " Message: " + e.getMessage());
 		}
-
-		Put payloadPut = new Put(Bytes.toBytes(hash));
-		payloadPut.add("META".getBytes(),
-				"version".getBytes(), metaInfo.get("version").getBytes());
-		payloadPut.add("META".getBytes(),
-				"creation_time".getBytes(), Bytes.toBytes(System.currentTimeMillis()));
-		payloadPut.add("META".getBytes(),
-				"cmssw_release".getBytes(), metaInfo.get("cmssw_release").getBytes());
-
-		payloadPut.add("DATA".getBytes(),
-				"payload".getBytes(), payload.toByteArray());
-		try {
-			payloadTable.put(payloadPut);
-		} catch (IOException e) {
-			throw new CustomSamplersException("IOException occured while writing into PAYLOAD HTable: "
-					+ " MetaInfo: " + metaInfo.toString()
-					+ "\n Exception details: " + e.toString());
-		}
-
-	}
-
-	private Integer fromByteArray(byte[] bytes) {
-		return ByteBuffer.wrap(bytes).getInt();
 	}
 
 	@Override
-	public Map<Integer, ByteArrayOutputStream> getChunks(String tagName,
-			long since) throws CustomSamplersException {
-		Map<Integer, ByteArrayOutputStream> result = new HashMap<Integer, ByteArrayOutputStream>();
+	public TreeMap<Integer, ByteBuffer> getChunks(String tagName, long since)
+			throws CustomSamplersException {
+		throw new CustomSamplersException("GetChunks with HBaseAsync is not yet supported...");
+		/*Map<Integer, ByteArrayOutputStream> result = new HashMap<Integer, ByteArrayOutputStream>();
 
 		String compositeIOVKey = tagName.concat("_").concat(String.valueOf(since));
 		Get iovGet = new Get(compositeIOVKey.getBytes());
@@ -150,14 +134,14 @@ public class HBaseQueryHandler implements QueryHandler {
 					+ " Details: " + e.toString());
 		}
 
-		return result;
+		return result;*/
 	}
 
 	@Override
 	public void putChunks(HashMap<String, String> metaInfo,
 			List<ByteArrayOutputStream> chunks) throws CustomSamplersException {
-
-		String plHash = metaInfo.get("payload_hash");
+		throw new CustomSamplersException("PutChunks with AsyncHbase is not yet supported...");
+		/*String plHash = metaInfo.get("payload_hash");
 		String compositeIOVKey = metaInfo.get("tag_name").concat("_").concat(metaInfo.get("since"));
 		Put iovPut = new Put(compositeIOVKey.getBytes());
 		iovPut.add("HASH".getBytes(), "payload_hash".getBytes(), plHash.getBytes());
@@ -188,7 +172,7 @@ public class HBaseQueryHandler implements QueryHandler {
 			throw new CustomSamplersException("IOException occured while writing into PAYLOAD HTable: "
 					+ " MetaInfo: " + metaInfo.toString()
 					+ "\n Exception details: " + e.toString());
-		}
+		}*/
 	}
 
 	@Override

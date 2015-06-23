@@ -9,15 +9,9 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
-import me.prettyprint.cassandra.serializers.StringSerializer;
-import me.prettyprint.cassandra.service.ThriftKsDef;
-import me.prettyprint.hector.api.Cluster;
-import me.prettyprint.hector.api.Keyspace;
-import me.prettyprint.hector.api.ddl.ColumnFamilyDefinition;
-import me.prettyprint.hector.api.ddl.KeyspaceDefinition;
-import me.prettyprint.hector.api.exceptions.HectorException;
-import me.prettyprint.hector.api.factory.HFactory;
-import me.prettyprint.hector.api.mutation.Mutator;
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.Cluster.Builder;
 
 import utils.DeployerOptions;
 import utils.EnvironmentDeployer;
@@ -27,18 +21,32 @@ public class CassandraDeployer {
 	private static class CassandraEnvironmentDeployer extends EnvironmentDeployer {
 
 		private Cluster cassCluster;
+		private Session cassSession;
+
+		private boolean chunkSupport;
+		private String compactionStrategy;
 
 		public CassandraEnvironmentDeployer(String host, String port,
-				String databaseName, String username, String password) {
+				String databaseName, String username, String password, String chunk, String compact) {
 			super(host, port, databaseName, username, password);
+			chunkSupport = Boolean.valueOf(chunk);
+			compactionStrategy = compact;
 		}
 
 		@Override
 		protected void initialize() {
 			System.out.println(" initialize() -> Initializing connection with Cassandra cluster!");
-			cassCluster = HFactory.getOrCreateCluster(super.getDatabase(), super.getHost());
-			//cassCluster = Cluster.builder().addContactPoint(super.getHost()).build();
-			//cassSession = cassCluster.connect();
+			Builder clusterBuilder = Cluster.builder();
+			if (getHost().contains(",")) {
+				String hosts[] = getHost().split(",");
+				for (int i = 0; i < hosts.length; ++i) {
+					clusterBuilder.addContactPoint(hosts[i]);
+				}
+			} else {
+				clusterBuilder.addContactPoint(getHost());
+			}
+			cassCluster = clusterBuilder.withPort(Integer.valueOf(getPort())).build();
+			cassSession = cassCluster.connect();
 			System.out.println(" initialize() -> Connection established...\n");
 		}
 
@@ -46,6 +54,8 @@ public class CassandraDeployer {
 		protected void tearDown() {
 			try {
 				if (cassCluster != null) {
+					cassSession.close();
+					cassCluster.close();
 				}
 				System.out.println(" tearDown() -> Connection and Session closed.\n");
 			} catch (Exception e) {
@@ -57,54 +67,44 @@ public class CassandraDeployer {
 		protected void setupEnvironment() {
 			System.out.println("-------- Cassandra environment setup ------------");
 			System.out.println(" setupEnvironment() -> Setting up the environment...");
-			cassCluster.addKeyspace(new ThriftKsDef("testKS"));
-			System.out.println(" setupEnvironment() -> testKS Keyspace created...");
-			ColumnFamilyDefinition tagCfDef = HFactory
-					.createColumnFamilyDefinition("testKS", "TAG");
-			cassCluster.addColumnFamily(tagCfDef);
-			System.out.println(" setupEnvironment() -> TAG ColumnFamily created...");
-			ColumnFamilyDefinition iovCfDef = HFactory
-					.createColumnFamilyDefinition("testKS", "IOV");
-			cassCluster.addColumnFamily(iovCfDef);
-			System.out.println(" setupEnvironment() -> PAYLOAD ColumnFamily created...");
-			ColumnFamilyDefinition payloadCfDef = HFactory
-					.createColumnFamilyDefinition("testKS", "PAYLOAD");
-			cassCluster.addColumnFamily(payloadCfDef);
-			System.out.println(" setupEnvironment() -> IOV ColumnFamily created...");
+			
+			cassSession.execute("CREATE KEYSPACE conddb WITH replication "
+					+ "= {'class':'SimpleStrategy', 'replication_factor':1};");
+			System.out.println(" setupEnvironment() -> conddb Keyspace created...");
 
-			try {
-				KeyspaceDefinition ksDef = cassCluster.describeKeyspace("testKS");
-				Keyspace testKS = HFactory.createKeyspace(ksDef.getName(), cassCluster);
-
-				String tagName = "TEST_TAG";
-
-				Mutator<String> strMutator = HFactory.createMutator(testKS, StringSerializer.get());
-				//HFactory.createCol
-				strMutator.addInsertion(tagName, "TAG", HFactory.createStringColumn("REVISION", "1"));
-				strMutator.addInsertion(tagName, "TAG", HFactory.createStringColumn("REVISION_TIME",
-								String.valueOf(System.currentTimeMillis())));
-				strMutator.addInsertion(tagName, "TAG", HFactory.createStringColumn(
-						"COMMENT", "This is the first and only tag for testing."));
-				strMutator.addInsertion(tagName, "TAG",
-						HFactory.createStringColumn("TIME_TYPE", "1"));
-				strMutator.addInsertion(tagName, "TAG", 
-						HFactory.createStringColumn("OBJECT_TYPE", "RANDOM"));
-				strMutator.addInsertion(tagName, "TAG", 
-						HFactory.createStringColumn("LAST_VALIDATED_TIME", "111"));
-				strMutator.addInsertion(tagName, "TAG", 
-						HFactory.createStringColumn("END_OF_VALIDITY", "222"));
-				strMutator.addInsertion(tagName, "TAG",
-						HFactory.createStringColumn("LAST_SINCE", "333"));
-				strMutator.addInsertion(tagName, "TAG",
-						HFactory.createStringColumn("LAST_SINCE_PID", "444"));
-				strMutator.addInsertion(tagName, "TAG",
-						HFactory.createStringColumn("CREATION_TIME",
-								String.valueOf(System.currentTimeMillis())));
-				strMutator.execute();
-			} catch (HectorException he) {
-				System.out.println("Hector exception occured during initial TAG write:" + he.toString());
+			String iovTableCqlsh = "CREATE TABLE conddb.iov ("
+					+ "tag text, "
+					+ "since bigint, ";
+			if (chunkSupport) {
+				iovTableCqlsh += "pl_hash text, hash list<text>, ";
+			} else {
+				iovTableCqlsh += "hash text, ";
 			}
-			System.out.println(" setupEnvironment() -> Initial TAG added...");
+			iovTableCqlsh += "PRIMARY KEY (tag, since) );";
+
+			System.out.println(" setupEnvironment() -> Creating IOV ColumnFamily with: " + iovTableCqlsh);
+			cassSession.execute(iovTableCqlsh);	
+			System.out.println(" setupEnvironment() -> iov ColumnFamily created...");
+
+			String payloadTableCqlsh = "CREATE TABLE conddb.payload (";
+			if (chunkSupport) {
+				payloadTableCqlsh += "pl_hash text, hash text, data blob, ";
+				payloadTableCqlsh += "PRIMARY KEY ((pl_hash), hash) );";
+			} else {
+				payloadTableCqlsh += "hash text, data blob, ";
+				payloadTableCqlsh += "PRIMARY KEY (hash) ) ";
+			}
+			payloadTableCqlsh += " WITH caching='KEYS_ONLY' AND";
+			if (compactionStrategy.equals("LEVELED")) {
+				payloadTableCqlsh += " compaction={'class': 'LeveledCompactionStrategy'};";
+			} else if (compactionStrategy.equals("SIZE-TIERED")) {
+				payloadTableCqlsh += " compaction={'class': 'SizeTieredCompactionStrategy'};";
+			}
+
+			System.out.println(" setupEnvironment() -> Creating Payload ColumnFamily with: " 
+					+ payloadTableCqlsh);
+			cassSession.execute(payloadTableCqlsh);
+			System.out.println(" setupEnvironment() -> payload ColumnFamily created...");
 			System.out.println(" setupEnvironment() -> The environment has been deployed.\n");
 		}
 
@@ -112,49 +112,18 @@ public class CassandraDeployer {
 		protected void destroyEnvironment() {
 			System.out.println("------- Cassandra environment teardown -----------");
 			System.out.println(" destroyEnvironment() -> Destroying environment...");
-			try {
-				cassCluster.truncate("testKS", "TAG");
-			} catch (Exception e) {
-				System.out.println(" destroyEnvironment() -> Failed to truncate TAG CF..."
-						+ e.getMessage());
-			}
-			String response = cassCluster.dropColumnFamily("testKS", "TAG");
-			if (response == null) {
-				System.out.println(" destroyEnvironment() -> Failed to drop TAG ColumnFamily...");
-			}
-
-			try {
-				cassCluster.truncate("testKS", "IOV");
-			} catch (Exception e) {
-				System.out.println(" destroyEnvironment() -> Failed to truncate IOV CF..."
-						+ e.getMessage());
-			}
-			response = cassCluster.dropColumnFamily("testKS", "IOV");
-			if (response == null) {
-				System.out.println(" destroyEnvironment() -> Failed to drop IOV ColumnFamily...");
-			}
-
-			try {
-				cassCluster.truncate("testKS", "PAYLOAD");
-			} catch (Exception e) {
-				System.out.println(" destroyEnvironment() -> Failed to truncate PAYLOAD CF..."
-						+ e.getMessage());
-			}
-			response = cassCluster.dropColumnFamily("testKS", "PAYLOAD");
-			if (response == null) {
-				System.out.println(" destroyEnvironment() -> Failed to drop Payload ColumnFamily...");
-			}
-
-			response = cassCluster.dropKeyspace("testKS");
-			if (response == null) {
-				System.out.println(" destroyEnvironment() -> Failed to drop TestKS Keyspace...");
-			}
+			cassSession.execute("DROP TABLE conddb.payload;");
+			System.out.println(" destroyEnvironment() -> payload ColumnFamily dropped...");
+			cassSession.execute("DROP TABLE conddb.iov;");
+			System.out.println(" destroyEnvironment() -> iov ColumnFamily dropped...");
+			cassSession.execute("DROP KEYSPACE conddb;");
+			System.out.println(" destroyEnvironment() -> conddb Keyspace dropped...");
 			System.out.println(" destroyEnvironment() -> The environment has been destroyed.\n");
 		}
 	}
 
 	/** The name of this class for the command line parser. */
-	private static final String CLASS_CMD = "CassandraDeployer [OPTIONS]";
+	private static final String CLASS_CMD = "CassandraThriftDeployer [OPTIONS]";
 	/** The help header for the command line parser. */
 	private static final String CLP_HEADER = "This class helps you to deploy test environments on "
 			+ "Cassandra clusters. For this, one needs to pass connection details of the cluster.\n"
@@ -167,7 +136,9 @@ public class CassandraDeployer {
 		/** Get a basic apache.cli Options from DeployerOptions. */
 		Options depOps = new DeployerOptions().getDeployerOptions();
 		// HBase specific options are added manually here:
-		depOps.addOption("p", "port", true, "port of the host (Cassandra default: 9160)");
+		depOps.addOption("p", "port", true, "port of the host (Native transport port: 9042)");
+		depOps.addOption("c", "chunks", true, "deploy with chunk schema (true or false)");
+		depOps.addOption("o", "compaction", true, "compaction strategy (LEVELED or SIZE-TIERED");
 
 		/** Help page creation. */
 		HelpFormatter formatter = new HelpFormatter();
@@ -183,6 +154,22 @@ public class CassandraDeployer {
 			CommandLine cl = parser.parse(depOps, args);
 			HashMap<String, String> optMap = DeployerOptions.mapCommandLine(cl);
 
+			// Cassandra specific options are parsed manually here:
+			if (cl.hasOption('c')) {
+				optMap.put("CHUNK", cl.getOptionValue('c'));
+			} else if (cl.hasOption("chunks")) {
+				optMap.put("CHUNK", cl.getOptionValue("chunk"));
+			} else {
+				optMap.put("HELP", "Chunk argument is missing!");
+			}
+			if (cl.hasOption('o')) {
+				optMap.put("COMPACT", cl.getOptionValue('o'));
+			} else if (cl.hasOption("compaction")) {
+				optMap.put("COMPACT", cl.getOptionValue("compaction"));
+			} else {
+				optMap.put("HELP", "Compaction argument is missing!");
+			}
+
 			if (optMap.containsKey("HELP")) {
 				System.out.println(optMap.get("HELP") + "\n");
 				formatter.printHelp(CLASS_CMD, CLP_HEADER, depOps, utils.Constants.SUPPORT_FOOTER);
@@ -190,7 +177,8 @@ public class CassandraDeployer {
 				/** Create an environment deployer with the parsed arguments. */
 				CassandraEnvironmentDeployer deployer = new CassandraEnvironmentDeployer(
 						optMap.get("HOST"), optMap.get("PORT"), optMap.get("DB"),
-						optMap.get("USER"), optMap.get("PASS"));
+						optMap.get("USER"), optMap.get("PASS"), optMap.get("CHUNK"),
+						optMap.get("COMPACT"));
 				if (optMap.get("MODE").equals("deploy")) {
 					deployer.deployTestEnvironment();
 				} else if (optMap.get("MODE").equals("teardown")) {

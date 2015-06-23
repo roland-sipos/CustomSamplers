@@ -1,14 +1,11 @@
 package hbase;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.zookeeper.ZKConfig;
 import org.apache.hadoop.hbase.HBaseConfiguration;
-import org.apache.hadoop.hbase.client.HTable;
 
 import org.apache.jmeter.config.ConfigElement;
 import org.apache.jmeter.testbeans.TestBean;
@@ -18,6 +15,9 @@ import org.apache.jmeter.threads.JMeterContextService;
 import org.apache.jmeter.threads.JMeterVariables;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
+import org.hbase.async.HBaseClient;
+
+import com.stumbleupon.async.Callback;
 
 import utils.CustomSamplersException;
 
@@ -39,23 +39,23 @@ implements ConfigElement, TestStateListener, TestBean {
 	public final static String MAX_KV_SIZE = "HBaseConfigElement.maxKvSize";
 
 
-	public static Configuration getHBaseConfiguration(String clusterId)
+	public static HBaseClient getHBaseClient(String connectionId)
 			throws CustomSamplersException {
-		Object hbaseConfig = JMeterContextService.getContext().getVariables().getObject(clusterId);
-		if (hbaseConfig == null) {
-			throw new CustomSamplersException("HBase Configuration object is null!");
+		Object hbaseClient = JMeterContextService.getContext().getVariables().getObject(connectionId);
+		if (hbaseClient == null) {
+			throw new CustomSamplersException("HBaseClient object is null!");
 		}
 		else {
-			if (hbaseConfig instanceof Configuration) {
-				return (Configuration)hbaseConfig;
+			if (hbaseClient instanceof HBaseClient) {
+				return (HBaseClient)hbaseClient;
 			}
 			else {
-				throw new CustomSamplersException("Casting the object to Configuration failed!");
+				throw new CustomSamplersException("Casting the object to HBaseClient failed!");
 			}
 		}
 	}
 
-	@SuppressWarnings("unchecked")
+	/*@SuppressWarnings("unchecked")
 	public static HTable getHTable(String clusterId, String tableName)
 			throws CustomSamplersException {
 		Object hTables = JMeterContextService.getContext().getVariables()
@@ -77,6 +77,39 @@ implements ConfigElement, TestStateListener, TestBean {
 		} else {
 			throw new CustomSamplersException("HTable not found in " + clusterId + "-HTables object!");
 		}
+	}*/
+
+	private boolean ensureTableExist(final HBaseClient client, final String table) {
+		final CountDownLatch plLatch = new CountDownLatch(1);
+		final AtomicBoolean plFail= new AtomicBoolean(false);
+		client.ensureTableExists(table).addCallbacks(
+				new Callback<Object, Object>() {
+					@Override
+					public Object call(Object arg) throws Exception {
+						plLatch.countDown();
+						return null;
+					}
+				},
+				new Callback<Object, Object>() {
+					@Override
+					public Object call(Object arg) throws Exception {
+						plFail.set(true);
+						plLatch.countDown();
+						return null;
+					}
+				}
+		);
+
+		try {
+			plLatch.await();
+		} catch (InterruptedException e) {
+			System.out.println("Exception for waiting for table lookup: " + e.toString());
+		}
+		if (plFail.get()) {
+			System.out.println("Could not find PAYLOAD table.");
+			return false;
+		}
+		return true;
 	}
 
 	@Override
@@ -91,7 +124,15 @@ implements ConfigElement, TestStateListener, TestBean {
 		hbaseConfig.set("hbase.master", getMasterHost().concat(":").concat(getMasterPort()));
 		hbaseConfig.set("hbase.client.keyvalue.maxsize", getMaxKvSize());
 
-		String tableNames[] = getTableList().replaceAll("^[,\\s]+", "").split("[,\\s]+");
+		HBaseClient hbaseClient = new HBaseClient(ZKConfig.getZKQuorumServersString(hbaseConfig));
+		final boolean plExists = ensureTableExist(hbaseClient, "PAYLOAD");
+		final boolean iovExists = ensureTableExist(hbaseClient, "IOV");
+		
+		if (!plExists || !iovExists) {
+			log.error("Missing tables in HBase! Payload:" + plExists + " IOV:" + iovExists);
+		}
+		
+		/*String tableNames[] = getTableList().replaceAll("^[,\\s]+", "").split("[,\\s]+");
 		Map<String, HTable> hTables = new HashMap<String, HTable>();
 		for (int i = 0; i < tableNames.length; ++i) {
 			try {
@@ -100,15 +141,33 @@ implements ConfigElement, TestStateListener, TestBean {
 			} catch (IOException e) {
 				log.error("IOException occured while fetching table " + tableNames[i] + " from HBase!");
 			}
-		}
+		}*/
 
 		if (log.isDebugEnabled()) {
 			log.debug("Hadoop Configuration: " + hbaseConfig.toString());
-			log.debug("HTables:" + hTables.toString());
+			log.debug("HBaseClient: " + hbaseClient.toString());
+			//log.debug("HTables:" + hTables.toString());
 		}
 
 		JMeterVariables jMeterVars = getThreadContext().getVariables();
-		if (jMeterVars.getObject(getConnectionId()) != null 
+		if (jMeterVars.getObject(getConnectionId()) != null) {
+			if (log.isWarnEnabled()) {
+				log.warn(getConnectionId() + " objects are already defined! Will not replace!");
+			}
+		}
+		else {
+			if (log.isDebugEnabled()) {
+				log.debug(getConnectionId() + " objects are being defined...");
+			}
+		
+			// Put the HBase Configuration element into the ThreadContext.
+			jMeterVars.putObject(getConnectionId(), hbaseClient);
+			// Put the HBase HTable elements into the ThreadContext.
+			//jMeterVars.putObject(getConnectionId().concat("-HTables"), hTables);
+		}
+		
+		
+		/*if (jMeterVars.getObject(getConnectionId()) != null 
 				|| jMeterVars.getObject(getConnectionId().concat("-HTables")) != null ) {
 			if (log.isWarnEnabled()) {
 				log.warn(getConnectionId() + " objects are already defined!");
@@ -123,7 +182,7 @@ implements ConfigElement, TestStateListener, TestBean {
 			// Put the HBase HTable elements into the ThreadContext.
 			jMeterVars.putObject(getConnectionId().concat("-HTables"), hTables);
 
-		}
+		}*/
 
 	}
 
@@ -132,38 +191,19 @@ implements ConfigElement, TestStateListener, TestBean {
 		testStarted();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void testEnded() {
 		if (log.isDebugEnabled()) {
 			log.debug(getTitle() + " test ended.");
 		}
+		try {
+			HBaseClient client = getHBaseClient(getConnectionId());
+			client.shutdown();
+		} catch (CustomSamplersException e) {
+			log.error("Could not fetch and close HBaseClient with id: " + getConnectionId());
+		}
+		
 		getThreadContext().getVariables().putObject(getConnectionId(), null);
-
-		Object hTables = JMeterContextService.getContext().getVariables()
-				.getObject(getConnectionId().concat("-HTables"));
-		HashMap<String, HTable> hTableMap = null;
-		if (hTables == null) {
-			log.error("HBase HTables object is null!");
-		}
-		else {
-			if (hTables instanceof HashMap<?, ?>) {
-				hTableMap = (HashMap<String, HTable>)hTables;
-				Iterator<Entry<String, HTable>> it = hTableMap.entrySet().iterator();
-				while (it.hasNext()) {
-					Map.Entry<String, HTable> tableEntry = (Map.Entry<String, HTable>)it.next();
-					HTable t = (HTable)tableEntry.getValue();
-					try {
-						t.close();
-					} catch (IOException e) {
-						log.error("IOException occured while closing HTable " + tableEntry.getKey());
-					}
-				}
-			}
-			else {
-				log.error("Casting the object to HashMap<String, HTable> failed!");
-			}
-		}
 	}
 
 	@Override

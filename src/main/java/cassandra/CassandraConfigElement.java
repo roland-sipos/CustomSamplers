@@ -1,9 +1,9 @@
 package cassandra;
 
-import me.prettyprint.hector.api.Cluster;
+/*import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.factory.HFactory;
 import me.prettyprint.cassandra.connection.LeastActiveBalancingPolicy;
-import me.prettyprint.cassandra.service.CassandraHostConfigurator;
+import me.prettyprint.cassandra.service.CassandraHostConfigurator;*/
 
 import org.apache.jmeter.config.ConfigElement;
 import org.apache.jmeter.testbeans.TestBean;
@@ -12,6 +12,12 @@ import org.apache.jmeter.testelement.TestStateListener;
 import org.apache.jmeter.threads.JMeterContextService;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
+
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.Cluster.Builder;
+import com.datastax.driver.core.Metadata;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.policies.RoundRobinPolicy;
 
 import utils.CustomSamplersException;
 
@@ -51,14 +57,46 @@ implements ConfigElement, TestStateListener, TestBean {
 		}
 	}
 
+	public static Session getCassandraSession(String connectionId) throws CustomSamplersException {
+		Object session = JMeterContextService.getContext()
+				.getVariables().getObject(connectionId.concat("-session"));
+		if (session == null) {
+			throw new CustomSamplersException("Cassandra Session object is null!");
+		}
+		else {
+			if (session instanceof Session) {
+				return (Session)session;
+			}
+			else {
+				throw new CustomSamplersException("Casting the object to Session failed!");
+			}
+		}
+	}
+
 	@Override
 	public void testStarted() {
 		if (log.isDebugEnabled()) {
 			log.debug(getTitle() + " test started...");
 		}
-		String fullHost = new String(getHost() + ":" + getPort());
 
-		CassandraHostConfigurator conf = new CassandraHostConfigurator(fullHost);
+		Builder clusterBuilder = Cluster.builder();
+		if (getHost().contains(",")) {
+			String hosts[] = getHost().split(",");
+			for (int i = 0; i < hosts.length; ++i) {
+				clusterBuilder.addContactPoint(hosts[i]);
+			}
+			// ADDING TOKEN AWARE LOAD BALANCING POLICY HERE!
+			clusterBuilder.withLoadBalancingPolicy(new RoundRobinPolicy());
+					//new TokenAwarePolicy(Policies.defaultLoadBalancingPolicy()));
+		} else {
+			clusterBuilder.addContactPoint(getHost());
+		}
+
+		Cluster cluster = clusterBuilder.withPort(Integer.valueOf(getPort()))
+										//.withLoadBalancingPolicy(TokenAwarePolicy)
+										.build();
+
+		/*CassandraHostConfigurator conf = new CassandraHostConfigurator(fullHost);
 		conf.setCassandraThriftSocketTimeout(Integer.parseInt(getThriftSocketTimeout()));
 		conf.setRetryDownedHostsDelayInSeconds(Integer.parseInt(getRetryDownedHostDelaySec()));
 		conf.setRetryDownedHostsQueueSize(Integer.parseInt(getRetryDownedHostQueueSize()));
@@ -67,10 +105,11 @@ implements ConfigElement, TestStateListener, TestBean {
 
 		conf.setLoadBalancingPolicy(new LeastActiveBalancingPolicy());
 		conf.setAutoDiscoverHosts(Boolean.parseBoolean(getSetAutoDiscoverHosts()));
-		conf.setHostTimeoutCounter(Integer.parseInt(getSetHostTimeoutCounter()));
+		conf.setHostTimeoutCounter(Integer.parseInt(getSetHostTimeoutCounter()));*/
 
 		if (log.isDebugEnabled()) {
-			log.debug("Cassandra host config: " + conf.toString());
+			Metadata metadata = cluster.getMetadata();
+			log.debug("Connected to Cassandra cluster: " + metadata.getClusterName());
 		}
 
 		if (getThreadContext().getVariables().getObject(getConnectionId()) != null) {
@@ -84,8 +123,10 @@ implements ConfigElement, TestStateListener, TestBean {
 			}
 			//Cluster cluster = HFactory.getOrCreateCluster(getCluster(), fullHost);
 			// This will be the real use-case, when the host itself is configured:
-			Cluster cluster = HFactory.getOrCreateCluster(getCluster(), conf);
+			//Cluster cluster = HFactory.getOrCreateCluster(getCluster(), conf);
+			Session session = cluster.connect();
 			getThreadContext().getVariables().putObject(getConnectionId(), cluster);
+			getThreadContext().getVariables().putObject(getConnectionId().concat("-session"), session);
 		}
 
 	}
@@ -100,7 +141,14 @@ implements ConfigElement, TestStateListener, TestBean {
 		if (log.isDebugEnabled()) {
 			log.debug(getTitle() + " test ended.");
 		}
-		getThreadContext().getVariables().putObject(getConnectionId(), null);
+		try {
+			Session session = getCassandraSession(getConnectionId());
+			session.close();
+			Cluster cluster = getCassandraCluster(getConnectionId());
+			cluster.close();
+		} catch (CustomSamplersException e) {
+			log.error("Closing Cluster and Session failed... " + e.toString());
+		}
 	}
 
 	@Override

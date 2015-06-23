@@ -30,7 +30,7 @@ public class CassandraConfigElementBeanInfo extends BeanInfoSupport {
 		p.setValue(DEFAULT, "cassConn");
 		p = property("host");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(DEFAULT, "188.184.23.11");
+		p.setValue(DEFAULT, "cloudssd-cassandra.cern.ch");
 		p = property("port");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "9160");

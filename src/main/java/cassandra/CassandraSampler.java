@@ -16,6 +16,7 @@ import assignment.Assignment;
 import assignment.AssignmentConfigElement;
 
 import utils.CustomSamplerUtils;
+import utils.CustomSamplersException;
 import utils.QueryHandler;
 
 /**
@@ -55,7 +56,8 @@ public class CassandraSampler extends AbstractSampler implements TestBean {
 		try {
 			assignment = AssignmentConfigElement.getAssignments(getAssignmentInfo());
 			if (getUseChunks().equals("bulk")) {
-				queryHandler = new CassandraBulkQueryHandler(getConnectionId());
+				return CustomSamplerUtils.getExceptionSampleResult(
+						new CustomSamplersException("BULK option is deprecated..."));
 			} else {
 				queryHandler = new CassandraQueryHandler(getConnectionId());
 			}

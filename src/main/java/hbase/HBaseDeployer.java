@@ -11,6 +11,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
+
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.MasterNotRunningException;
@@ -40,10 +41,12 @@ public class HBaseDeployer {
 		@Override
 		protected void initialize() {
 			System.out.println(" initialize() -> Initializing connection with HBase cluster!");
+			
 			hbaseConf = new HBaseConfiguration().create();
 			hbaseConf.set("hbase.zookeeper.quorum", super.getHost());
 			hbaseConf.set("hbase.zookeeper.property.clientPort", super.getPort());
 			hbaseConf.set("hbase.master", super.getHost().concat(":60000"));
+
 			try {
 				HBaseAdmin.checkHBaseAvailable(hbaseConf);
 				hbaseAdmin = new HBaseAdmin(hbaseConf);

@@ -45,11 +45,12 @@ public class HBaseSampler extends AbstractSampler implements TestBean {
 		Assignment assignment = null;
 		try {
 			assignment = AssignmentConfigElement.getAssignments(getAssignmentInfo());
-			if (getUseChunks().equals("bulk")) {
-				queryHandler = new HBaseBulkQueryHandler(getConnectionId());
-			} else {
-				queryHandler = new HBaseQueryHandler(getConnectionId());
-			}
+			/*if (getUseChunks().equals("bulk")) {
+				return CustomSamplerUtils.getExceptionSampleResult(
+						new CustomSamplersException("BULK option is deprecated..."));
+			} else {*/
+			queryHandler = new HBaseQueryHandler(getConnectionId());
+			//}
 		} catch (Exception e) {
 			log.error("Failed to create HBaseSampler prerequisites for the " + 
 					Thread.currentThread().getName() + " sampler. Details:" + e.toString());
