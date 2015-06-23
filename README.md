@@ -1,35 +1,25 @@
 CustomSamplers
 ==============
 
-The CustomSamplers project is a fairly big extension to the JMeter tool that 
-contains custom configuration and sampler elements for different relational and
-non-relation databases, in order to measure performance characteristics of binary
-data handling for given workloads in the CMS Conditions environment.
+The CustomSamplers project is an extension for JMeter that contains custom configuration and sampler elements for different relational and NoSQL databases, in order to measure performance characteristics of binary data handling simulated workloads that are similar to the CERN CMS Conditions access.
 
-Currently the following databases are supported by configuration and sampler elements:
+Currently the following databases are supported by configuration and sampler elements (obsolete indicates missing/incorrect parts):
 NoSQL:
 ------
+ + Accumulo (obsolete)
  + Cassandra
- + RIAK
- + MongoDB
  + CouchDB
- + Voldemort
- + Accumulo
  + HBase
- + Hypertable
-
-NewSQL:
--------
- + MariaDB
- + Drizzle
- - TokuDB (Pending)
+ + Hypertable (obsolete)
+ + MongoDB
+ + RIAK
+ + Voldemort (obsolete)
 
 Relational:
 -----------
  + PostgreSQL
  + MySQL
- + Oracle 11g
-
+ + Oracle
 
 Known issues:
 -------------
@@ -46,12 +36,4 @@ With a basic installation these are located here:
 You need to add these JARs to your project's Java build path (or to your Java classpath) in order to make the 
 HypertableDeployer executable from your IDE (or from command line). For the Maven build, you also need to 
 manually add these artifacts to you local Maven repository. (See: 1.)
-
-TODO:
------
- - RIAK, Cassandra: Make Quorum CRUD operations optional.
- - Base64 Reader in the BinaryFileInfo. (still needed?)
- - ConfigElements should remove persistency objects on their own, when the test ended.
- - Switchable storage engines where it's available: RIAK, MySQL
- - Add/Correct TestPlans for databases.
 
