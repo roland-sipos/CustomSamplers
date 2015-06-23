@@ -1,9 +1,10 @@
 package utils;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * The QueryHandler interface represents the required communication protocol
@@ -21,16 +22,16 @@ public interface QueryHandler {
 	public void closeResources() throws CustomSamplersException;
 
 	/**
-	 * The implementation of this method should return a ByteArrayOutputStream 
+	 * The implementation of this method should return a ByteBuffer 
 	 * object that contains the data, read from a given database that the
 	 * implementation handles.
 	 * <p>
 	 * @param  tagName  the requested PAYLOAD's TAG_NAME
 	 * @param  since  the requested PAYLOAD's SINCE
-	 * @return  a ByteArrayOutputStream object that holds the BLOB of the PAYLOAD.
+	 * @return  a ByteBuffer object that holds the BLOB of the PAYLOAD.
 	 * @throws  CustomSamplersException  if the reading of the PAYLOAD failed
 	 */
-	public ByteArrayOutputStream getData(String tagName, long since)
+	public ByteBuffer getData(String tagName, long since)
 			throws CustomSamplersException;
 
 	/**
@@ -57,7 +58,7 @@ public interface QueryHandler {
 	 * @return  a map that holds chunk ID - chunk value pairs
 	 * @throws  CustomSamplersException  if the reading of the PAYLOAD's chunks failed
 	 */
-	public Map<Integer, ByteArrayOutputStream> getChunks(String tagName, long since)
+	public TreeMap<Integer, ByteBuffer> getChunks(String tagName, long since)
 			throws CustomSamplersException;
 
 	/**

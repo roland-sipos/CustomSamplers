@@ -2,12 +2,14 @@ package utils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.jmeter.samplers.SampleResult;
 
@@ -143,6 +145,21 @@ public class CustomSamplerUtils {
 		return resOs;
 	}
 
+	private static ByteBuffer mergeByteBuffers(TreeMap<Integer, ByteBuffer> map)
+					throws CustomSamplersException {
+		CustomByteArrayOutputStream resOs = new CustomByteArrayOutputStream();
+		try {
+			Iterator<Map.Entry<Integer, ByteBuffer> > mIt = map.entrySet().iterator();
+			while (mIt.hasNext()) {
+				Map.Entry<Integer, ByteBuffer> entry = mIt.next();
+				resOs.write(entry.getValue().array());
+			}
+		} catch (IOException e) {
+			throw new CustomSamplersException("IOException occured during array merge: " + e.toString());
+		}
+		return ByteBuffer.wrap(resOs.getByteBuffer());
+	}
+
 	/**
 	 * The function is making a fast check of the equality between the binary content that
 	 * is read from the database, and that is read from the original file. This function is called
@@ -159,6 +176,14 @@ public class CustomSamplerUtils {
 		ByteArrayOutputStream payload = assignment.getReader().read(binaryFullPath);
 				//Readers.BinaryReader.read(binaryFullPath);
 		return Arrays.equals(result.toByteArray(), payload.toByteArray());
+	}
+
+	private static boolean checkMatch(ByteBuffer result, Assignment assignment,
+			HashMap<String, String> meta) {
+		String binaryFullPath = assignment.getBinaryFileInfo().getFilePathList().get(meta.get("id"));
+		ByteArrayOutputStream payload = assignment.getReader().read(binaryFullPath);
+				//Readers.BinaryReader.read(binaryFullPath);
+		return Arrays.equals(result.array(), payload.toByteArray());
 	}
 
 	/**
@@ -180,16 +205,17 @@ public class CustomSamplerUtils {
 		HashMap<String, String> meta = assignment.getMeta(getThreadID(Thread.currentThread().getName()));
 		res.setRequestHeaders(meta.get("id"));
 		try {
-			ByteArrayOutputStream result = null;
+			ByteBuffer result = null;
 			Boolean chunkMode = options.get("useChunks");
 			String tagName = meta.get("tag_name");
 			Long since = Long.valueOf(meta.get("since"));
 			if (chunkMode) {
-				Map<Integer, ByteArrayOutputStream> data = new HashMap<Integer, ByteArrayOutputStream>();
+				TreeMap<Integer, ByteBuffer> data = new TreeMap<Integer, ByteBuffer>();
 				res.sampleStart();
 				data = queryHandler.getChunks(tagName, since);
 				res.samplePause();
-				result = mergeToByteArrayOStream(data);
+				//result = mergeToByteArrayOStream(data);
+				result = mergeByteBuffers(data);
 				/*for (Entry<String, HashMap<String, String>> entry : metaMap.entrySet())
 				{
 					HashMap<String, String> meta = entry.getValue();
@@ -211,7 +237,7 @@ public class CustomSamplerUtils {
 			} else {
 				/** We will not save the huge BLOBs as response data, however we'll store their size. */
 				//res.setResponseData(result.toByteArray());
-				res.setBytes(result.size());
+				res.setBytes(result.array().length);
 				if (options.get("validateOperation")) {
 					if (!checkMatch(result, assignment, meta)) {
 						finalizeResponse(res, false, "600", "Payload content for: " + meta.get("id")

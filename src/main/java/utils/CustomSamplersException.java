@@ -35,6 +35,7 @@ public class CustomSamplersException extends Exception {
 	 * @param  exStr  an error message
 	 * */
 	public CustomSamplersException(String exStr) {
+		super();
 		System.err.println(exStr);
 	}
 
