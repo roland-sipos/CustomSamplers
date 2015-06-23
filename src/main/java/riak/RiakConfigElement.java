@@ -1,5 +1,9 @@
 package riak;
 
+import java.net.UnknownHostException;
+import java.util.List;
+import java.util.LinkedList;
+
 import org.apache.jmeter.config.ConfigElement;
 import org.apache.jmeter.testbeans.TestBean;
 import org.apache.jmeter.testelement.AbstractTestElement;
@@ -8,15 +12,22 @@ import org.apache.jmeter.threads.JMeterContextService;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
+import com.basho.riak.client.api.RiakClient;
+import com.basho.riak.client.core.RiakCluster;
+import com.basho.riak.client.core.RiakNode;
+
 import utils.CustomSamplersException;
 
-import com.basho.riak.client.IRiakClient;
+/*import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.RiakException;
 import com.basho.riak.client.RiakFactory;
+import com.basho.riak.client.RiakRetryFailedException;
+import com.basho.riak.client.bucket.Bucket;
+import com.basho.riak.client.query.NodeStats;
 import com.basho.riak.client.raw.http.HTTPClientConfig;
 import com.basho.riak.client.raw.http.HTTPClusterConfig;
 import com.basho.riak.client.raw.pbc.PBClientConfig;
-import com.basho.riak.client.raw.pbc.PBClusterConfig;
+import com.basho.riak.client.raw.pbc.PBClusterConfig;*/
 
 
 public class RiakConfigElement extends AbstractTestElement
@@ -36,17 +47,20 @@ implements ConfigElement, TestStateListener, TestBean {
 	public final static String MAX_CONNECTION = "RiakConfigElement.maxConnection";
 	public final static String TIMEOUT = "RiakConfigElement.timeout";
 
-	public static String protocolName;
+	private static String protocol;
+
 	
 	@Override
 	public void testEnded() {
-		IRiakClient riak = null;
+		RiakClient riak = null;
 		try {
 			riak = getRiakClient(getConnectionId());
 		} catch (CustomSamplersException e) {
 			log.error("Unable to get the RiakClient for Shutdown in testEnd()!");
 		} finally {
+			System.out.println(" Attempt on shutting down RiakClient ... ");
 			riak.shutdown();
+			System.out.println(" ... Success!");
 		}
 	}
 
@@ -55,20 +69,35 @@ implements ConfigElement, TestStateListener, TestBean {
 		testEnded();
 	}
 
-	public static IRiakClient getRiakClient(String connectionId) throws CustomSamplersException {
+	public static RiakClient getRiakClient(String connectionId) throws CustomSamplersException {
 		Object riak = JMeterContextService.getContext().getVariables().getObject(connectionId);
 		if (riak == null) {
 			throw new CustomSamplersException("RiakClient object is null!");
 		}
 		else {
-			if (riak instanceof IRiakClient) {
-				return (IRiakClient)riak;
+			if (riak instanceof RiakClient) {
+				return (RiakClient)riak;
 			}
 			else {
-				throw new CustomSamplersException("Casting the object to IRiakClient failed!");
+				throw new CustomSamplersException("Casting the object to RiakClient failed!");
 			}
 		}
 	}
+
+	/*public static Bucket getBucket(String connectionId) throws CustomSamplersException {
+		Object bucket = JMeterContextService.getContext().getVariables().getObject(connectionId);
+		if (bucket == null) {
+			throw new CustomSamplersException("Bucket object is null!");
+		}
+		else {
+			if (bucket instanceof Bucket) {
+				return (Bucket)bucket;
+			}
+			else {
+				throw new CustomSamplersException("Casting the object to Bucket failed!");
+			}
+		}
+	}*/
 
 	@Override
 	public void testStarted() {
@@ -76,11 +105,9 @@ implements ConfigElement, TestStateListener, TestBean {
 			log.debug(this.getName() + " testStarted()");
 		}
 
-		protocolName = getProtocol();
-
-		String[] hosts = getHost().split(":");
-		IRiakClient riakClient = null;
-		if (getProtocol().equals("HTTP")) {
+		//IRiakClient riakClient = null;
+		/*if (getProtocol().equals("HTTP")) {
+			protocol = "HTTP";
 			HTTPClientConfig.Builder configBuilder = new HTTPClientConfig.Builder();
 			//HTTPClientConfig.Builder.from(HTTPClientConfig.defaults());
 			configBuilder.withHost(hosts[0]);
@@ -105,20 +132,22 @@ implements ConfigElement, TestStateListener, TestBean {
 
 
 		} else if (getProtocol().equals("RAW-PB")) {
+			protocol = "RAW-PB";
 			PBClientConfig.Builder configBuilder = 
 					PBClientConfig.Builder.from(PBClientConfig.defaults());
 			configBuilder.withHost(hosts[0]);
 			configBuilder.withPort(Integer.parseInt(getPort()));
 			configBuilder.withRequestTimeoutMillis(Integer.parseInt(getTimeout()));
-			configBuilder.build();
 
 			PBClientConfig clientConfig = configBuilder.build();
 			PBClusterConfig clusterConf = new PBClusterConfig(Integer.parseInt(getMaxConnection()));
 			clusterConf.addClient(clientConfig);
 			for (int i = 0; i < hosts.length; ++i) {
-				System.out.println("Adding host to HTTP cluster config: " + hosts[i]);
+				System.out.println("Adding host to RAW-PB cluster config: " + hosts[i]);
 				clusterConf.addHosts(hosts[i]);
 			}
+			System.out.println("On this IRiakClient max connection number is: "
+					+ clusterConf.getTotalMaximumConnections());
 
 			try {
 				riakClient = RiakFactory.newClient(clusterConf);
@@ -129,8 +158,30 @@ implements ConfigElement, TestStateListener, TestBean {
 
 		} else {
 			log.error("Unknown protocol requested for the connection builder!");
+		}*/
+
+		RiakNode.Builder builder = new RiakNode.Builder();
+		builder.withMinConnections(10);
+		builder.withMaxConnections(50);
+
+		String[] hosts = getHost().split(",");
+		LinkedList<String> addresses = new LinkedList<String>();
+		for (int i = 0; i < hosts.length; ++i) {
+			System.out.println("Adding host to cluster config: " + hosts[i]);
+			addresses.add(hosts[i]);
 		}
 
+		RiakClient riakClient = null;
+		try {
+			List<RiakNode> nodes = RiakNode.Builder.buildNodes(builder, addresses);
+			RiakCluster cluster = new RiakCluster.Builder(nodes).build();
+			cluster.start();
+			riakClient = new RiakClient(cluster);
+		} catch (UnknownHostException e) {
+			log.error("Could not initialize RiakClient: UnknowHostException -> " + e.getMessage());
+		}
+		
+		
 		if (log.isDebugEnabled()) {
 			log.debug("RiakClient prepared: " + riakClient.toString());
 		}
@@ -142,9 +193,28 @@ implements ConfigElement, TestStateListener, TestBean {
 				log.debug(getConnectionId() + " is being initialized ...");
 
 			getThreadContext().getVariables().putObject(getConnectionId(), riakClient);
+			/*try {
+				getThreadContext().getVariables().putObject(
+								getConnectionId(), riakClient);
+				Bucket iovBucket = riakClient.fetchBucket("IOV").execute();
+				Bucket plBucket = riakClient.fetchBucket("PAYLOAD").execute();
+				Bucket chunkBucket = riakClient.fetchBucket("CHUNK").execute();
+				getThreadContext().getVariables().putObject(
+						getConnectionId().concat("-IOV"), iovBucket);
+				getThreadContext().getVariables().putObject(
+						getConnectionId().concat("-PAYLOAD"), plBucket);
+				getThreadContext().getVariables().putObject(
+						getConnectionId().concat("-CHUNK"), chunkBucket);
+			} catch (RiakRetryFailedException e) {
+				log.error("Could not fetch buckets from riakClient... Exception: " + e.toString());
+			}*/
 		}
 	}
 
+	public static String getProtocolName() {
+		return protocol;
+	}
+	
 	@Override
 	public void testStarted(String arg0) {
 		testStarted();
@@ -159,10 +229,6 @@ implements ConfigElement, TestStateListener, TestBean {
 	@Override
 	public boolean expectsModification() {
 		return false;
-	}
-
-	public static String getProtocolName() {
-		return protocolName;
 	}
 
 	public String getConnectionId() {

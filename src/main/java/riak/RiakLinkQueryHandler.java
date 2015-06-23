@@ -1,14 +1,14 @@
 package riak;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.Collection;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.TreeMap;
 
-import com.basho.riak.client.IRiakClient;
+import com.basho.riak.client.api.RiakClient;
+
+/*import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakException;
 import com.basho.riak.client.RiakLink;
@@ -17,14 +17,14 @@ import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.cap.UnresolvedConflictException;
 import com.basho.riak.client.convert.ConversionException;
 import com.basho.riak.client.operations.StoreObject;
-import com.basho.riak.client.query.WalkResult;
+import com.basho.riak.client.query.WalkResult;*/
 
 import utils.CustomSamplersException;
 import utils.QueryHandler;
 
 public class RiakLinkQueryHandler implements QueryHandler {
 
-	private static IRiakClient riakClient;
+	private static RiakClient riakClient;
 
 	public RiakLinkQueryHandler(String clusterName) 
 			throws CustomSamplersException {
@@ -42,10 +42,9 @@ public class RiakLinkQueryHandler implements QueryHandler {
 	}
 
 	@Override
-	public ByteArrayOutputStream getData(String tagName, long since)
+	public ByteBuffer getData(String tagName, long since)
 			throws CustomSamplersException {
-		ByteArrayOutputStream result = new ByteArrayOutputStream();
-		try {
+		/*try {
 			Bucket b = riakClient.fetchBucket("TAG").execute();
 			IRiakObject tObj = b.fetch(tagName).execute();
 			WalkResult wr = riakClient.walk(tObj)
@@ -61,7 +60,7 @@ public class RiakLinkQueryHandler implements QueryHandler {
 					//System.out.println(count + ". link shows to " + o.getKey());
 					// Skipping the PAYLOAD bucket, to fetch META for this payload...
 					IRiakObject plObj = riakClient.fetchBucket("CHUNK").execute().fetch(o.getKey()).execute();
-					result.write(plObj.getValue());
+					return ByteBuffer.wrap(plObj.getValue());
 				}
 			}
 			if (count > 1) {
@@ -76,17 +75,15 @@ public class RiakLinkQueryHandler implements QueryHandler {
 			throw new CustomSamplersException("ConversionException occured. Details: " + e.toString());
 		} catch (RiakException e) {
 			throw new CustomSamplersException("RiakException occured. Details: " + e.toString());
-		} catch (IOException e) {
-			throw new CustomSamplersException("IOException occured. Details: " + e.toString());
-		}
-		return result;
+		}*/
+		return null;
 	}
 
 	@Override
 	public void putData(HashMap<String, String> metaInfo,
 			ByteArrayOutputStream payload, ByteArrayOutputStream streamerInfo)
 					throws CustomSamplersException {
-		try {
+		/*try {
 			Bucket plBucket = riakClient.fetchBucket("PAYLOAD").execute();
 			// The PAYLOAD bucket is just meta-bucket for the actual hash.
 			StoreObject<IRiakObject> sObj = plBucket.store(metaInfo.get("payload_hash"), metaInfo.get("payload_hash"));
@@ -118,14 +115,14 @@ public class RiakLinkQueryHandler implements QueryHandler {
 			throw new CustomSamplersException("UnresolvedConflictException occured. Details: " + e.toString());
 		} catch (ConversionException e) {
 			throw new CustomSamplersException("ConversionException occured. Details: " + e.toString());
-		}
+		}*/
 	}
 
 	@Override
-	public Map<Integer, ByteArrayOutputStream> getChunks(String tagName, long since)
+	public TreeMap<Integer, ByteBuffer> getChunks(String tagName, long since)
 			throws CustomSamplersException {
-		Map<Integer, ByteArrayOutputStream> result = new HashMap<Integer, ByteArrayOutputStream>();
-		try {
+		TreeMap<Integer, ByteBuffer> result = new TreeMap<Integer, ByteBuffer>();
+		/*try {
 			Bucket b = riakClient.fetchBucket("TAG").execute();
 			IRiakObject tObj = b.fetch(tagName).execute();
 			WalkResult wr = riakClient.walk(tObj)
@@ -145,11 +142,9 @@ public class RiakLinkQueryHandler implements QueryHandler {
 					for (int j = 0; j < links.size(); ++j) {
 						// ... fetch the pointed CHUNK ...
 						IRiakObject cObj = cBuck.fetch(links.get(j).getKey()).execute();
-						// ... write it to a ByteArrayOutputStream ...
-						ByteArrayOutputStream cS = new ByteArrayOutputStream();
-						cS.write(cObj.getValue());
 						// ... add the stream, to the result, with the ID as a key.
-						result.put(Integer.parseInt(links.get(j).getTag()), cS);
+						result.put(Integer.parseInt(links.get(j).getTag()),
+								ByteBuffer.wrap(cObj.getValue()));
 					}
 				}
 			}
@@ -165,16 +160,14 @@ public class RiakLinkQueryHandler implements QueryHandler {
 			throw new CustomSamplersException("ConversionException occured. Details: " + e.toString());
 		} catch (RiakException e) {
 			throw new CustomSamplersException("RiakException occured. Details: " + e.toString());
-		} catch (IOException e) {
-			throw new CustomSamplersException("IOException occured. Details: " + e.toString());
-		}
+		}*/
 		return result;
 	}
 
 	@Override
 	public void putChunks(HashMap<String, String> metaInfo,
 			List<ByteArrayOutputStream> chunks) throws CustomSamplersException {
-		try {
+		/*try {
 			// Store PAYLOAD as pure meta.
 			Bucket plBucket = riakClient.fetchBucket("PAYLOAD").execute();
 			StoreObject<IRiakObject> sObj = plBucket.store(metaInfo.get("payload_hash") , metaInfo.get("payload_hash"));
@@ -209,7 +202,7 @@ public class RiakLinkQueryHandler implements QueryHandler {
 			throw new CustomSamplersException("UnresolvedConflictException occured. Details: " + e.toString());
 		} catch (ConversionException e) {
 			throw new CustomSamplersException("ConversionException occured. Details: " + e.toString());
-		}
+		}*/
 	}
 
 	@Override

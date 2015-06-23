@@ -1,8 +1,10 @@
 package riak;
 
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -13,12 +15,17 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+/*import com.basho.riak.client.api.RiakClient;
+import com.basho.riak.client.core.RiakCluster;
+import com.basho.riak.client.core.RiakNode;*/
+
 import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakException;
 import com.basho.riak.client.RiakFactory;
 import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.cap.Quora;
+//import com.basho.riak.client.cap.Quora;
 import com.basho.riak.client.raw.http.HTTPClientConfig;
 import com.basho.riak.client.raw.http.HTTPClusterConfig;
 import com.basho.riak.client.raw.pbc.PBClientConfig;
@@ -35,20 +42,22 @@ public class RiakDeployer {
 		private int totalMaxConnections = 0;
 		private List<String> bucketNames = null;
 		private String protocol = null;
+		private int nval = 1;
 
 		public RiakEnvironmentDeployer(String host, String port, String databaseName,
 				String username, String password,
-				int totalMaxConnections, String bucketNames, String protocol) {
+				int totalMaxConnections, String bucketNames, String protocol, String nval) {
 			super(host, port, databaseName, username, password);
 			this.totalMaxConnections = totalMaxConnections;
 			this.bucketNames = Arrays.asList(bucketNames.split("\\s+"));
 			System.out.println(this.bucketNames.toString());
 			this.protocol = protocol;
+			this.nval = Integer.valueOf(nval);
 		}
 		
 		@Override
 		protected void initialize() {
-			String[] hosts = getHost().split(":");
+			String[] hosts = getHost().split(",");
 			if (protocol.equals("HTTP")) {
 				HTTPClientConfig.Builder configBuilder = new HTTPClientConfig.Builder();
 				configBuilder.withHost(hosts[0]);
@@ -70,7 +79,6 @@ public class RiakDeployer {
 					System.out.println(" initialize() -> RIAKException occured on connection attempt." 
 							+ " Details: " + e.toString());
 				}
-
 			} else if (protocol.equals("RAW-PB")) {
 				PBClientConfig.Builder configBuilder = 
 						PBClientConfig.Builder.from(PBClientConfig.defaults());
@@ -119,19 +127,29 @@ public class RiakDeployer {
 			try {
 				Set<String> buckets = riakClient.listBuckets();
 				System.out.println(" setupEnvironment() -> Found buckets: " + buckets.toString());
+
+				Bucket plB = riakClient.fetchBucket("PAYLOAD").execute();
+				riakClient.updateBucket(plB)
+					.allowSiblings(false).nVal(nval).r(Quora.ONE).execute();
+				plB.store("PAYLOAD", "Init store").execute();
 				
-				Iterator<String> i = bucketNames.iterator();
-				while (i.hasNext()) {
-					String bN = i.next();
-					Bucket b = riakClient.fetchBucket(bN).execute();
-					riakClient.updateBucket(b)
-						.allowSiblings(false).nVal(1)
-						.w(Quora.QUORUM).dw(Quora.QUORUM).pw(0)
-						.r(Quora.QUORUM).rw(Quora.QUORUM).pr(0)
-						.execute();
-					b.store(bN, "Init store").execute();
-					System.out.println(" setupEnvironment() -> " + bN + " bucket created ...");
-				}
+				Bucket iovB = riakClient.fetchBucket("IOV").execute();
+				riakClient.updateBucket(iovB)
+					.allowSiblings(false).execute();
+				iovB.store("IOV", "Init store").execute();
+
+				//Iterator<String> i = bucketNames.iterator();
+				//while (i.hasNext()) {
+				//	String bN = i.next();
+				//	Bucket b = riakClient.fetchBucket(bN).execute();
+				//	riakClient.updateBucket(b)
+				//		.allowSiblings(false).nVal(nval)
+				//		//.w(Quora.QUORUM).dw(Quora.QUORUM).pw(0)
+				//		//.r(Quora.QUORUM).rw(Quora.QUORUM).pr(0)
+				//		.execute();
+				//	b.store(bN, "Init store").execute();
+				//	System.out.println(" setupEnvironment() -> " + bN + " bucket created ...");
+				//}
 				System.out.println(" setupEnvironment() -> Found buckets after creation: "
 						+ riakClient.listBuckets().toString());
 				
@@ -183,22 +201,12 @@ public class RiakDeployer {
 	 * @param args command line arguments, parsed by utils.DeployerOptions.
 	 */
 	public static void main(String[] args) {
-		/*RiakEnvironmentDeployer deployer =
-				new RiakEnvironmentDeployer(
-						"riak-n1.cern.ch",
-						"8087", "" , "", "", 10, "TAG IOV PAYLOAD CHUNK", "RAW-PB"); // RAW-PB: 8087*/
-
-		//System.out.println("-------- RIAK environment setup ------------");
-		//deployer.deployTestEnvironment();
-		//System.out.println("------- RIAK environment teardown -----------");
-		//deployer.destroyTestEnvironment();
-		//System.out.println("-------- RIAK environment teardown and setup ------------");
-		//deployer.redeployEnvironment();
-
 		/** Get a basic apache.cli Options from DeployerOptions. */
 		Options depOps = new DeployerOptions().getDeployerOptions();
 		// MongoDB specific options are added manually here:
 		depOps.addOption("p", "port", true, "port of the host (RIAK defaults: RAW:8087 HTTP:8098)");
+		depOps.addOption("r", "protocol", true, "protocol to use: RAW-PB or HTTP");
+		depOps.addOption("n", "n_val", true, "n_val for the PAYLOAD bucket. (Number of replicas.");
 
 		/** Help page creation. */
 		HelpFormatter formatter = new HelpFormatter();
@@ -214,6 +222,23 @@ public class RiakDeployer {
 			CommandLine line = parser.parse(depOps, args);
 			HashMap<String, String> optionMap = DeployerOptions.mapCommandLine(line);
 
+			// RIAK specific options are parsed manually here:
+			if (line.hasOption('r')) {
+				optionMap.put("PROT", line.getOptionValue('r'));
+			} else if (line.hasOption("protocol")) {
+				optionMap.put("PROT", line.getOptionValue("protocol"));
+			} else {
+				optionMap.put("HELP", "Protocol argument is missing!");
+			}
+
+			if (line.hasOption('n')) {
+				optionMap.put("NVAL", line.getOptionValue('n'));
+			} else if (line.hasOption("n_val")) {
+				optionMap.put("NVAL", line.getOptionValue("n_val"));
+			} else {
+				optionMap.put("HELP", "n_val argument is missing!");
+			}
+
 			if (optionMap.containsKey("HELP")) {
 				System.out.println(optionMap.get("HELP") + "\n");
 				formatter.printHelp(CLASS_CMD, CLP_HEADER, depOps, utils.Constants.SUPPORT_FOOTER);
@@ -222,7 +247,7 @@ public class RiakDeployer {
 				RiakEnvironmentDeployer deployer =
 						new RiakEnvironmentDeployer(optionMap.get("HOST"), optionMap.get("PORT"),
 								optionMap.get("DB"), optionMap.get("USER"), optionMap.get("PASS"),
-								10, "TAG IOV PAYLOAD CHUNK", "RAW-PB");
+								10, "TAG IOV PAYLOAD CHUNK", optionMap.get("PROT"), optionMap.get("NVAL"));
 				if (optionMap.get("MODE").equals("deploy")) {
 					deployer.deployTestEnvironment();
 				} else if (optionMap.get("MODE").equals("teardown")) {
