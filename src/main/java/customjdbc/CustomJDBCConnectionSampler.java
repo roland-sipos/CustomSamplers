@@ -34,6 +34,8 @@ public class CustomJDBCConnectionSampler extends AbstractSampler implements Test
 	public final static String USERNAME = "CustomJDBCConnectionSampler.username";
 	public final static String PASSWORD = "CustomJDBCConnectionSampler.password";
 
+	public final static String OPERATION = "CustomJDBCConnectionSampler.operation";
+
 	public CustomJDBCConnectionSampler() {
 		trace("CustomJDBCConnectionSampler()" + this.toString());
 	}
@@ -51,21 +53,30 @@ public class CustomJDBCConnectionSampler extends AbstractSampler implements Test
 	public SampleResult sample(Entry arg0) {
 		SampleResult res = CustomSamplerUtils.getInitialSampleResult(getName());
 		try {
-			res.sampleStart();
-			Connection connection = CustomJDBCConfigElement.createJDBCConnection(
-					getJdbcName(), getHost(), getPort(), getSid(), getDatabase(),
-					getUsername(), getPassword());
-			res.samplePause();
-			connection.setAutoCommit(Boolean.parseBoolean(getAutoCommit()));
-			connection.setReadOnly(Boolean.parseBoolean(getReadOnly()));
-			connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-			getThreadContext().getVariables().putObject(getConnectionId(), connection);
+			if (getThreadContext().getVariables().getObject(getConnectionId()) != null ) {
+				res.sampleStart();
+				Connection conn = CustomJDBCConfigElement.getJDBCConnection(getConnectionId());
+				conn.close();
+				CustomSamplerUtils.finalizeResponse(res, true, "200", "JDBC Object closed."
+						+ "with ID: " + getConnectionId());
+				return res;
+			} else {
+				res.sampleStart();
+				Connection connection = CustomJDBCConfigElement.createJDBCConnection(
+						getJdbcName(), getHost(), getPort(), getSid(), getDatabase(),
+						getUsername(), getPassword());
+				res.samplePause();
+				connection.setAutoCommit(Boolean.parseBoolean(getAutoCommit()));
+				connection.setReadOnly(Boolean.parseBoolean(getReadOnly()));
+				//connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+				getThreadContext().getVariables().putObject(getConnectionId(), connection);
+			}
 		} catch (Exception e) {
 			CustomSamplerUtils.finalizeResponse(res, false, "999",
 					"Exception occured in this sample: " + e.toString());
 		} finally {
 			CustomSamplerUtils.finalizeResponse(res, true, "200", "JDBC Object is placed successfully, "
-					+ "with ID: " + getDatabase());
+					+ "with ID: " + getConnectionId());
 			res.sampleEnd();
 		}
 		return res;
