@@ -32,6 +32,8 @@ implements ConfigElement, TestStateListener, TestBean {
 	private static final String ASSIGNMENT_OUTPUT_FILE = "AssignmentConfigElement.assignmentOutputFile";
 	/** The inputLocation for the BinaryFileInfo instance. */
 	public final static String INPUT_LOCATION = "BinaryConfigElement.inputLocation";
+	/** The number of assignments to be generated. */
+	public final static String NUMBER_OF_ASSIGNMENTS = "BinaryConfigElement.numberOfAssignments";
 	/** Encoding flag for the BinaryFileInfo. */
 	public final static String ENCODING = "BinaryConfigElement.encoding";
 	/** The assignment mode that this resource need to utilize. */
@@ -95,8 +97,8 @@ implements ConfigElement, TestStateListener, TestBean {
 			}
 
 			try {
-				int numOfThreads = Integer.valueOf(
-						getThreadContext().getVariables().get("numberOfThreads"));
+				int numOfThreads = Integer.valueOf(getNumberOfAssignments());
+						//getThreadContext().getVariables().get("numberOfThreads"));
 				Assignment assignment =
 						new Assignment(getAssignmentInputFile(), getAssignmentOutputFile(),
 								getAssignmentMode(), numOfThreads, getEncoding(),
@@ -160,6 +162,14 @@ implements ConfigElement, TestStateListener, TestBean {
 	}
 	public void setInputLocation(String inputLocation) {
 		setProperty(INPUT_LOCATION, inputLocation);
+	}
+
+	public String getNumberOfAssignments() {
+		return getPropertyAsString(NUMBER_OF_ASSIGNMENTS);
+	}
+
+	public void setNumberOfAssignments(String numberOfAssignments) {
+		setProperty(NUMBER_OF_ASSIGNMENTS, numberOfAssignments);
 	}
 
 	public String getEncoding() {

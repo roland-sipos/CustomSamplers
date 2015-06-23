@@ -106,6 +106,15 @@ public class Assignment {
 		assignedPathMap = new HashMap<Integer, SortedSet<String>>();
 		sanityCheck();
 		finalizeAssignments();
+		System.out.println("New assignment object created with the following parameters: \n"
+				+ " -> input assignment file (if it was set): " + iFilePath + "\n"
+				+ " -> output assignment file (if it was set): " + oFilePath + "\n"
+				+ " -> assignment mode: " + mode + "\n"
+				+ " -> number of assignments: " + threadNum + "\n"
+				+ " -> encoding: " + encoding + "\n"
+				+ " -> binInfo Object is: " + binInfo + "\n"
+				+ " -> the new Assignment Object is: " + this + "\n"
+		);
 	}
 
 	/**
@@ -230,7 +239,6 @@ public class Assignment {
 	 * */
 	private void sanityCheck() throws CustomSamplersException {
 		int numOfFiles = binaryFileInfo.getFileNameArray().length;
-		System.out.println("NUM OF FILE:" + numOfFiles);
 		if (assignmentMode == Mode.SEQUENCE && numOfFiles < numOfThreads) {
 			throw new CustomSamplersException("Sanity check failed! The number of files are less "
 					+ "than the number of threads, and the assignmentMode was set to sequence!");

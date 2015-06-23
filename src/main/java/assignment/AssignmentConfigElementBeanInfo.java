@@ -21,6 +21,7 @@ public class AssignmentConfigElementBeanInfo extends BeanInfoSupport {
 	 * -- assignmentInfo <br>
 	 * -- assignmentInputFile <br>
 	 * -- assignmentOutputFile <br>
+	 * -- numberOfAssignments <br>
 	 * binary <br>
 	 * -- location <br>
 	 * -- encoding <br>
@@ -31,7 +32,7 @@ public class AssignmentConfigElementBeanInfo extends BeanInfoSupport {
 		super(AssignmentConfigElement.class);
 
 		createPropertyGroup("assignment", new String[] {"assignmentInfo",
-				"assignmentInputFile", "assignmentOutputFile"});
+				"assignmentInputFile", "assignmentOutputFile", "numberOfAssignments"});
 		createPropertyGroup("binary", new String[] {"inputLocation", "encoding"});
 		createPropertyGroup("options", new String[] {"assignmentMode"});
 
@@ -44,6 +45,9 @@ public class AssignmentConfigElementBeanInfo extends BeanInfoSupport {
 		p = property("assignmentOutputFile");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(DEFAULT, "");
+		p = property("numberOfAssignments");
+		p.setValue(NOT_UNDEFINED,  Boolean.TRUE);
+		p.setValue(DEFAULT, "1000");
 
 		p = property("inputLocation");
 		p.setValue(NOT_UNDEFINED,  Boolean.TRUE);
