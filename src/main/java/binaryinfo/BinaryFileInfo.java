@@ -20,8 +20,8 @@ import java.util.TreeMap;
  * this class. Please make the appropriate changes here also.
  * <p>
  * Note2: The multiton pattern was introduced in order to create a single static instance
- * of every given test data location, so many Assignment configuration may exist for the same
- * BinaryFileInfo instance.
+ * of every given test data location, in order to create multiple Assignment configurations 
+ * for the same BinaryFileInfo instance.
  * */
 public class BinaryFileInfo {
 
@@ -100,9 +100,10 @@ public class BinaryFileInfo {
 		return filePathList.get(fileName) + ".chunks/STREAMER_INFO.bin";
 	}
 
-	/** The standard method for access the singleton. 
+	/**
+	 * The standard method for accessing the singleton. 
 	 * 
-	 * @param  location  the full path to the PaGeS generated directory
+	 * @param  location  the full path to the generated directory by PaGeS
 	 * @return  BinaryFileInfo  the only instance of this class
 	 * */
 	public static BinaryFileInfo getInstance(String location) {
@@ -148,6 +149,11 @@ public class BinaryFileInfo {
 			}
 		}
 		fileNameArray = filePathList.keySet().toArray(new String[0]);
+		System.out.println("New BinaryFileInfo Object created with the following parameters: \n"
+				+ " -> Location of files: " + loc + "\n"
+				+ " -> Number of files found: " + numOfFiles + "\n"
+				+ " -> Object is: " + this.toString() + "\n"
+		);
 	}
 
 	/**
