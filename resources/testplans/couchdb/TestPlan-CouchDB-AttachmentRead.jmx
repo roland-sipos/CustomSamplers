@@ -4,7 +4,7 @@
     <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="CouchDB-Attachment-Random-Read-1000-1000-1" enabled="true">
       <stringProp name="TestPlan.comments"></stringProp>
       <boolProp name="TestPlan.functional_mode">false</boolProp>
-      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">true</boolProp>
       <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
         <collectionProp name="Arguments.arguments"/>
       </elementProp>
@@ -15,24 +15,24 @@
         <collectionProp name="Arguments.arguments">
           <elementProp name="testPlanName" elementType="Argument">
             <stringProp name="Argument.name">testPlanName</stringProp>
-            <stringProp name="Argument.value">CouchDB-Attachment-Random-Read-1000-1000-1</stringProp>
+            <stringProp name="Argument.value">RENAME-THIS</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="numberOfThreads" elementType="Argument">
             <stringProp name="Argument.name">numberOfThreads</stringProp>
-            <stringProp name="Argument.value">1000</stringProp>
+            <stringProp name="Argument.value">1200</stringProp>
             <stringProp name="Argument.desc">The number of threads.</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="rampUpTime" elementType="Argument">
             <stringProp name="Argument.name">rampUpTime</stringProp>
-            <stringProp name="Argument.value">1000</stringProp>
+            <stringProp name="Argument.value">1200</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
             <stringProp name="Argument.desc">Ramp up time [sec]</stringProp>
           </elementProp>
           <elementProp name="host" elementType="Argument">
             <stringProp name="Argument.name">host</stringProp>
-            <stringProp name="Argument.value">test-couchdb.cern.ch</stringProp>
+            <stringProp name="Argument.value">node3.cern.ch</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
             <stringProp name="Argument.desc">Host to connect to.</stringProp>
           </elementProp>
@@ -44,10 +44,11 @@
         <stringProp name="assignmentInfo">assignInfo</stringProp>
         <stringProp name="assignmentMode">random</stringProp>
         <stringProp name="binaryInfo">binInfo</stringProp>
-        <stringProp name="inputLocation">/testdata/out/</stringProp>
-        <stringProp name="encoding">NO</stringProp>
+        <stringProp name="inputLocation">/mnt/testdata/</stringProp>
+        <stringProp name="encoding">binary</stringProp>
         <stringProp name="assignmentInputFile"></stringProp>
         <stringProp name="assignmentOutputFile"></stringProp>
+        <stringProp name="numberOfAssignments">${numberOfThreads}</stringProp>
       </assignment.AssignmentConfigElement>
       <hashTree/>
       <couchdb.CouchConfigElement guiclass="TestBeanGUI" testclass="couchdb.CouchConfigElement" testname="Custom - CouchDB Connection Configuration" enabled="true">
@@ -55,20 +56,20 @@
         <stringProp name="cleanupIdleConnections">True</stringProp>
         <stringProp name="connectionTimeout">30000</stringProp>
         <stringProp name="createIfNotExists">False</stringProp>
-        <stringProp name="database">testdb</stringProp>
-        <stringProp name="host">http://test-couchdb.cern.ch</stringProp>
-        <stringProp name="maxCacheEntries">1000</stringProp>
+        <stringProp name="database">conddb</stringProp>
+        <stringProp name="host">http://${host}</stringProp>
+        <stringProp name="maxCacheEntries">0</stringProp>
         <stringProp name="maxConnections">100</stringProp>
         <stringProp name="maxObjectSizeBytes">104857600</stringProp>
         <stringProp name="password">testPass</stringProp>
         <stringProp name="port">5984</stringProp>
-        <stringProp name="socketTimeout">30000</stringProp>
+        <stringProp name="socketTimeout">60000</stringProp>
         <stringProp name="useExpectContinue">True</stringProp>
         <stringProp name="username"></stringProp>
         <stringProp name="connectionId">couchConn</stringProp>
       </couchdb.CouchConfigElement>
       <hashTree/>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Iperf" enabled="true">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Iperf" enabled="false">
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
           <boolProp name="LoopController.continue_forever">false</boolProp>
@@ -153,6 +154,80 @@
           <hashTree/>
         </hashTree>
       </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Start Monitoring" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <longProp name="ThreadGroup.start_time">1411742528000</longProp>
+        <longProp name="ThreadGroup.end_time">1411742528000</longProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler" testname="SSH DSTAT" enabled="true">
+          <stringProp name="command">timeout ${rampUpTime} dstat -T -c -d -r -g -i -l -m -n -s -p -y --fs --ipc --lock --raw --socket --tcp --udp --unix --vm --nocolor --output ~/dstat.csv &gt; /dev/null &amp;</stringProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="hostname">${host}</stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <intProp name="port">22</intProp>
+          <boolProp name="printStdErr">true</boolProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <boolProp name="useReturnCode">true</boolProp>
+          <stringProp name="username">testUser</stringProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler" testname="SSH IOSTAT" enabled="true">
+          <stringProp name="command">iostat -cdxtm /dev/vda 1 ${rampUpTime} &gt; ~/iostat.csv &amp;</stringProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="hostname">${host}</stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <intProp name="port">22</intProp>
+          <boolProp name="printStdErr">true</boolProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <boolProp name="useReturnCode">true</boolProp>
+          <stringProp name="username">testUser</stringProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler>
+        <hashTree/>
+        <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+            </value>
+          </objProp>
+          <stringProp name="filename">./RENAME-THIS/monitoring/MonitoringThreadsStart.csv</stringProp>
+        </ResultCollector>
+        <hashTree/>
+      </hashTree>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="QueryHandlers" enabled="true">
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
@@ -169,6 +244,24 @@
         <boolProp name="ThreadGroup.delayedStart">true</boolProp>
       </ThreadGroup>
       <hashTree>
+        <couchdb.CouchConnectionSampler guiclass="TestBeanGUI" testclass="couchdb.CouchConnectionSampler" testname="Custom - CouchDB Connection Sampler" enabled="true">
+          <stringProp name="caching">False</stringProp>
+          <stringProp name="cleanupIdleConnections">True</stringProp>
+          <stringProp name="connectionId">couchConn</stringProp>
+          <stringProp name="connectionTimeout">30000</stringProp>
+          <stringProp name="createIfNotExists">False</stringProp>
+          <stringProp name="database">testdb</stringProp>
+          <stringProp name="host">http://${host}</stringProp>
+          <stringProp name="maxCacheEntries">0</stringProp>
+          <stringProp name="maxConnections">20</stringProp>
+          <stringProp name="maxObjectSizeBytes">104857600</stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <stringProp name="port">5984</stringProp>
+          <stringProp name="socketTimeout">60000</stringProp>
+          <stringProp name="useExpectContinue">True</stringProp>
+          <stringProp name="username">testUser</stringProp>
+        </couchdb.CouchConnectionSampler>
+        <hashTree/>
         <couchdb.CouchSampler guiclass="TestBeanGUI" testclass="couchdb.CouchSampler" testname="Custom - CouchDB Sampler" enabled="true">
           <stringProp name="assignmentInfo">assignInfo</stringProp>
           <stringProp name="attachmentMode">True</stringProp>
@@ -212,10 +305,99 @@
                 <threadCounts>true</threadCounts>
               </value>
             </objProp>
-            <stringProp name="filename">./${testPlanName}/CouchQueryHandlerSampleResults.csv</stringProp>
+            <stringProp name="filename">./RENAME-THIS/CouchQueryHandlerSampleResults.csv</stringProp>
           </ResultCollector>
           <hashTree/>
         </hashTree>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Finish monitoring" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <longProp name="ThreadGroup.start_time">1411742723000</longProp>
+        <longProp name="ThreadGroup.end_time">1411742723000</longProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler" testname="SSH SFTP Copy DSTAT" enabled="true">
+          <stringProp name="action">get</stringProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="destination">./${testPlanName}/monitoring/dstat-node1.csv</stringProp>
+          <stringProp name="hostname">${host}</stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <intProp name="port">22</intProp>
+          <boolProp name="printFile">false</boolProp>
+          <stringProp name="source">/home/testUser/dstat.csv</stringProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <stringProp name="username">testUser</stringProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler" testname="SSH SFTP Copy IOSTAT" enabled="true">
+          <stringProp name="action">get</stringProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="destination">./${testPlanName}/monitoring/iostat-node1.csv</stringProp>
+          <stringProp name="hostname">${host}</stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <intProp name="port">22</intProp>
+          <boolProp name="printFile">false</boolProp>
+          <stringProp name="source">/home/testUser/iostat.csv</stringProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <stringProp name="username">testUser</stringProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler" testname="SSH Remove" enabled="true">
+          <stringProp name="hostname">${host}</stringProp>
+          <intProp name="port">22</intProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="username">testUser</stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="command">rm ~/*</stringProp>
+          <boolProp name="useReturnCode">true</boolProp>
+          <boolProp name="printStdErr">true</boolProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler>
+        <hashTree/>
+        <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+            </value>
+          </objProp>
+          <stringProp name="filename">./RENAME-THIS/monitoring/MonitoringThreadsStop.csv</stringProp>
+        </ResultCollector>
+        <hashTree/>
       </hashTree>
     </hashTree>
   </hashTree>

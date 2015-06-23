@@ -32,7 +32,7 @@
           </elementProp>
           <elementProp name="host" elementType="Argument">
             <stringProp name="Argument.name">host</stringProp>
-            <stringProp name="Argument.value">cloud-cass.cern.ch</stringProp>
+            <stringProp name="Argument.value">cloudssd-cassandra-n1.cern.ch</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
             <stringProp name="Argument.desc">Host to connect to.</stringProp>
           </elementProp>
@@ -44,10 +44,11 @@
         <stringProp name="assignmentInfo">assignInfo</stringProp>
         <stringProp name="assignmentMode">random</stringProp>
         <stringProp name="binaryInfo">binInfo</stringProp>
-        <stringProp name="inputLocation">/testdata/out/</stringProp>
-        <stringProp name="encoding">NO</stringProp>
+        <stringProp name="inputLocation">/mnt/testdata/</stringProp>
+        <stringProp name="encoding">binary</stringProp>
         <stringProp name="assignmentInputFile"></stringProp>
         <stringProp name="assignmentOutputFile"></stringProp>
+        <stringProp name="numberOfAssignments">${numberOfThreads}</stringProp>
       </assignment.AssignmentConfigElement>
       <hashTree/>
       <cassandra.CassandraConfigElement guiclass="TestBeanGUI" testclass="cassandra.CassandraConfigElement" testname="Custom - Cassandra Connection Configuration" enabled="true">
@@ -55,7 +56,7 @@
         <stringProp name="host">${host}</stringProp>
         <stringProp name="loadBalancingPolicy">leastActive</stringProp>
         <stringProp name="maxWaitTimeIfExhausted">60000</stringProp>
-        <stringProp name="port">9160</stringProp>
+        <stringProp name="port">9042</stringProp>
         <stringProp name="retryDownedHostDelaySec">30</stringProp>
         <stringProp name="retryDownedHostQueueSize">128</stringProp>
         <stringProp name="retryDownedHosts">True</stringProp>
@@ -201,6 +202,7 @@
                 <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
                 <assertionsResultsToSave>0</assertionsResultsToSave>
                 <bytes>true</bytes>
+                <threadCounts>true</threadCounts>
               </value>
             </objProp>
             <stringProp name="filename">./${testPlanName}/CassandraQueryHandlerSampleResults.csv</stringProp>

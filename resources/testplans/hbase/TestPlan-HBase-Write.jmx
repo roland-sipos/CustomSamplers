@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jmeterTestPlan version="1.2" properties="2.4" jmeter="2.9 r1437961">
   <hashTree>
-    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="HBase-Write-Sequence-600-1800-1" enabled="true">
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="HBase-Write-Sequence-1200-3600-1" enabled="true">
       <stringProp name="TestPlan.comments"></stringProp>
       <boolProp name="TestPlan.functional_mode">false</boolProp>
       <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
@@ -15,24 +15,24 @@
         <collectionProp name="Arguments.arguments">
           <elementProp name="testPlanName" elementType="Argument">
             <stringProp name="Argument.name">testPlanName</stringProp>
-            <stringProp name="Argument.value">HBase-Write-Sequence-600-1800-1</stringProp>
+            <stringProp name="Argument.value">HBase-Write-Sequence-1200-3600-1</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="numberOfThreads" elementType="Argument">
             <stringProp name="Argument.name">numberOfThreads</stringProp>
-            <stringProp name="Argument.value">600</stringProp>
+            <stringProp name="Argument.value">1200</stringProp>
             <stringProp name="Argument.desc">The number of threads.</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="rampUpTime" elementType="Argument">
             <stringProp name="Argument.name">rampUpTime</stringProp>
-            <stringProp name="Argument.value">1800</stringProp>
+            <stringProp name="Argument.value">3600</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
             <stringProp name="Argument.desc">Ramp up time [sec]</stringProp>
           </elementProp>
           <elementProp name="host" elementType="Argument">
             <stringProp name="Argument.name">host</stringProp>
-            <stringProp name="Argument.value">hbase-n1.cern.ch</stringProp>
+            <stringProp name="Argument.value">cloudssd-hbase-n1.cern.ch</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
             <stringProp name="Argument.desc">Host to connect to.</stringProp>
           </elementProp>
@@ -44,21 +44,22 @@
         <stringProp name="assignmentInfo">assignInfo</stringProp>
         <stringProp name="assignmentMode">sequence</stringProp>
         <stringProp name="binaryInfo">binInfo</stringProp>
-        <stringProp name="inputLocation">/testdata/out/</stringProp>
-        <stringProp name="encoding">NO</stringProp>
+        <stringProp name="inputLocation">/mnt/testdata/</stringProp>
+        <stringProp name="encoding">binary</stringProp>
         <stringProp name="assignmentInputFile"></stringProp>
         <stringProp name="assignmentOutputFile"></stringProp>
+        <stringProp name="numberOfAssignments">${numberOfThreads}</stringProp>
       </assignment.AssignmentConfigElement>
       <hashTree/>
       <hbase.HBaseConfigElement guiclass="TestBeanGUI" testclass="hbase.HBaseConfigElement" testname="Custom - HBase Connection Configuration" enabled="true">
-        <stringProp name="clusterName">testHbase</stringProp>
+        <stringProp name="clusterName">testHBase</stringProp>
         <stringProp name="connectionId">hbaseConn</stringProp>
-        <stringProp name="masterHost">hbase-n1.cern.ch</stringProp>
+        <stringProp name="masterHost">${host}</stringProp>
         <stringProp name="masterPort">60000</stringProp>
         <stringProp name="maxKvSize">0</stringProp>
         <stringProp name="tableList">IOV, PAYLOAD</stringProp>
         <stringProp name="zookeeperClientPort">2181</stringProp>
-        <stringProp name="zookeeperQuorum">hbase-n1.cern.ch</stringProp>
+        <stringProp name="zookeeperQuorum">${host}</stringProp>
       </hbase.HBaseConfigElement>
       <hashTree/>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Iperf" enabled="true">

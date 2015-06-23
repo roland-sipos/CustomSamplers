@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jmeterTestPlan version="1.2" properties="2.4" jmeter="2.9 r1437961">
   <hashTree>
-    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="RIAK-Sequence-Write-2600-5200-1" enabled="true">
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="MySQL-Random-Read-Results-1000-1000-1" enabled="true">
       <stringProp name="TestPlan.comments"></stringProp>
-      <boolProp name="TestPlan.functional_mode">true</boolProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
       <boolProp name="TestPlan.serialize_threadgroups">true</boolProp>
       <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
         <collectionProp name="Arguments.arguments"/>
@@ -15,36 +15,26 @@
         <collectionProp name="Arguments.arguments">
           <elementProp name="testPlanName" elementType="Argument">
             <stringProp name="Argument.name">testPlanName</stringProp>
-            <stringProp name="Argument.value">RIAK-Sequence-Write-2600-5200-1</stringProp>
+            <stringProp name="Argument.value">RENAME-THIS</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="numberOfThreads" elementType="Argument">
             <stringProp name="Argument.name">numberOfThreads</stringProp>
-            <stringProp name="Argument.value">2600</stringProp>
+            <stringProp name="Argument.value">1200</stringProp>
             <stringProp name="Argument.desc">The number of threads.</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="rampUpTime" elementType="Argument">
             <stringProp name="Argument.name">rampUpTime</stringProp>
-            <stringProp name="Argument.value">5200</stringProp>
+            <stringProp name="Argument.value">1200</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
             <stringProp name="Argument.desc">Ramp up time [sec]</stringProp>
           </elementProp>
           <elementProp name="host" elementType="Argument">
             <stringProp name="Argument.name">host</stringProp>
-            <stringProp name="Argument.value">node1.cern.ch</stringProp>
+            <stringProp name="Argument.value">node2.cern.ch</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
             <stringProp name="Argument.desc">Host to connect to.</stringProp>
-          </elementProp>
-          <elementProp name="port" elementType="Argument">
-            <stringProp name="Argument.name">port</stringProp>
-            <stringProp name="Argument.value">8087</stringProp>
-            <stringProp name="Argument.metadata">=</stringProp>
-          </elementProp>
-          <elementProp name="controller" elementType="Argument">
-            <stringProp name="Argument.name">controller</stringProp>
-            <stringProp name="Argument.value">cloud-jmeter.cern.ch</stringProp>
-            <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
         </collectionProp>
       </Arguments>
@@ -52,7 +42,7 @@
       <assignment.AssignmentConfigElement guiclass="TestBeanGUI" testclass="assignment.AssignmentConfigElement" testname="Custom - Assignment Configuration" enabled="true">
         <stringProp name="assignmentFile">unspecified</stringProp>
         <stringProp name="assignmentInfo">assignInfo</stringProp>
-        <stringProp name="assignmentMode">sequence</stringProp>
+        <stringProp name="assignmentMode">random</stringProp>
         <stringProp name="binaryInfo">binInfo</stringProp>
         <stringProp name="inputLocation">/mnt/testdata/</stringProp>
         <stringProp name="encoding">binary</stringProp>
@@ -61,17 +51,22 @@
         <stringProp name="numberOfAssignments">${numberOfThreads}</stringProp>
       </assignment.AssignmentConfigElement>
       <hashTree/>
-      <riak.RiakConfigElement guiclass="TestBeanGUI" testclass="riak.RiakConfigElement" testname="Custom - RIAK Connection Configuration" enabled="true">
-        <stringProp name="cluster">conddb</stringProp>
-        <stringProp name="connectionId">riakConn</stringProp>
+      <customjdbc.CustomJDBCConfigElement guiclass="TestBeanGUI" testclass="customjdbc.CustomJDBCConfigElement" testname="Custom - JDBC Connection Configuration" enabled="false">
+        <stringProp name="autocommit">True</stringProp>
+        <stringProp name="classname">com.mysql.jdbc.Driver</stringProp>
+        <stringProp name="database">testdb</stringProp>
         <stringProp name="host">${host}</stringProp>
-        <stringProp name="maxConnection">200</stringProp>
+        <stringProp name="jdbcname">jdbc:mysql</stringProp>
         <stringProp name="password">testPass</stringProp>
-        <stringProp name="port">${port}</stringProp>
-        <stringProp name="protocol">RAW-PB</stringProp>
-        <stringProp name="timeout">60000</stringProp>
+        <stringProp name="port">3306</stringProp>
+        <stringProp name="sid"></stringProp>
         <stringProp name="username">testUser</stringProp>
-      </riak.RiakConfigElement>
+        <stringProp name="connectionId">mysqlConn</stringProp>
+        <stringProp name="jdbcName">jdbc:mysql</stringProp>
+        <stringProp name="className">com.mysql.jdbc.Driver</stringProp>
+        <stringProp name="autoCommit">True</stringProp>
+        <stringProp name="readOnly">True</stringProp>
+      </customjdbc.CustomJDBCConfigElement>
       <hashTree/>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Iperf" enabled="false">
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
@@ -88,7 +83,7 @@
         <stringProp name="ThreadGroup.delay"></stringProp>
       </ThreadGroup>
       <hashTree>
-        <SystemSampler guiclass="SystemSamplerGui" testclass="SystemSampler" testname="Iperf Sampler" enabled="false">
+        <SystemSampler guiclass="SystemSamplerGui" testclass="SystemSampler" testname="Iperf Sampler" enabled="true">
           <boolProp name="SystemSampler.checkReturnCode">true</boolProp>
           <stringProp name="SystemSampler.expectedReturnCode">0</stringProp>
           <stringProp name="SystemSampler.command">iperf</stringProp>
@@ -124,6 +119,38 @@
           <stringProp name="SystemSampler.stderr">./${testPlanName}/iperflog_${__threadNum}_${__machineName}_to_${host}.log</stringProp>
         </SystemSampler>
         <hashTree>
+          <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>true</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>true</code>
+                <message>true</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>true</assertions>
+                <subresults>true</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>false</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <bytes>true</bytes>
+              </value>
+            </objProp>
+            <stringProp name="filename"></stringProp>
+          </ResultCollector>
+          <hashTree/>
           <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer" enabled="true">
             <boolProp name="ResultCollector.error_logging">false</boolProp>
             <objProp>
@@ -153,7 +180,7 @@
                 <hostname>true</hostname>
               </value>
             </objProp>
-            <stringProp name="filename">./RENAME-THIS/iperfSampleResults.csv</stringProp>
+            <stringProp name="filename">./${testPlanName}/iperfSampleResults.csv</stringProp>
           </ResultCollector>
           <hashTree/>
         </hashTree>
@@ -228,7 +255,7 @@
               <bytes>true</bytes>
             </value>
           </objProp>
-          <stringProp name="filename">./RENAME-THIS/monitoring/MonitoringThreadsStart.csv</stringProp>
+          <stringProp name="filename">./${testPlanName}/monitoring/MonitoringThreadsStart.csv</stringProp>
         </ResultCollector>
         <hashTree/>
       </hashTree>
@@ -248,15 +275,19 @@
         <boolProp name="ThreadGroup.delayedStart">true</boolProp>
       </ThreadGroup>
       <hashTree>
-        <riak.RiakSampler guiclass="TestBeanGUI" testclass="riak.RiakSampler" testname="Custom - RIAK Sampler" enabled="true">
-          <stringProp name="assignmentInfo">assignInfo</stringProp>
-          <stringProp name="connectionId">riakConn</stringProp>
-          <stringProp name="kryoMethod">False</stringProp>
-          <stringProp name="requestType">write</stringProp>
-          <stringProp name="useChunks">False</stringProp>
-          <stringProp name="useLinks">False</stringProp>
-          <stringProp name="validateOperation">False</stringProp>
-        </riak.RiakSampler>
+        <customjdbc.CustomJDBCConnectionSampler guiclass="TestBeanGUI" testclass="customjdbc.CustomJDBCConnectionSampler" testname="Custom - JDBC Connection Sampler" enabled="true">
+          <stringProp name="autoCommit">True</stringProp>
+          <stringProp name="className">com.mysql.jdbc.Driver</stringProp>
+          <stringProp name="connectionId">mysqlConn-${__threadNum}</stringProp>
+          <stringProp name="database">testdb</stringProp>
+          <stringProp name="host">${host}</stringProp>
+          <stringProp name="jdbcName">jdbc:mysql</stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <stringProp name="port">3306</stringProp>
+          <stringProp name="readOnly">True</stringProp>
+          <stringProp name="sid"></stringProp>
+          <stringProp name="username">testUser</stringProp>
+        </customjdbc.CustomJDBCConnectionSampler>
         <hashTree>
           <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer" enabled="true">
             <boolProp name="ResultCollector.error_logging">false</boolProp>
@@ -288,7 +319,98 @@
                 <threadCounts>true</threadCounts>
               </value>
             </objProp>
-            <stringProp name="filename">./RENAME-THIS/RIAKQueryHandlerSampleResults.csv</stringProp>
+            <stringProp name="filename">./${testPlanName}/JDBCConnectionOpenSampleResults.csv</stringProp>
+          </ResultCollector>
+          <hashTree/>
+        </hashTree>
+        <mysql.MysqlSampler guiclass="TestBeanGUI" testclass="mysql.MysqlSampler" testname="Custom - MySQL Sampler" enabled="true">
+          <stringProp name="assignmentInfo">assignInfo</stringProp>
+          <stringProp name="database">testdb</stringProp>
+          <stringProp name="requestType">read</stringProp>
+          <stringProp name="useChunks">False</stringProp>
+          <stringProp name="validateOperation">False</stringProp>
+          <stringProp name="connectionId">mysqlConn-${__threadNum}</stringProp>
+        </mysql.MysqlSampler>
+        <hashTree>
+          <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>true</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>true</code>
+                <message>true</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>false</assertions>
+                <subresults>false</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>true</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <bytes>true</bytes>
+                <threadCounts>true</threadCounts>
+              </value>
+            </objProp>
+            <stringProp name="filename">./${testPlanName}/MySQLQueryHandlerSampleResults.csv</stringProp>
+          </ResultCollector>
+          <hashTree/>
+        </hashTree>
+        <customjdbc.CustomJDBCConnectionSampler guiclass="TestBeanGUI" testclass="customjdbc.CustomJDBCConnectionSampler" testname="Custom - JDBC Connection Sampler" enabled="true">
+          <stringProp name="autoCommit">True</stringProp>
+          <stringProp name="className">com.mysql.jdbc.Driver</stringProp>
+          <stringProp name="connectionId">mysqlConn-${__threadNum}</stringProp>
+          <stringProp name="database">testdb</stringProp>
+          <stringProp name="host">${host}</stringProp>
+          <stringProp name="jdbcName">jdbc:mysql</stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <stringProp name="port">3306</stringProp>
+          <stringProp name="readOnly">True</stringProp>
+          <stringProp name="sid"></stringProp>
+          <stringProp name="username">testUser</stringProp>
+        </customjdbc.CustomJDBCConnectionSampler>
+        <hashTree>
+          <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>true</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>true</code>
+                <message>true</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>false</assertions>
+                <subresults>false</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>true</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <bytes>true</bytes>
+                <threadCounts>true</threadCounts>
+              </value>
+            </objProp>
+            <stringProp name="filename">./${testPlanName}/JDBCConnectionCloseSampleResults.csv</stringProp>
           </ResultCollector>
           <hashTree/>
         </hashTree>
@@ -311,7 +433,7 @@
         <org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler" testname="SSH SFTP Copy DSTAT" enabled="true">
           <stringProp name="action">get</stringProp>
           <intProp name="connectionTimeout">5000</intProp>
-          <stringProp name="destination">./RENAME-THIS/monitoring/dstat.csv</stringProp>
+          <stringProp name="destination">./${testPlanName}/monitoring/dstat-node1.csv</stringProp>
           <stringProp name="hostname">${host}</stringProp>
           <stringProp name="passphrase"></stringProp>
           <stringProp name="password">testPass</stringProp>
@@ -325,7 +447,7 @@
         <org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler" testname="SSH SFTP Copy IOSTAT" enabled="true">
           <stringProp name="action">get</stringProp>
           <intProp name="connectionTimeout">5000</intProp>
-          <stringProp name="destination">./RENAME-THIS/monitoring/iostat.csv</stringProp>
+          <stringProp name="destination">./${testPlanName}/monitoring/iostat-node1.csv</stringProp>
           <stringProp name="hostname">${host}</stringProp>
           <stringProp name="passphrase"></stringProp>
           <stringProp name="password">testPass</stringProp>
@@ -378,7 +500,7 @@
               <bytes>true</bytes>
             </value>
           </objProp>
-          <stringProp name="filename">./RENAME-THIS/monitoring/MonitoringThreadsStop.csv</stringProp>
+          <stringProp name="filename">./${testPlanName}/monitoring/MonitoringThreadsStop.csv</stringProp>
         </ResultCollector>
         <hashTree/>
       </hashTree>

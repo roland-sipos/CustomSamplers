@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jmeterTestPlan version="1.2" properties="2.4" jmeter="2.9 r1437961">
   <hashTree>
-    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="RIAK-Sequence-Write-2600-5200-1" enabled="true">
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="MongoDB-Random-GFSRead-1000-1000-1" enabled="true">
       <stringProp name="TestPlan.comments"></stringProp>
       <boolProp name="TestPlan.functional_mode">true</boolProp>
       <boolProp name="TestPlan.serialize_threadgroups">true</boolProp>
@@ -15,18 +15,18 @@
         <collectionProp name="Arguments.arguments">
           <elementProp name="testPlanName" elementType="Argument">
             <stringProp name="Argument.name">testPlanName</stringProp>
-            <stringProp name="Argument.value">RIAK-Sequence-Write-2600-5200-1</stringProp>
+            <stringProp name="Argument.value">RENAME-THIS</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="numberOfThreads" elementType="Argument">
             <stringProp name="Argument.name">numberOfThreads</stringProp>
-            <stringProp name="Argument.value">2600</stringProp>
+            <stringProp name="Argument.value">1000</stringProp>
             <stringProp name="Argument.desc">The number of threads.</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="rampUpTime" elementType="Argument">
             <stringProp name="Argument.name">rampUpTime</stringProp>
-            <stringProp name="Argument.value">5200</stringProp>
+            <stringProp name="Argument.value">1000</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
             <stringProp name="Argument.desc">Ramp up time [sec]</stringProp>
           </elementProp>
@@ -35,11 +35,6 @@
             <stringProp name="Argument.value">node1.cern.ch</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
             <stringProp name="Argument.desc">Host to connect to.</stringProp>
-          </elementProp>
-          <elementProp name="port" elementType="Argument">
-            <stringProp name="Argument.name">port</stringProp>
-            <stringProp name="Argument.value">8087</stringProp>
-            <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="controller" elementType="Argument">
             <stringProp name="Argument.name">controller</stringProp>
@@ -52,7 +47,7 @@
       <assignment.AssignmentConfigElement guiclass="TestBeanGUI" testclass="assignment.AssignmentConfigElement" testname="Custom - Assignment Configuration" enabled="true">
         <stringProp name="assignmentFile">unspecified</stringProp>
         <stringProp name="assignmentInfo">assignInfo</stringProp>
-        <stringProp name="assignmentMode">sequence</stringProp>
+        <stringProp name="assignmentMode">random</stringProp>
         <stringProp name="binaryInfo">binInfo</stringProp>
         <stringProp name="inputLocation">/mnt/testdata/</stringProp>
         <stringProp name="encoding">binary</stringProp>
@@ -61,17 +56,22 @@
         <stringProp name="numberOfAssignments">${numberOfThreads}</stringProp>
       </assignment.AssignmentConfigElement>
       <hashTree/>
-      <riak.RiakConfigElement guiclass="TestBeanGUI" testclass="riak.RiakConfigElement" testname="Custom - RIAK Connection Configuration" enabled="true">
-        <stringProp name="cluster">conddb</stringProp>
-        <stringProp name="connectionId">riakConn</stringProp>
+      <mongodb.MongoConfigElement guiclass="TestBeanGUI" testclass="mongodb.MongoConfigElement" testname="Custom - MongoDB Connection Configuration" enabled="false">
+        <stringProp name="autoConnectRetry">False</stringProp>
+        <stringProp name="connectTimeout">0</stringProp>
+        <stringProp name="connectionsPerHost">100</stringProp>
+        <stringProp name="database">conddb</stringProp>
         <stringProp name="host">${host}</stringProp>
-        <stringProp name="maxConnection">200</stringProp>
+        <stringProp name="maxAutoConnectRetryTime">0</stringProp>
+        <stringProp name="maxWaitTime">120000</stringProp>
         <stringProp name="password">testPass</stringProp>
-        <stringProp name="port">${port}</stringProp>
-        <stringProp name="protocol">RAW-PB</stringProp>
-        <stringProp name="timeout">60000</stringProp>
+        <stringProp name="port">27017</stringProp>
+        <stringProp name="socketKeepAlive">True</stringProp>
+        <stringProp name="socketTimeout">0</stringProp>
+        <stringProp name="threadsAllowedToBlockMultiplier">5</stringProp>
         <stringProp name="username">testUser</stringProp>
-      </riak.RiakConfigElement>
+        <stringProp name="connectionId">mongoConn</stringProp>
+      </mongodb.MongoConfigElement>
       <hashTree/>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Iperf" enabled="false">
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
@@ -248,15 +248,22 @@
         <boolProp name="ThreadGroup.delayedStart">true</boolProp>
       </ThreadGroup>
       <hashTree>
-        <riak.RiakSampler guiclass="TestBeanGUI" testclass="riak.RiakSampler" testname="Custom - RIAK Sampler" enabled="true">
-          <stringProp name="assignmentInfo">assignInfo</stringProp>
-          <stringProp name="connectionId">riakConn</stringProp>
-          <stringProp name="kryoMethod">False</stringProp>
-          <stringProp name="requestType">write</stringProp>
-          <stringProp name="useChunks">False</stringProp>
-          <stringProp name="useLinks">False</stringProp>
-          <stringProp name="validateOperation">False</stringProp>
-        </riak.RiakSampler>
+        <mongodb.MongoConnectionSampler guiclass="TestBeanGUI" testclass="mongodb.MongoConnectionSampler" testname="Custom - MongoDB Connection Sampler" enabled="true">
+          <stringProp name="autoConnectRetry">False</stringProp>
+          <stringProp name="connectTimeout">0</stringProp>
+          <stringProp name="connectionId">mongoConn-${__threadNum}</stringProp>
+          <stringProp name="connectionsPerHost">10</stringProp>
+          <stringProp name="database">conddb</stringProp>
+          <stringProp name="host">${host}</stringProp>
+          <stringProp name="maxAutoConnectRetryTime">0</stringProp>
+          <stringProp name="maxWaitTime">120000</stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <stringProp name="port">27017</stringProp>
+          <stringProp name="socketKeepAlive">False</stringProp>
+          <stringProp name="socketTimeout">0</stringProp>
+          <stringProp name="threadsAllowedToBlockMultiplier">5</stringProp>
+          <stringProp name="username">testUser</stringProp>
+        </mongodb.MongoConnectionSampler>
         <hashTree>
           <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer" enabled="true">
             <boolProp name="ResultCollector.error_logging">false</boolProp>
@@ -288,7 +295,101 @@
                 <threadCounts>true</threadCounts>
               </value>
             </objProp>
-            <stringProp name="filename">./RENAME-THIS/RIAKQueryHandlerSampleResults.csv</stringProp>
+            <stringProp name="filename">./RENAME-THIS/MongoConnectionOpenSamplerResults.csv</stringProp>
+          </ResultCollector>
+          <hashTree/>
+        </hashTree>
+        <mongodb.MongoSampler guiclass="TestBeanGUI" testclass="mongodb.MongoSampler" testname="Custom - MongoDB Sampler" enabled="true">
+          <stringProp name="assignmentInfo">assignInfo</stringProp>
+          <stringProp name="gridFsMethod">True</stringProp>
+          <stringProp name="useChunks">False</stringProp>
+          <stringProp name="connectionId">mongoConn-${__threadNum}</stringProp>
+          <stringProp name="requestType">read</stringProp>
+          <stringProp name="validateOperation">False</stringProp>
+        </mongodb.MongoSampler>
+        <hashTree>
+          <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>true</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>true</code>
+                <message>true</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>false</assertions>
+                <subresults>false</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>true</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <bytes>true</bytes>
+                <threadCounts>true</threadCounts>
+              </value>
+            </objProp>
+            <stringProp name="filename">./RENAME-THIS/MongoQueryHandlerSampleResults.csv</stringProp>
+          </ResultCollector>
+          <hashTree/>
+        </hashTree>
+        <mongodb.MongoConnectionSampler guiclass="TestBeanGUI" testclass="mongodb.MongoConnectionSampler" testname="Custom - MongoDB Connection Sampler" enabled="true">
+          <stringProp name="autoConnectRetry">False</stringProp>
+          <stringProp name="connectTimeout">0</stringProp>
+          <stringProp name="connectionId">mongoConn-${__threadNum}</stringProp>
+          <stringProp name="connectionsPerHost">10</stringProp>
+          <stringProp name="database">conddb</stringProp>
+          <stringProp name="host">${host}</stringProp>
+          <stringProp name="maxAutoConnectRetryTime">0</stringProp>
+          <stringProp name="maxWaitTime">120000</stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <stringProp name="port">27017</stringProp>
+          <stringProp name="socketKeepAlive">False</stringProp>
+          <stringProp name="socketTimeout">0</stringProp>
+          <stringProp name="threadsAllowedToBlockMultiplier">5</stringProp>
+          <stringProp name="username">testUser</stringProp>
+        </mongodb.MongoConnectionSampler>
+        <hashTree>
+          <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>true</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>true</code>
+                <message>true</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>false</assertions>
+                <subresults>false</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>true</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <bytes>true</bytes>
+                <threadCounts>true</threadCounts>
+              </value>
+            </objProp>
+            <stringProp name="filename">./RENAME-THIS/MongoConnectionCloseSamplerResults.csv</stringProp>
           </ResultCollector>
           <hashTree/>
         </hashTree>

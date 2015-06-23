@@ -45,9 +45,10 @@
         <stringProp name="assignmentMode">sequence</stringProp>
         <stringProp name="binaryInfo">binInfo</stringProp>
         <stringProp name="inputLocation">/testdata/out/</stringProp>
-        <stringProp name="encoding">NO</stringProp>
+        <stringProp name="encoding">binary</stringProp>
         <stringProp name="assignmentInputFile"></stringProp>
         <stringProp name="assignmentOutputFile"></stringProp>
+        <stringProp name="numberOfAssignments">${numberOfThreads}</stringProp>
       </assignment.AssignmentConfigElement>
       <hashTree/>
       <customjdbc.CustomJDBCConfigElement guiclass="TestBeanGUI" testclass="customjdbc.CustomJDBCConfigElement" testname="Custom - JDBC Connection Configuration" enabled="true">
@@ -64,6 +65,7 @@
         <stringProp name="jdbcName">jdbc:mysql</stringProp>
         <stringProp name="className">com.mysql.jdbc.Driver</stringProp>
         <stringProp name="autoCommit">True</stringProp>
+        <stringProp name="readOnly">False</stringProp>
       </customjdbc.CustomJDBCConfigElement>
       <hashTree/>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Iperf" enabled="true">

@@ -1,0 +1,640 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="2.4" jmeter="2.9 r1437961">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Cassandra-Read-MedCluster-1200-1200-1" enabled="true">
+      <stringProp name="TestPlan.comments"></stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">true</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+      <stringProp name="TestPlan.user_define_classpath"></stringProp>
+    </TestPlan>
+    <hashTree>
+      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="testPlanName" elementType="Argument">
+            <stringProp name="Argument.name">testPlanName</stringProp>
+            <stringProp name="Argument.value">RENAME-THIS</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="numberOfThreads" elementType="Argument">
+            <stringProp name="Argument.name">numberOfThreads</stringProp>
+            <stringProp name="Argument.value">1200</stringProp>
+            <stringProp name="Argument.desc">The number of threads.</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="rampUpTime" elementType="Argument">
+            <stringProp name="Argument.name">rampUpTime</stringProp>
+            <stringProp name="Argument.value">1200</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Ramp up time [sec]</stringProp>
+          </elementProp>
+          <elementProp name="host" elementType="Argument">
+            <stringProp name="Argument.name">host</stringProp>
+            <stringProp name="Argument.value">med-node1.cern.ch,med-node2.cern.ch,med-node3.cern.ch,med-node4.cern.ch</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Host to connect to.</stringProp>
+          </elementProp>
+          <elementProp name="host1" elementType="Argument">
+            <stringProp name="Argument.name">host1</stringProp>
+            <stringProp name="Argument.value">med-node1.cern.ch</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="host2" elementType="Argument">
+            <stringProp name="Argument.name">host2</stringProp>
+            <stringProp name="Argument.value">med-node2.cern.ch</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="host3" elementType="Argument">
+            <stringProp name="Argument.name">host3</stringProp>
+            <stringProp name="Argument.value">med-node3.cern.ch</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="host4" elementType="Argument">
+            <stringProp name="Argument.name">host4</stringProp>
+            <stringProp name="Argument.value">med-node4.cern.ch</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+      </Arguments>
+      <hashTree/>
+      <assignment.AssignmentConfigElement guiclass="TestBeanGUI" testclass="assignment.AssignmentConfigElement" testname="Custom - Assignment Configuration" enabled="true">
+        <stringProp name="assignmentFile">unspecified</stringProp>
+        <stringProp name="assignmentInfo">assignInfo</stringProp>
+        <stringProp name="assignmentMode">random</stringProp>
+        <stringProp name="binaryInfo">binInfo</stringProp>
+        <stringProp name="inputLocation">/mnt/testdata/</stringProp>
+        <stringProp name="encoding">binary</stringProp>
+        <stringProp name="assignmentInputFile"></stringProp>
+        <stringProp name="assignmentOutputFile"></stringProp>
+        <stringProp name="numberOfAssignments">${numberOfThreads}</stringProp>
+      </assignment.AssignmentConfigElement>
+      <hashTree/>
+      <cassandra.CassandraConfigElement guiclass="TestBeanGUI" testclass="cassandra.CassandraConfigElement" testname="Custom - Cassandra Connection Configuration" enabled="true">
+        <stringProp name="cluster">TestCluster</stringProp>
+        <stringProp name="host">${host}</stringProp>
+        <stringProp name="loadBalancingPolicy">leastActive</stringProp>
+        <stringProp name="maxWaitTimeIfExhausted">60000</stringProp>
+        <stringProp name="port">9042</stringProp>
+        <stringProp name="retryDownedHostDelaySec">30</stringProp>
+        <stringProp name="retryDownedHostQueueSize">128</stringProp>
+        <stringProp name="retryDownedHosts">True</stringProp>
+        <stringProp name="setAutoDiscoverHosts">True</stringProp>
+        <stringProp name="setHostTimeoutCounter">20</stringProp>
+        <stringProp name="thriftSocketTimeout">10000</stringProp>
+        <stringProp name="connectionId">cassConn</stringProp>
+      </cassandra.CassandraConfigElement>
+      <hashTree/>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Iperf" enabled="false">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <longProp name="ThreadGroup.start_time">1392294966000</longProp>
+        <longProp name="ThreadGroup.end_time">1392294966000</longProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <SystemSampler guiclass="SystemSamplerGui" testclass="SystemSampler" testname="Iperf Sampler" enabled="true">
+          <boolProp name="SystemSampler.checkReturnCode">true</boolProp>
+          <stringProp name="SystemSampler.expectedReturnCode">0</stringProp>
+          <stringProp name="SystemSampler.command">iperf</stringProp>
+          <elementProp name="SystemSampler.arguments" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="Argument">
+                <stringProp name="Argument.name"></stringProp>
+                <stringProp name="Argument.value">-c</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Argument">
+                <stringProp name="Argument.name"></stringProp>
+                <stringProp name="Argument.value">${host}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Argument">
+                <stringProp name="Argument.name"></stringProp>
+                <stringProp name="Argument.value">-t 1</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Argument">
+                <stringProp name="Argument.name"></stringProp>
+                <stringProp name="Argument.value">-P 10</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <elementProp name="SystemSampler.environment" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="SystemSampler.directory"></stringProp>
+          <stringProp name="SystemSampler.stdout">./${testPlanName}/iperflog_${__threadNum}_${__machineName}_to_${host}.log</stringProp>
+          <stringProp name="SystemSampler.stderr">./${testPlanName}/iperflog_${__threadNum}_${__machineName}_to_${host}.log</stringProp>
+        </SystemSampler>
+        <hashTree>
+          <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>false</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>false</code>
+                <message>false</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>false</assertions>
+                <subresults>false</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>true</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <hostname>true</hostname>
+              </value>
+            </objProp>
+            <stringProp name="filename">./${testPlanName}/iperfSampleResults.csv</stringProp>
+          </ResultCollector>
+          <hashTree/>
+        </hashTree>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Start Monitoring" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <longProp name="ThreadGroup.start_time">1411742528000</longProp>
+        <longProp name="ThreadGroup.end_time">1411742528000</longProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler" testname="SSH DSTAT Node1" enabled="true">
+          <stringProp name="command">timeout ${rampUpTime} dstat -T -c -d -r -g -i -l -m -n -s -p -y --fs --ipc --lock --raw --socket --tcp --udp --unix --vm --nocolor --output ~/dstat.csv &gt; /dev/null &amp;</stringProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="hostname">${host1}</stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <intProp name="port">22</intProp>
+          <boolProp name="printStdErr">true</boolProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <boolProp name="useReturnCode">true</boolProp>
+          <stringProp name="username">testUser</stringProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler" testname="SSH IOSTAT Node1" enabled="true">
+          <stringProp name="command">iostat -cdxtm /dev/vda 1 ${rampUpTime} &gt; ~/iostat.csv &amp;</stringProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="hostname">${host1}</stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <intProp name="port">22</intProp>
+          <boolProp name="printStdErr">true</boolProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <boolProp name="useReturnCode">true</boolProp>
+          <stringProp name="username">testUser</stringProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler" testname="SSH DSTAT Node2" enabled="true">
+          <stringProp name="command">timeout ${rampUpTime} dstat -T -c -d -r -g -i -l -m -n -s -p -y --fs --ipc --lock --raw --socket --tcp --udp --unix --vm --nocolor --output ~/dstat.csv &gt; /dev/null &amp;</stringProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="hostname">${host2}</stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <intProp name="port">22</intProp>
+          <boolProp name="printStdErr">true</boolProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <boolProp name="useReturnCode">true</boolProp>
+          <stringProp name="username">testUser</stringProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler" testname="SSH IOSTAT Node2" enabled="true">
+          <stringProp name="command">iostat -cdxtm /dev/vda 1 ${rampUpTime} &gt; ~/iostat.csv &amp;</stringProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="hostname">${host2}</stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <intProp name="port">22</intProp>
+          <boolProp name="printStdErr">true</boolProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <boolProp name="useReturnCode">true</boolProp>
+          <stringProp name="username">testUser</stringProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler" testname="SSH DSTAT Node3" enabled="true">
+          <stringProp name="command">timeout ${rampUpTime} dstat -T -c -d -r -g -i -l -m -n -s -p -y --fs --ipc --lock --raw --socket --tcp --udp --unix --vm --nocolor --output ~/dstat.csv &gt; /dev/null &amp;</stringProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="hostname">${host3}</stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <intProp name="port">22</intProp>
+          <boolProp name="printStdErr">true</boolProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <boolProp name="useReturnCode">true</boolProp>
+          <stringProp name="username">testUser</stringProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler" testname="SSH IOSTAT Node3" enabled="true">
+          <stringProp name="command">iostat -cdxtm /dev/vda 1 ${rampUpTime} &gt; ~/iostat.csv &amp;</stringProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="hostname">${host3}</stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <intProp name="port">22</intProp>
+          <boolProp name="printStdErr">true</boolProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <boolProp name="useReturnCode">true</boolProp>
+          <stringProp name="username">testUser</stringProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler" testname="SSH DSTAT Node4" enabled="true">
+          <stringProp name="command">timeout ${rampUpTime} dstat -T -c -d -r -g -i -l -m -n -s -p -y --fs --ipc --lock --raw --socket --tcp --udp --unix --vm --nocolor --output ~/dstat.csv &gt; /dev/null &amp;</stringProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="hostname">${host4}</stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <intProp name="port">22</intProp>
+          <boolProp name="printStdErr">true</boolProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <boolProp name="useReturnCode">true</boolProp>
+          <stringProp name="username">testUser</stringProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler" testname="SSH IOSTAT Node4" enabled="true">
+          <stringProp name="command">iostat -cdxtm /dev/vda 1 ${rampUpTime} &gt; ~/iostat.csv &amp;</stringProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="hostname">${host4}</stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <intProp name="port">22</intProp>
+          <boolProp name="printStdErr">true</boolProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <boolProp name="useReturnCode">true</boolProp>
+          <stringProp name="username">testUser</stringProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler>
+        <hashTree/>
+        <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+            </value>
+          </objProp>
+          <stringProp name="filename">./RENAME-THIS/monitoring/MonitoringThreadsStart.csv</stringProp>
+        </ResultCollector>
+        <hashTree/>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="QueryHandlers" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${numberOfThreads}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">${rampUpTime}</stringProp>
+        <longProp name="ThreadGroup.start_time">1385029359000</longProp>
+        <longProp name="ThreadGroup.end_time">1385029359000</longProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.delayedStart">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <cassandra.CassandraSampler guiclass="TestBeanGUI" testclass="cassandra.CassandraSampler" testname="Custom - Cassandra Sampler" enabled="true">
+          <stringProp name="assignmentInfo">assignInfo</stringProp>
+          <stringProp name="connectionId">cassConn</stringProp>
+          <stringProp name="requestType">read</stringProp>
+          <stringProp name="useChunks">False</stringProp>
+          <stringProp name="validateOperation">False</stringProp>
+        </cassandra.CassandraSampler>
+        <hashTree>
+          <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>true</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>true</code>
+                <message>true</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>false</assertions>
+                <subresults>false</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>true</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <bytes>true</bytes>
+                <threadCounts>true</threadCounts>
+              </value>
+            </objProp>
+            <stringProp name="filename">./RENAME-THIS/CassandraQueryHandlerSampleResults.csv</stringProp>
+          </ResultCollector>
+          <hashTree/>
+        </hashTree>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Finish monitoring" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <longProp name="ThreadGroup.start_time">1411742723000</longProp>
+        <longProp name="ThreadGroup.end_time">1411742723000</longProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler" testname="SSH SFTP Copy DSTAT Node1" enabled="true">
+          <stringProp name="action">get</stringProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="destination">./${testPlanName}/monitoring/dstat-node1.csv</stringProp>
+          <stringProp name="hostname">${host1}</stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <intProp name="port">22</intProp>
+          <boolProp name="printFile">false</boolProp>
+          <stringProp name="source">/home/testUser/dstat.csv</stringProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <stringProp name="username">testUser</stringProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler" testname="SSH SFTP Copy IOSTAT Node1" enabled="true">
+          <stringProp name="action">get</stringProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="destination">./${testPlanName}/monitoring/iostat-node1.csv</stringProp>
+          <stringProp name="hostname">${host1}</stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <intProp name="port">22</intProp>
+          <boolProp name="printFile">false</boolProp>
+          <stringProp name="source">/home/testUser/iostat.csv</stringProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <stringProp name="username">testUser</stringProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler" testname="SSH Remove Node1" enabled="true">
+          <stringProp name="hostname">${host1}</stringProp>
+          <intProp name="port">22</intProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="username">testUser</stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="command">rm ~/*</stringProp>
+          <boolProp name="useReturnCode">true</boolProp>
+          <boolProp name="printStdErr">true</boolProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler" testname="SSH SFTP Copy DSTAT Node2" enabled="true">
+          <stringProp name="action">get</stringProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="destination">./${testPlanName}/monitoring/dstat-node2.csv</stringProp>
+          <stringProp name="hostname">${host2}</stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <intProp name="port">22</intProp>
+          <boolProp name="printFile">false</boolProp>
+          <stringProp name="source">/home/testUser/dstat.csv</stringProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <stringProp name="username">testUser</stringProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler" testname="SSH SFTP Copy IOSTAT Node2" enabled="true">
+          <stringProp name="action">get</stringProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="destination">./${testPlanName}/monitoring/iostat-node2.csv</stringProp>
+          <stringProp name="hostname">${host2}</stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <intProp name="port">22</intProp>
+          <boolProp name="printFile">false</boolProp>
+          <stringProp name="source">/home/testUser/iostat.csv</stringProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <stringProp name="username">testUser</stringProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler" testname="SSH Remove Node2" enabled="true">
+          <stringProp name="hostname">${host2}</stringProp>
+          <intProp name="port">22</intProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="username">testUser</stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="command">rm ~/*</stringProp>
+          <boolProp name="useReturnCode">true</boolProp>
+          <boolProp name="printStdErr">true</boolProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler" testname="SSH SFTP Copy DSTAT Node3" enabled="true">
+          <stringProp name="action">get</stringProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="destination">./${testPlanName}/monitoring/dstat-node3.csv</stringProp>
+          <stringProp name="hostname">${host3}</stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <intProp name="port">22</intProp>
+          <boolProp name="printFile">false</boolProp>
+          <stringProp name="source">/home/testUser/dstat.csv</stringProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <stringProp name="username">testUser</stringProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler" testname="SSH SFTP Copy IOSTAT Node3" enabled="true">
+          <stringProp name="action">get</stringProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="destination">./${testPlanName}/monitoring/iostat-node3.csv</stringProp>
+          <stringProp name="hostname">${host3}</stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <intProp name="port">22</intProp>
+          <boolProp name="printFile">false</boolProp>
+          <stringProp name="source">/home/testUser/iostat.csv</stringProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <stringProp name="username">testUser</stringProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler" testname="SSH Remove Node3" enabled="true">
+          <stringProp name="hostname">${host3}</stringProp>
+          <intProp name="port">22</intProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="username">testUser</stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="command">rm ~/*</stringProp>
+          <boolProp name="useReturnCode">true</boolProp>
+          <boolProp name="printStdErr">true</boolProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler" testname="SSH SFTP Copy DSTAT Node4" enabled="true">
+          <stringProp name="action">get</stringProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="destination">./${testPlanName}/monitoring/dstat-node4.csv</stringProp>
+          <stringProp name="hostname">${host4}</stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <intProp name="port">22</intProp>
+          <boolProp name="printFile">false</boolProp>
+          <stringProp name="source">/home/testUser/dstat.csv</stringProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <stringProp name="username">testUser</stringProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler" testname="SSH SFTP Copy IOSTAT Node4" enabled="true">
+          <stringProp name="action">get</stringProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="destination">./${testPlanName}/monitoring/iostat-node4.csv</stringProp>
+          <stringProp name="hostname">${host4}</stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <intProp name="port">22</intProp>
+          <boolProp name="printFile">false</boolProp>
+          <stringProp name="source">/home/testUser/iostat.csv</stringProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <stringProp name="username">testUser</stringProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler" testname="SSH Remove Node4" enabled="true">
+          <stringProp name="hostname">${host4}</stringProp>
+          <intProp name="port">22</intProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="username">testUser</stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="command">rm ~/*</stringProp>
+          <boolProp name="useReturnCode">true</boolProp>
+          <boolProp name="printStdErr">true</boolProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler" testname="SSH SFTP Copy DSTAT Node5" enabled="true">
+          <stringProp name="action">get</stringProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="destination">./${testPlanName}/monitoring/dstat-node5.csv</stringProp>
+          <stringProp name="hostname">${host5}</stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <intProp name="port">22</intProp>
+          <boolProp name="printFile">false</boolProp>
+          <stringProp name="source">/home/testUser/dstat.csv</stringProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <stringProp name="username">testUser</stringProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler" testname="SSH SFTP Copy IOSTAT Node5" enabled="true">
+          <stringProp name="action">get</stringProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="destination">./${testPlanName}/monitoring/iostat-node5.csv</stringProp>
+          <stringProp name="hostname">${host5}</stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <intProp name="port">22</intProp>
+          <boolProp name="printFile">false</boolProp>
+          <stringProp name="source">/home/testUser/iostat.csv</stringProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <stringProp name="username">testUser</stringProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler" testname="SSH Remove Node5" enabled="true">
+          <stringProp name="hostname">${host5}</stringProp>
+          <intProp name="port">22</intProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="username">testUser</stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="command">rm ~/*</stringProp>
+          <boolProp name="useReturnCode">true</boolProp>
+          <boolProp name="printStdErr">true</boolProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler>
+        <hashTree/>
+        <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+            </value>
+          </objProp>
+          <stringProp name="filename">./RENAME-THIS/monitoring/MonitoringThreadsStop.csv</stringProp>
+        </ResultCollector>
+        <hashTree/>
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jmeterTestPlan version="1.2" properties="2.4" jmeter="2.9 r1437961">
   <hashTree>
-    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="CouchDB-Attachment-Sequence-Write-600-1800-1" enabled="true">
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="CouchDB-Attachment-Sequence-Write-1200-3600-1" enabled="true">
       <stringProp name="TestPlan.comments"></stringProp>
       <boolProp name="TestPlan.functional_mode">false</boolProp>
       <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
@@ -15,24 +15,24 @@
         <collectionProp name="Arguments.arguments">
           <elementProp name="testPlanName" elementType="Argument">
             <stringProp name="Argument.name">testPlanName</stringProp>
-            <stringProp name="Argument.value">CouchDB-Attachment-Sequence-Write-600-1800-1</stringProp>
+            <stringProp name="Argument.value">CouchDB-Attachment-Sequence-Write-1200-3600-1</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="numberOfThreads" elementType="Argument">
             <stringProp name="Argument.name">numberOfThreads</stringProp>
-            <stringProp name="Argument.value">600</stringProp>
+            <stringProp name="Argument.value">1200</stringProp>
             <stringProp name="Argument.desc">The number of threads.</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="rampUpTime" elementType="Argument">
             <stringProp name="Argument.name">rampUpTime</stringProp>
-            <stringProp name="Argument.value">1800</stringProp>
+            <stringProp name="Argument.value">3600</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
             <stringProp name="Argument.desc">Ramp up time [sec]</stringProp>
           </elementProp>
           <elementProp name="host" elementType="Argument">
             <stringProp name="Argument.name">host</stringProp>
-            <stringProp name="Argument.value">couch-test.cern.ch</stringProp>
+            <stringProp name="Argument.value">node-11564567-f8d3-4236-8113-8bab6bf8a427.cern.ch</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
             <stringProp name="Argument.desc">Host to connect to.</stringProp>
           </elementProp>
@@ -44,10 +44,11 @@
         <stringProp name="assignmentInfo">assignInfo</stringProp>
         <stringProp name="assignmentMode">sequence</stringProp>
         <stringProp name="binaryInfo">binInfo</stringProp>
-        <stringProp name="inputLocation">/testdata/out/</stringProp>
-        <stringProp name="encoding">NO</stringProp>
+        <stringProp name="inputLocation">/mnt/testdata/</stringProp>
+        <stringProp name="encoding">binary</stringProp>
         <stringProp name="assignmentInputFile"></stringProp>
         <stringProp name="assignmentOutputFile"></stringProp>
+        <stringProp name="numberOfAssignments">${numberOfThreads}</stringProp>
       </assignment.AssignmentConfigElement>
       <hashTree/>
       <couchdb.CouchConfigElement guiclass="TestBeanGUI" testclass="couchdb.CouchConfigElement" testname="Custom - CouchDB Connection Configuration" enabled="true">
@@ -56,7 +57,7 @@
         <stringProp name="connectionTimeout">30000</stringProp>
         <stringProp name="createIfNotExists">False</stringProp>
         <stringProp name="database">testdb</stringProp>
-        <stringProp name="host">http://couch-test.cern.ch</stringProp>
+        <stringProp name="host">${host}</stringProp>
         <stringProp name="maxCacheEntries">1000</stringProp>
         <stringProp name="maxConnections">100</stringProp>
         <stringProp name="maxObjectSizeBytes">104857600</stringProp>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jmeterTestPlan version="1.2" properties="2.4" jmeter="2.9 r1437961">
   <hashTree>
-    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="MySQL-Random-Read-Results-1000-1000-1" enabled="true">
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="MongoDB-GFSRead-MediumShards-1200-1200-1" enabled="true">
       <stringProp name="TestPlan.comments"></stringProp>
       <boolProp name="TestPlan.functional_mode">false</boolProp>
       <boolProp name="TestPlan.serialize_threadgroups">true</boolProp>
@@ -32,9 +32,29 @@
           </elementProp>
           <elementProp name="host" elementType="Argument">
             <stringProp name="Argument.name">host</stringProp>
-            <stringProp name="Argument.value">node2.cern.ch</stringProp>
+            <stringProp name="Argument.value">med-node1.cern.ch,med-node2.cern.ch,med-node3.cern.ch,med-node4.cern.ch</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
             <stringProp name="Argument.desc">Host to connect to.</stringProp>
+          </elementProp>
+          <elementProp name="host1" elementType="Argument">
+            <stringProp name="Argument.name">host1</stringProp>
+            <stringProp name="Argument.value">med-node1.cern.ch</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="host2" elementType="Argument">
+            <stringProp name="Argument.name">host2</stringProp>
+            <stringProp name="Argument.value">med-node2.cern.ch</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="host3" elementType="Argument">
+            <stringProp name="Argument.name">host3</stringProp>
+            <stringProp name="Argument.value">med-node3.cern.ch</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="host4" elementType="Argument">
+            <stringProp name="Argument.name">host4</stringProp>
+            <stringProp name="Argument.value">med-node4.cern.ch</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
         </collectionProp>
       </Arguments>
@@ -51,22 +71,22 @@
         <stringProp name="numberOfAssignments">${numberOfThreads}</stringProp>
       </assignment.AssignmentConfigElement>
       <hashTree/>
-      <customjdbc.CustomJDBCConfigElement guiclass="TestBeanGUI" testclass="customjdbc.CustomJDBCConfigElement" testname="Custom - JDBC Connection Configuration" enabled="true">
-        <stringProp name="autocommit">True</stringProp>
-        <stringProp name="classname">com.mysql.jdbc.Driver</stringProp>
-        <stringProp name="database">testdb</stringProp>
+      <mongodb.MongoConfigElement guiclass="TestBeanGUI" testclass="mongodb.MongoConfigElement" testname="Custom - MongoDB Connection Configuration" enabled="true">
+        <stringProp name="autoConnectRetry">False</stringProp>
+        <stringProp name="connectTimeout">0</stringProp>
+        <stringProp name="connectionsPerHost">100</stringProp>
+        <stringProp name="database">conddb</stringProp>
         <stringProp name="host">${host}</stringProp>
-        <stringProp name="jdbcname">jdbc:mysql</stringProp>
+        <stringProp name="maxAutoConnectRetryTime">0</stringProp>
+        <stringProp name="maxWaitTime">120000</stringProp>
         <stringProp name="password">testPass</stringProp>
-        <stringProp name="port">3306</stringProp>
-        <stringProp name="sid"></stringProp>
+        <stringProp name="port">27017</stringProp>
+        <stringProp name="socketKeepAlive">True</stringProp>
+        <stringProp name="socketTimeout">0</stringProp>
+        <stringProp name="threadsAllowedToBlockMultiplier">5</stringProp>
         <stringProp name="username">testUser</stringProp>
-        <stringProp name="connectionId">mysqlConn</stringProp>
-        <stringProp name="jdbcName">jdbc:mysql</stringProp>
-        <stringProp name="className">com.mysql.jdbc.Driver</stringProp>
-        <stringProp name="autoCommit">True</stringProp>
-        <stringProp name="readOnly">True</stringProp>
-      </customjdbc.CustomJDBCConfigElement>
+        <stringProp name="connectionId">mongoConn</stringProp>
+      </mongodb.MongoConfigElement>
       <hashTree/>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Iperf" enabled="false">
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
@@ -119,38 +139,6 @@
           <stringProp name="SystemSampler.stderr">./${testPlanName}/iperflog_${__threadNum}_${__machineName}_to_${host}.log</stringProp>
         </SystemSampler>
         <hashTree>
-          <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
-            <boolProp name="ResultCollector.error_logging">false</boolProp>
-            <objProp>
-              <name>saveConfig</name>
-              <value class="SampleSaveConfiguration">
-                <time>true</time>
-                <latency>true</latency>
-                <timestamp>true</timestamp>
-                <success>true</success>
-                <label>true</label>
-                <code>true</code>
-                <message>true</message>
-                <threadName>true</threadName>
-                <dataType>true</dataType>
-                <encoding>false</encoding>
-                <assertions>true</assertions>
-                <subresults>true</subresults>
-                <responseData>false</responseData>
-                <samplerData>false</samplerData>
-                <xml>false</xml>
-                <fieldNames>false</fieldNames>
-                <responseHeaders>false</responseHeaders>
-                <requestHeaders>false</requestHeaders>
-                <responseDataOnError>false</responseDataOnError>
-                <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
-                <assertionsResultsToSave>0</assertionsResultsToSave>
-                <bytes>true</bytes>
-              </value>
-            </objProp>
-            <stringProp name="filename"></stringProp>
-          </ResultCollector>
-          <hashTree/>
           <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer" enabled="true">
             <boolProp name="ResultCollector.error_logging">false</boolProp>
             <objProp>
@@ -200,10 +188,10 @@
         <stringProp name="ThreadGroup.delay"></stringProp>
       </ThreadGroup>
       <hashTree>
-        <org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler" testname="SSH DSTAT" enabled="true">
+        <org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler" testname="SSH DSTAT Node1" enabled="true">
           <stringProp name="command">timeout ${rampUpTime} dstat -T -c -d -r -g -i -l -m -n -s -p -y --fs --ipc --lock --raw --socket --tcp --udp --unix --vm --nocolor --output ~/dstat.csv &gt; /dev/null &amp;</stringProp>
           <intProp name="connectionTimeout">5000</intProp>
-          <stringProp name="hostname">${host}</stringProp>
+          <stringProp name="hostname">${host1}</stringProp>
           <stringProp name="passphrase"></stringProp>
           <stringProp name="password">testPass</stringProp>
           <intProp name="port">22</intProp>
@@ -213,10 +201,88 @@
           <stringProp name="username">testUser</stringProp>
         </org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler>
         <hashTree/>
-        <org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler" testname="SSH IOSTAT" enabled="true">
+        <org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler" testname="SSH IOSTAT Node1" enabled="true">
           <stringProp name="command">iostat -cdxtm /dev/vda 1 ${rampUpTime} &gt; ~/iostat.csv &amp;</stringProp>
           <intProp name="connectionTimeout">5000</intProp>
-          <stringProp name="hostname">${host}</stringProp>
+          <stringProp name="hostname">${host1}</stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <intProp name="port">22</intProp>
+          <boolProp name="printStdErr">true</boolProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <boolProp name="useReturnCode">true</boolProp>
+          <stringProp name="username">testUser</stringProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler" testname="SSH DSTAT Node2" enabled="true">
+          <stringProp name="command">timeout ${rampUpTime} dstat -T -c -d -r -g -i -l -m -n -s -p -y --fs --ipc --lock --raw --socket --tcp --udp --unix --vm --nocolor --output ~/dstat.csv &gt; /dev/null &amp;</stringProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="hostname">${host2}</stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <intProp name="port">22</intProp>
+          <boolProp name="printStdErr">true</boolProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <boolProp name="useReturnCode">true</boolProp>
+          <stringProp name="username">testUser</stringProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler" testname="SSH IOSTAT Node2" enabled="true">
+          <stringProp name="command">iostat -cdxtm /dev/vda 1 ${rampUpTime} &gt; ~/iostat.csv &amp;</stringProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="hostname">${host2}</stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <intProp name="port">22</intProp>
+          <boolProp name="printStdErr">true</boolProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <boolProp name="useReturnCode">true</boolProp>
+          <stringProp name="username">testUser</stringProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler" testname="SSH DSTAT Node3" enabled="true">
+          <stringProp name="command">timeout ${rampUpTime} dstat -T -c -d -r -g -i -l -m -n -s -p -y --fs --ipc --lock --raw --socket --tcp --udp --unix --vm --nocolor --output ~/dstat.csv &gt; /dev/null &amp;</stringProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="hostname">${host3}</stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <intProp name="port">22</intProp>
+          <boolProp name="printStdErr">true</boolProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <boolProp name="useReturnCode">true</boolProp>
+          <stringProp name="username">testUser</stringProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler" testname="SSH IOSTAT Node3" enabled="true">
+          <stringProp name="command">iostat -cdxtm /dev/vda 1 ${rampUpTime} &gt; ~/iostat.csv &amp;</stringProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="hostname">${host3}</stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <intProp name="port">22</intProp>
+          <boolProp name="printStdErr">true</boolProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <boolProp name="useReturnCode">true</boolProp>
+          <stringProp name="username">testUser</stringProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler" testname="SSH DSTAT Node4" enabled="true">
+          <stringProp name="command">timeout ${rampUpTime} dstat -T -c -d -r -g -i -l -m -n -s -p -y --fs --ipc --lock --raw --socket --tcp --udp --unix --vm --nocolor --output ~/dstat.csv &gt; /dev/null &amp;</stringProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="hostname">${host4}</stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <intProp name="port">22</intProp>
+          <boolProp name="printStdErr">true</boolProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <boolProp name="useReturnCode">true</boolProp>
+          <stringProp name="username">testUser</stringProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler" testname="SSH IOSTAT Node4" enabled="true">
+          <stringProp name="command">iostat -cdxtm /dev/vda 1 ${rampUpTime} &gt; ~/iostat.csv &amp;</stringProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="hostname">${host4}</stringProp>
           <stringProp name="passphrase"></stringProp>
           <stringProp name="password">testPass</stringProp>
           <intProp name="port">22</intProp>
@@ -275,14 +341,18 @@
         <boolProp name="ThreadGroup.delayedStart">true</boolProp>
       </ThreadGroup>
       <hashTree>
-        <mysql.MysqlSampler guiclass="TestBeanGUI" testclass="mysql.MysqlSampler" testname="Custom - MySQL Sampler" enabled="true">
+        <mongodb.MongoSampler guiclass="TestBeanGUI" testclass="mongodb.MongoSampler" testname="Custom - MongoDB Sampler" enabled="true">
           <stringProp name="assignmentInfo">assignInfo</stringProp>
-          <stringProp name="database">testdb</stringProp>
-          <stringProp name="requestType">read</stringProp>
+          <stringProp name="checkRead">False</stringProp>
+          <stringProp name="database">test</stringProp>
+          <stringProp name="doRead">True</stringProp>
+          <stringProp name="doWrite">False</stringProp>
+          <stringProp name="gridFsMethod">True</stringProp>
           <stringProp name="useChunks">False</stringProp>
+          <stringProp name="connectionId">mongoConn</stringProp>
+          <stringProp name="requestType">read</stringProp>
           <stringProp name="validateOperation">False</stringProp>
-          <stringProp name="connectionId">mysqlConn</stringProp>
-        </mysql.MysqlSampler>
+        </mongodb.MongoSampler>
         <hashTree>
           <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer" enabled="true">
             <boolProp name="ResultCollector.error_logging">false</boolProp>
@@ -314,7 +384,7 @@
                 <threadCounts>true</threadCounts>
               </value>
             </objProp>
-            <stringProp name="filename">./${testPlanName}/MySQLQueryHandlerSampleResults.csv</stringProp>
+            <stringProp name="filename">./${testPlanName}/MongoQueryHandlerSampleResults.csv</stringProp>
           </ResultCollector>
           <hashTree/>
         </hashTree>
@@ -334,11 +404,11 @@
         <stringProp name="ThreadGroup.delay"></stringProp>
       </ThreadGroup>
       <hashTree>
-        <org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler" testname="SSH SFTP Copy DSTAT" enabled="true">
+        <org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler" testname="SSH SFTP Copy DSTAT Node1" enabled="true">
           <stringProp name="action">get</stringProp>
           <intProp name="connectionTimeout">5000</intProp>
           <stringProp name="destination">./${testPlanName}/monitoring/dstat-node1.csv</stringProp>
-          <stringProp name="hostname">${host}</stringProp>
+          <stringProp name="hostname">${host1}</stringProp>
           <stringProp name="passphrase"></stringProp>
           <stringProp name="password">testPass</stringProp>
           <intProp name="port">22</intProp>
@@ -348,11 +418,11 @@
           <stringProp name="username">testUser</stringProp>
         </org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler>
         <hashTree/>
-        <org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler" testname="SSH SFTP Copy IOSTAT" enabled="true">
+        <org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler" testname="SSH SFTP Copy IOSTAT Node1" enabled="true">
           <stringProp name="action">get</stringProp>
           <intProp name="connectionTimeout">5000</intProp>
           <stringProp name="destination">./${testPlanName}/monitoring/iostat-node1.csv</stringProp>
-          <stringProp name="hostname">${host}</stringProp>
+          <stringProp name="hostname">${host1}</stringProp>
           <stringProp name="passphrase"></stringProp>
           <stringProp name="password">testPass</stringProp>
           <intProp name="port">22</intProp>
@@ -362,8 +432,131 @@
           <stringProp name="username">testUser</stringProp>
         </org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler>
         <hashTree/>
-        <org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler" testname="SSH Remove" enabled="true">
-          <stringProp name="hostname">${host}</stringProp>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler" testname="SSH Remove Node1" enabled="true">
+          <stringProp name="hostname">${host1}</stringProp>
+          <intProp name="port">22</intProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="username">testUser</stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="command">rm ~/*</stringProp>
+          <boolProp name="useReturnCode">true</boolProp>
+          <boolProp name="printStdErr">true</boolProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler" testname="SSH SFTP Copy DSTAT Node2" enabled="true">
+          <stringProp name="action">get</stringProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="destination">./${testPlanName}/monitoring/dstat-node2.csv</stringProp>
+          <stringProp name="hostname">${host2}</stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <intProp name="port">22</intProp>
+          <boolProp name="printFile">false</boolProp>
+          <stringProp name="source">/home/testUser/dstat.csv</stringProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <stringProp name="username">testUser</stringProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler" testname="SSH SFTP Copy IOSTAT Node2" enabled="true">
+          <stringProp name="action">get</stringProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="destination">./${testPlanName}/monitoring/iostat-node2.csv</stringProp>
+          <stringProp name="hostname">${host2}</stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <intProp name="port">22</intProp>
+          <boolProp name="printFile">false</boolProp>
+          <stringProp name="source">/home/testUser/iostat.csv</stringProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <stringProp name="username">testUser</stringProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler" testname="SSH Remove Node2" enabled="true">
+          <stringProp name="hostname">${host2}</stringProp>
+          <intProp name="port">22</intProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="username">testUser</stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="command">rm ~/*</stringProp>
+          <boolProp name="useReturnCode">true</boolProp>
+          <boolProp name="printStdErr">true</boolProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler" testname="SSH SFTP Copy DSTAT Node3" enabled="true">
+          <stringProp name="action">get</stringProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="destination">./${testPlanName}/monitoring/dstat-node3.csv</stringProp>
+          <stringProp name="hostname">${host3}</stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <intProp name="port">22</intProp>
+          <boolProp name="printFile">false</boolProp>
+          <stringProp name="source">/home/testUser/dstat.csv</stringProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <stringProp name="username">testUser</stringProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler" testname="SSH SFTP Copy IOSTAT Node3" enabled="true">
+          <stringProp name="action">get</stringProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="destination">./${testPlanName}/monitoring/iostat-node3.csv</stringProp>
+          <stringProp name="hostname">${host3}</stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <intProp name="port">22</intProp>
+          <boolProp name="printFile">false</boolProp>
+          <stringProp name="source">/home/testUser/iostat.csv</stringProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <stringProp name="username">testUser</stringProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler" testname="SSH Remove Node3" enabled="true">
+          <stringProp name="hostname">${host3}</stringProp>
+          <intProp name="port">22</intProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="username">testUser</stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="command">rm ~/*</stringProp>
+          <boolProp name="useReturnCode">true</boolProp>
+          <boolProp name="printStdErr">true</boolProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler" testname="SSH SFTP Copy DSTAT Node4" enabled="true">
+          <stringProp name="action">get</stringProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="destination">./${testPlanName}/monitoring/dstat-node4.csv</stringProp>
+          <stringProp name="hostname">${host4}</stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <intProp name="port">22</intProp>
+          <boolProp name="printFile">false</boolProp>
+          <stringProp name="source">/home/testUser/dstat.csv</stringProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <stringProp name="username">testUser</stringProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler" testname="SSH SFTP Copy IOSTAT Node4" enabled="true">
+          <stringProp name="action">get</stringProp>
+          <intProp name="connectionTimeout">5000</intProp>
+          <stringProp name="destination">./${testPlanName}/monitoring/iostat-node4.csv</stringProp>
+          <stringProp name="hostname">${host4}</stringProp>
+          <stringProp name="passphrase"></stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <intProp name="port">22</intProp>
+          <boolProp name="printFile">false</boolProp>
+          <stringProp name="source">/home/testUser/iostat.csv</stringProp>
+          <stringProp name="sshkeyfile"></stringProp>
+          <stringProp name="username">testUser</stringProp>
+        </org.apache.jmeter.protocol.ssh.sampler.SSHSFTPSampler>
+        <hashTree/>
+        <org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler guiclass="TestBeanGUI" testclass="org.apache.jmeter.protocol.ssh.sampler.SSHCommandSampler" testname="SSH Remove Node4" enabled="true">
+          <stringProp name="hostname">${host4}</stringProp>
           <intProp name="port">22</intProp>
           <intProp name="connectionTimeout">5000</intProp>
           <stringProp name="username">testUser</stringProp>

@@ -1,0 +1,676 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="2.4" jmeter="2.9 r1437961">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="RIAK-Random-Read-Results-1000-1000-multi6" enabled="true">
+      <stringProp name="TestPlan.comments"></stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+      <stringProp name="TestPlan.user_define_classpath"></stringProp>
+    </TestPlan>
+    <hashTree>
+      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="testPlanName" elementType="Argument">
+            <stringProp name="Argument.name">testPlanName</stringProp>
+            <stringProp name="Argument.value">RIAK-Random-Read-1000-1000-multi6</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="numberOfThreads" elementType="Argument">
+            <stringProp name="Argument.name">numberOfThreads</stringProp>
+            <stringProp name="Argument.value">1000</stringProp>
+            <stringProp name="Argument.desc">The number of threads.</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="rampUpTime" elementType="Argument">
+            <stringProp name="Argument.name">rampUpTime</stringProp>
+            <stringProp name="Argument.value">1000</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Ramp up time [sec]</stringProp>
+          </elementProp>
+          <elementProp name="host" elementType="Argument">
+            <stringProp name="Argument.name">host</stringProp>
+            <stringProp name="Argument.value">cloudssd-riak-n1.cern.ch</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Host to connect to.</stringProp>
+          </elementProp>
+          <elementProp name="port" elementType="Argument">
+            <stringProp name="Argument.name">port</stringProp>
+            <stringProp name="Argument.value">8087</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+      </Arguments>
+      <hashTree/>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Iperf" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <longProp name="ThreadGroup.start_time">1392294966000</longProp>
+        <longProp name="ThreadGroup.end_time">1392294966000</longProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <SystemSampler guiclass="SystemSamplerGui" testclass="SystemSampler" testname="Iperf Sampler" enabled="true">
+          <boolProp name="SystemSampler.checkReturnCode">true</boolProp>
+          <stringProp name="SystemSampler.expectedReturnCode">0</stringProp>
+          <stringProp name="SystemSampler.command">iperf</stringProp>
+          <elementProp name="SystemSampler.arguments" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="Argument">
+                <stringProp name="Argument.name"></stringProp>
+                <stringProp name="Argument.value">-c</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Argument">
+                <stringProp name="Argument.name"></stringProp>
+                <stringProp name="Argument.value">${host}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Argument">
+                <stringProp name="Argument.name"></stringProp>
+                <stringProp name="Argument.value">-t 1</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Argument">
+                <stringProp name="Argument.name"></stringProp>
+                <stringProp name="Argument.value">-P 10</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <elementProp name="SystemSampler.environment" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="SystemSampler.directory"></stringProp>
+          <stringProp name="SystemSampler.stdout">./${testPlanName}/iperflog_${__threadNum}_${__machineName}_to_${host}.log</stringProp>
+          <stringProp name="SystemSampler.stderr">./${testPlanName}/iperflog_${__threadNum}_${__machineName}_to_${host}.log</stringProp>
+        </SystemSampler>
+        <hashTree>
+          <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>true</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>true</code>
+                <message>true</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>true</assertions>
+                <subresults>true</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>false</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <bytes>true</bytes>
+              </value>
+            </objProp>
+            <stringProp name="filename"></stringProp>
+          </ResultCollector>
+          <hashTree/>
+          <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>false</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>false</code>
+                <message>false</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>false</assertions>
+                <subresults>false</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>true</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <hostname>true</hostname>
+              </value>
+            </objProp>
+            <stringProp name="filename">./${testPlanName}/iperfSampleResults.csv</stringProp>
+          </ResultCollector>
+          <hashTree/>
+        </hashTree>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="QueryHandlers1" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${numberOfThreads}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">${rampUpTime}</stringProp>
+        <longProp name="ThreadGroup.start_time">1385029359000</longProp>
+        <longProp name="ThreadGroup.end_time">1385029359000</longProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.delayedStart">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <assignment.AssignmentConfigElement guiclass="TestBeanGUI" testclass="assignment.AssignmentConfigElement" testname="Custom - Assignment Configuration1" enabled="true">
+          <stringProp name="assignmentFile">unspecified</stringProp>
+          <stringProp name="assignmentInfo">assignInfo1</stringProp>
+          <stringProp name="assignmentMode">random</stringProp>
+          <stringProp name="binaryInfo">binInfo</stringProp>
+          <stringProp name="inputLocation">/mnt/testdata/</stringProp>
+          <stringProp name="encoding">binary</stringProp>
+          <stringProp name="assignmentInputFile"></stringProp>
+          <stringProp name="assignmentOutputFile"></stringProp>
+          <stringProp name="numberOfAssignments">${numberOfThreads}</stringProp>
+        </assignment.AssignmentConfigElement>
+        <hashTree/>
+        <riak.RiakConfigElement guiclass="TestBeanGUI" testclass="riak.RiakConfigElement" testname="Custom - RIAK Connection Configuration1" enabled="true">
+          <stringProp name="cluster">conddb</stringProp>
+          <stringProp name="connectionId">riakConn1</stringProp>
+          <stringProp name="host">${host}</stringProp>
+          <stringProp name="maxConnection">50</stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <stringProp name="port">${port}</stringProp>
+          <stringProp name="protocol">RAW-PB</stringProp>
+          <stringProp name="timeout">60000</stringProp>
+          <stringProp name="username">testUser</stringProp>
+        </riak.RiakConfigElement>
+        <hashTree/>
+        <riak.RiakSampler guiclass="TestBeanGUI" testclass="riak.RiakSampler" testname="Custom - RIAK Sampler1" enabled="true">
+          <stringProp name="assignmentInfo">assignInfo1</stringProp>
+          <stringProp name="connectionId">riakConn1</stringProp>
+          <stringProp name="kryoMethod">False</stringProp>
+          <stringProp name="requestType">read</stringProp>
+          <stringProp name="useChunks">False</stringProp>
+          <stringProp name="useLinks">False</stringProp>
+          <stringProp name="validateOperation">False</stringProp>
+        </riak.RiakSampler>
+        <hashTree>
+          <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>true</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>true</code>
+                <message>true</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>false</assertions>
+                <subresults>false</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>true</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <bytes>true</bytes>
+                <threadCounts>true</threadCounts>
+              </value>
+            </objProp>
+            <stringProp name="filename">./${testPlanName}/RIAKQueryHandlerSampleResults.csv</stringProp>
+          </ResultCollector>
+          <hashTree/>
+        </hashTree>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="QueryHandlers2" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${numberOfThreads}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">${rampUpTime}</stringProp>
+        <longProp name="ThreadGroup.start_time">1385029359000</longProp>
+        <longProp name="ThreadGroup.end_time">1385029359000</longProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.delayedStart">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <assignment.AssignmentConfigElement guiclass="TestBeanGUI" testclass="assignment.AssignmentConfigElement" testname="Custom - Assignment Configuration2" enabled="true">
+          <stringProp name="assignmentFile">unspecified</stringProp>
+          <stringProp name="assignmentInfo">assignInfo2</stringProp>
+          <stringProp name="assignmentMode">random</stringProp>
+          <stringProp name="binaryInfo">binInfo</stringProp>
+          <stringProp name="inputLocation">/mnt/testdata/</stringProp>
+          <stringProp name="encoding">binary</stringProp>
+          <stringProp name="assignmentInputFile"></stringProp>
+          <stringProp name="assignmentOutputFile"></stringProp>
+          <stringProp name="numberOfAssignments">${numberOfThreads}</stringProp>
+        </assignment.AssignmentConfigElement>
+        <hashTree/>
+        <riak.RiakConfigElement guiclass="TestBeanGUI" testclass="riak.RiakConfigElement" testname="Custom - RIAK Connection Configuration2" enabled="true">
+          <stringProp name="cluster">conddb</stringProp>
+          <stringProp name="connectionId">riakConn2</stringProp>
+          <stringProp name="host">${host}</stringProp>
+          <stringProp name="maxConnection">50</stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <stringProp name="port">${port}</stringProp>
+          <stringProp name="protocol">RAW-PB</stringProp>
+          <stringProp name="timeout">60000</stringProp>
+          <stringProp name="username">testUser</stringProp>
+        </riak.RiakConfigElement>
+        <hashTree/>
+        <riak.RiakSampler guiclass="TestBeanGUI" testclass="riak.RiakSampler" testname="Custom - RIAK Sampler2" enabled="true">
+          <stringProp name="assignmentInfo">assignInfo2</stringProp>
+          <stringProp name="connectionId">riakConn2</stringProp>
+          <stringProp name="kryoMethod">False</stringProp>
+          <stringProp name="requestType">read</stringProp>
+          <stringProp name="useChunks">False</stringProp>
+          <stringProp name="useLinks">False</stringProp>
+          <stringProp name="validateOperation">False</stringProp>
+        </riak.RiakSampler>
+        <hashTree>
+          <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>true</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>true</code>
+                <message>true</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>false</assertions>
+                <subresults>false</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>true</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <bytes>true</bytes>
+                <threadCounts>true</threadCounts>
+              </value>
+            </objProp>
+            <stringProp name="filename">./${testPlanName}/RIAKQueryHandlerSampleResults.csv</stringProp>
+          </ResultCollector>
+          <hashTree/>
+        </hashTree>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="QueryHandlers3" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${numberOfThreads}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">${rampUpTime}</stringProp>
+        <longProp name="ThreadGroup.start_time">1385029359000</longProp>
+        <longProp name="ThreadGroup.end_time">1385029359000</longProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.delayedStart">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <assignment.AssignmentConfigElement guiclass="TestBeanGUI" testclass="assignment.AssignmentConfigElement" testname="Custom - Assignment Configuration3" enabled="true">
+          <stringProp name="assignmentFile">unspecified</stringProp>
+          <stringProp name="assignmentInfo">assignInfo3</stringProp>
+          <stringProp name="assignmentMode">random</stringProp>
+          <stringProp name="binaryInfo">binInfo</stringProp>
+          <stringProp name="inputLocation">/mnt/testdata/</stringProp>
+          <stringProp name="encoding">binary</stringProp>
+          <stringProp name="assignmentInputFile"></stringProp>
+          <stringProp name="assignmentOutputFile"></stringProp>
+          <stringProp name="numberOfAssignments">${numberOfThreads}</stringProp>
+        </assignment.AssignmentConfigElement>
+        <hashTree/>
+        <riak.RiakConfigElement guiclass="TestBeanGUI" testclass="riak.RiakConfigElement" testname="Custom - RIAK Connection Configuration3" enabled="true">
+          <stringProp name="cluster">conddb</stringProp>
+          <stringProp name="connectionId">riakConn3</stringProp>
+          <stringProp name="host">${host}</stringProp>
+          <stringProp name="maxConnection">50</stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <stringProp name="port">${port}</stringProp>
+          <stringProp name="protocol">RAW-PB</stringProp>
+          <stringProp name="timeout">60000</stringProp>
+          <stringProp name="username">testUser</stringProp>
+        </riak.RiakConfigElement>
+        <hashTree/>
+        <riak.RiakSampler guiclass="TestBeanGUI" testclass="riak.RiakSampler" testname="Custom - RIAK Sampler3" enabled="true">
+          <stringProp name="assignmentInfo">assignInfo3</stringProp>
+          <stringProp name="connectionId">riakConn3</stringProp>
+          <stringProp name="kryoMethod">False</stringProp>
+          <stringProp name="requestType">read</stringProp>
+          <stringProp name="useChunks">False</stringProp>
+          <stringProp name="useLinks">False</stringProp>
+          <stringProp name="validateOperation">False</stringProp>
+        </riak.RiakSampler>
+        <hashTree>
+          <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>true</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>true</code>
+                <message>true</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>false</assertions>
+                <subresults>false</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>true</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <bytes>true</bytes>
+                <threadCounts>true</threadCounts>
+              </value>
+            </objProp>
+            <stringProp name="filename">./${testPlanName}/RIAKQueryHandlerSampleResults.csv</stringProp>
+          </ResultCollector>
+          <hashTree/>
+        </hashTree>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="QueryHandlers4" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${numberOfThreads}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">${rampUpTime}</stringProp>
+        <longProp name="ThreadGroup.start_time">1385029359000</longProp>
+        <longProp name="ThreadGroup.end_time">1385029359000</longProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.delayedStart">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <assignment.AssignmentConfigElement guiclass="TestBeanGUI" testclass="assignment.AssignmentConfigElement" testname="Custom - Assignment Configuration4" enabled="true">
+          <stringProp name="assignmentFile">unspecified</stringProp>
+          <stringProp name="assignmentInfo">assignInfo4</stringProp>
+          <stringProp name="assignmentMode">random</stringProp>
+          <stringProp name="binaryInfo">binInfo</stringProp>
+          <stringProp name="inputLocation">/mnt/testdata/</stringProp>
+          <stringProp name="encoding">binary</stringProp>
+          <stringProp name="assignmentInputFile"></stringProp>
+          <stringProp name="assignmentOutputFile"></stringProp>
+          <stringProp name="numberOfAssignments">${numberOfThreads}</stringProp>
+        </assignment.AssignmentConfigElement>
+        <hashTree/>
+        <riak.RiakConfigElement guiclass="TestBeanGUI" testclass="riak.RiakConfigElement" testname="Custom - RIAK Connection Configuration4" enabled="true">
+          <stringProp name="cluster">conddb</stringProp>
+          <stringProp name="connectionId">riakConn4</stringProp>
+          <stringProp name="host">${host}</stringProp>
+          <stringProp name="maxConnection">50</stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <stringProp name="port">${port}</stringProp>
+          <stringProp name="protocol">RAW-PB</stringProp>
+          <stringProp name="timeout">60000</stringProp>
+          <stringProp name="username">testUser</stringProp>
+        </riak.RiakConfigElement>
+        <hashTree/>
+        <riak.RiakSampler guiclass="TestBeanGUI" testclass="riak.RiakSampler" testname="Custom - RIAK Sampler4" enabled="true">
+          <stringProp name="assignmentInfo">assignInfo4</stringProp>
+          <stringProp name="connectionId">riakConn4</stringProp>
+          <stringProp name="kryoMethod">False</stringProp>
+          <stringProp name="requestType">read</stringProp>
+          <stringProp name="useChunks">False</stringProp>
+          <stringProp name="useLinks">False</stringProp>
+          <stringProp name="validateOperation">False</stringProp>
+        </riak.RiakSampler>
+        <hashTree>
+          <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>true</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>true</code>
+                <message>true</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>false</assertions>
+                <subresults>false</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>true</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <bytes>true</bytes>
+                <threadCounts>true</threadCounts>
+              </value>
+            </objProp>
+            <stringProp name="filename">./${testPlanName}/RIAKQueryHandlerSampleResults.csv</stringProp>
+          </ResultCollector>
+          <hashTree/>
+        </hashTree>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="QueryHandlers5" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${numberOfThreads}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">${rampUpTime}</stringProp>
+        <longProp name="ThreadGroup.start_time">1385029359000</longProp>
+        <longProp name="ThreadGroup.end_time">1385029359000</longProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.delayedStart">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <assignment.AssignmentConfigElement guiclass="TestBeanGUI" testclass="assignment.AssignmentConfigElement" testname="Custom - Assignment Configuration5" enabled="true">
+          <stringProp name="assignmentFile">unspecified</stringProp>
+          <stringProp name="assignmentInfo">assignInfo5</stringProp>
+          <stringProp name="assignmentMode">random</stringProp>
+          <stringProp name="binaryInfo">binInfo</stringProp>
+          <stringProp name="inputLocation">/mnt/testdata/</stringProp>
+          <stringProp name="encoding">binary</stringProp>
+          <stringProp name="assignmentInputFile"></stringProp>
+          <stringProp name="assignmentOutputFile"></stringProp>
+          <stringProp name="numberOfAssignments">${numberOfThreads}</stringProp>
+        </assignment.AssignmentConfigElement>
+        <hashTree/>
+        <riak.RiakConfigElement guiclass="TestBeanGUI" testclass="riak.RiakConfigElement" testname="Custom - RIAK Connection Configuration5" enabled="true">
+          <stringProp name="cluster">conddb</stringProp>
+          <stringProp name="connectionId">riakConn5</stringProp>
+          <stringProp name="host">${host}</stringProp>
+          <stringProp name="maxConnection">50</stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <stringProp name="port">${port}</stringProp>
+          <stringProp name="protocol">RAW-PB</stringProp>
+          <stringProp name="timeout">60000</stringProp>
+          <stringProp name="username">testUser</stringProp>
+        </riak.RiakConfigElement>
+        <hashTree/>
+        <riak.RiakSampler guiclass="TestBeanGUI" testclass="riak.RiakSampler" testname="Custom - RIAK Sampler5" enabled="true">
+          <stringProp name="assignmentInfo">assignInfo5</stringProp>
+          <stringProp name="connectionId">riakConn5</stringProp>
+          <stringProp name="kryoMethod">False</stringProp>
+          <stringProp name="requestType">read</stringProp>
+          <stringProp name="useChunks">False</stringProp>
+          <stringProp name="useLinks">False</stringProp>
+          <stringProp name="validateOperation">False</stringProp>
+        </riak.RiakSampler>
+        <hashTree>
+          <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>true</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>true</code>
+                <message>true</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>false</assertions>
+                <subresults>false</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>true</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <bytes>true</bytes>
+                <threadCounts>true</threadCounts>
+              </value>
+            </objProp>
+            <stringProp name="filename">./${testPlanName}/RIAKQueryHandlerSampleResults.csv</stringProp>
+          </ResultCollector>
+          <hashTree/>
+        </hashTree>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="QueryHandlers6" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${numberOfThreads}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">${rampUpTime}</stringProp>
+        <longProp name="ThreadGroup.start_time">1385029359000</longProp>
+        <longProp name="ThreadGroup.end_time">1385029359000</longProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.delayedStart">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <assignment.AssignmentConfigElement guiclass="TestBeanGUI" testclass="assignment.AssignmentConfigElement" testname="Custom - Assignment Configuration6" enabled="true">
+          <stringProp name="assignmentFile">unspecified</stringProp>
+          <stringProp name="assignmentInfo">assignInfo6</stringProp>
+          <stringProp name="assignmentMode">random</stringProp>
+          <stringProp name="binaryInfo">binInfo</stringProp>
+          <stringProp name="inputLocation">/mnt/testdata/</stringProp>
+          <stringProp name="encoding">binary</stringProp>
+          <stringProp name="assignmentInputFile"></stringProp>
+          <stringProp name="assignmentOutputFile"></stringProp>
+          <stringProp name="numberOfAssignments">${numberOfThreads}</stringProp>
+        </assignment.AssignmentConfigElement>
+        <hashTree/>
+        <riak.RiakConfigElement guiclass="TestBeanGUI" testclass="riak.RiakConfigElement" testname="Custom - RIAK Connection Configuration6" enabled="true">
+          <stringProp name="cluster">conddb</stringProp>
+          <stringProp name="connectionId">riakConn6</stringProp>
+          <stringProp name="host">${host}</stringProp>
+          <stringProp name="maxConnection">50</stringProp>
+          <stringProp name="password">testPass</stringProp>
+          <stringProp name="port">${port}</stringProp>
+          <stringProp name="protocol">RAW-PB</stringProp>
+          <stringProp name="timeout">60000</stringProp>
+          <stringProp name="username">testUser</stringProp>
+        </riak.RiakConfigElement>
+        <hashTree/>
+        <riak.RiakSampler guiclass="TestBeanGUI" testclass="riak.RiakSampler" testname="Custom - RIAK Sampler6" enabled="true">
+          <stringProp name="assignmentInfo">assignInfo6</stringProp>
+          <stringProp name="connectionId">riakConn6</stringProp>
+          <stringProp name="kryoMethod">False</stringProp>
+          <stringProp name="requestType">read</stringProp>
+          <stringProp name="useChunks">False</stringProp>
+          <stringProp name="useLinks">False</stringProp>
+          <stringProp name="validateOperation">False</stringProp>
+        </riak.RiakSampler>
+        <hashTree>
+          <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>true</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>true</code>
+                <message>true</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>false</assertions>
+                <subresults>false</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>true</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <bytes>true</bytes>
+                <threadCounts>true</threadCounts>
+              </value>
+            </objProp>
+            <stringProp name="filename">./${testPlanName}/RIAKQueryHandlerSampleResults.csv</stringProp>
+          </ResultCollector>
+          <hashTree/>
+        </hashTree>
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>

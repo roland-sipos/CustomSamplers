@@ -32,18 +32,104 @@
           </elementProp>
           <elementProp name="host" elementType="Argument">
             <stringProp name="Argument.name">host</stringProp>
-            <stringProp name="Argument.value">cloud-cass.cern.ch</stringProp>
+            <stringProp name="Argument.value">cloudssd-cassandra-n1.cern.ch</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
             <stringProp name="Argument.desc">Host to connect to.</stringProp>
           </elementProp>
-          <elementProp name="clusterName" elementType="Argument">
-            <stringProp name="Argument.name">clusterName</stringProp>
-            <stringProp name="Argument.value">TestCondCass</stringProp>
+          <elementProp name="port" elementType="Argument">
+            <stringProp name="Argument.name">port</stringProp>
+            <stringProp name="Argument.value">9042</stringProp>
+            <stringProp name="Argument.desc">Native client port.</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
         </collectionProp>
       </Arguments>
       <hashTree/>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Iperf" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <longProp name="ThreadGroup.start_time">1392294966000</longProp>
+        <longProp name="ThreadGroup.end_time">1392294966000</longProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <SystemSampler guiclass="SystemSamplerGui" testclass="SystemSampler" testname="Iperf Sampler" enabled="true">
+          <boolProp name="SystemSampler.checkReturnCode">true</boolProp>
+          <stringProp name="SystemSampler.expectedReturnCode">0</stringProp>
+          <stringProp name="SystemSampler.command">iperf</stringProp>
+          <elementProp name="SystemSampler.arguments" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="Argument">
+                <stringProp name="Argument.name"></stringProp>
+                <stringProp name="Argument.value">-c</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Argument">
+                <stringProp name="Argument.name"></stringProp>
+                <stringProp name="Argument.value">${host}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Argument">
+                <stringProp name="Argument.name"></stringProp>
+                <stringProp name="Argument.value">-t 1</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Argument">
+                <stringProp name="Argument.name"></stringProp>
+                <stringProp name="Argument.value">-P 10</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <elementProp name="SystemSampler.environment" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="SystemSampler.directory"></stringProp>
+          <stringProp name="SystemSampler.stdout">./${testPlanName}/iperflog_${__threadNum}_${__machineName}_to_${host}.log</stringProp>
+          <stringProp name="SystemSampler.stderr">./${testPlanName}/iperflog_${__threadNum}_${__machineName}_to_${host}.log</stringProp>
+        </SystemSampler>
+        <hashTree>
+          <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>false</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>false</code>
+                <message>false</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>false</assertions>
+                <subresults>false</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>true</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <hostname>true</hostname>
+              </value>
+            </objProp>
+            <stringProp name="filename">./${testPlanName}/iperfSampleResults.csv</stringProp>
+          </ResultCollector>
+          <hashTree/>
+        </hashTree>
+      </hashTree>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="QueryHandlers" enabled="true">
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
@@ -60,24 +146,13 @@
         <boolProp name="ThreadGroup.delayedStart">true</boolProp>
       </ThreadGroup>
       <hashTree>
-        <assignment.AssignmentConfigElement guiclass="TestBeanGUI" testclass="assignment.AssignmentConfigElement" testname="Custom - Assignment Configuration" enabled="true">
-          <stringProp name="assignmentFile">unspecified</stringProp>
-          <stringProp name="assignmentInfo">assignInfo1</stringProp>
-          <stringProp name="assignmentMode">random</stringProp>
-          <stringProp name="binaryInfo">binInfo</stringProp>
-          <stringProp name="inputLocation">/testdata/out/</stringProp>
-          <stringProp name="encoding">NO</stringProp>
-          <stringProp name="assignmentInputFile"></stringProp>
-          <stringProp name="assignmentOutputFile"></stringProp>
-        </assignment.AssignmentConfigElement>
-        <hashTree/>
         <cassandra.CassandraConfigElement guiclass="TestBeanGUI" testclass="cassandra.CassandraConfigElement" testname="Custom - Cassandra Connection Configuration" enabled="true">
-          <stringProp name="cluster">${clusterName}</stringProp>
+          <stringProp name="cluster">TestCluster</stringProp>
           <stringProp name="connectionId">cassConn1</stringProp>
           <stringProp name="host">${host}</stringProp>
           <stringProp name="loadBalancingPolicy">leastActive</stringProp>
           <stringProp name="maxWaitTimeIfExhausted">60000</stringProp>
-          <stringProp name="port">9160</stringProp>
+          <stringProp name="port">${port}</stringProp>
           <stringProp name="retryDownedHostDelaySec">30</stringProp>
           <stringProp name="retryDownedHostQueueSize">128</stringProp>
           <stringProp name="retryDownedHosts">True</stringProp>
@@ -85,6 +160,18 @@
           <stringProp name="setHostTimeoutCounter">20</stringProp>
           <stringProp name="thriftSocketTimeout">10000</stringProp>
         </cassandra.CassandraConfigElement>
+        <hashTree/>
+        <assignment.AssignmentConfigElement guiclass="TestBeanGUI" testclass="assignment.AssignmentConfigElement" testname="Custom - Assignment Configuration" enabled="true">
+          <stringProp name="assignmentFile">unspecified</stringProp>
+          <stringProp name="assignmentInfo">assignInfo1</stringProp>
+          <stringProp name="assignmentMode">random</stringProp>
+          <stringProp name="binaryInfo">binInfo</stringProp>
+          <stringProp name="inputLocation">/mnt/testdata/</stringProp>
+          <stringProp name="encoding">binary</stringProp>
+          <stringProp name="assignmentInputFile"></stringProp>
+          <stringProp name="assignmentOutputFile"></stringProp>
+          <stringProp name="numberOfAssignments">${numberOfThreads}</stringProp>
+        </assignment.AssignmentConfigElement>
         <hashTree/>
         <cassandra.CassandraSampler guiclass="TestBeanGUI" testclass="cassandra.CassandraSampler" testname="Custom - Cassandra Sampler" enabled="true">
           <stringProp name="assignmentInfo">assignInfo1</stringProp>
@@ -107,28 +194,17 @@
         <longProp name="ThreadGroup.end_time">1385029359000</longProp>
         <boolProp name="ThreadGroup.scheduler">true</boolProp>
         <stringProp name="ThreadGroup.duration">1000</stringProp>
-        <stringProp name="ThreadGroup.delay">200</stringProp>
+        <stringProp name="ThreadGroup.delay">100</stringProp>
         <boolProp name="ThreadGroup.delayedStart">true</boolProp>
       </ThreadGroup>
       <hashTree>
-        <assignment.AssignmentConfigElement guiclass="TestBeanGUI" testclass="assignment.AssignmentConfigElement" testname="Custom - Assignment Configuration 2" enabled="true">
-          <stringProp name="assignmentFile">unspecified</stringProp>
-          <stringProp name="assignmentInfo">assignInfo2</stringProp>
-          <stringProp name="assignmentMode">random</stringProp>
-          <stringProp name="binaryInfo">binInfo</stringProp>
-          <stringProp name="inputLocation">/testdata/out/</stringProp>
-          <stringProp name="encoding">NO</stringProp>
-          <stringProp name="assignmentInputFile"></stringProp>
-          <stringProp name="assignmentOutputFile"></stringProp>
-        </assignment.AssignmentConfigElement>
-        <hashTree/>
         <cassandra.CassandraConfigElement guiclass="TestBeanGUI" testclass="cassandra.CassandraConfigElement" testname="Custom - Cassandra Connection Configuration 2" enabled="true">
-          <stringProp name="cluster">${clusterName}</stringProp>
+          <stringProp name="cluster">TestCluster</stringProp>
           <stringProp name="connectionId">cassConn2</stringProp>
           <stringProp name="host">${host}</stringProp>
           <stringProp name="loadBalancingPolicy">leastActive</stringProp>
           <stringProp name="maxWaitTimeIfExhausted">60000</stringProp>
-          <stringProp name="port">9160</stringProp>
+          <stringProp name="port">${port}</stringProp>
           <stringProp name="retryDownedHostDelaySec">30</stringProp>
           <stringProp name="retryDownedHostQueueSize">128</stringProp>
           <stringProp name="retryDownedHosts">True</stringProp>
@@ -137,11 +213,179 @@
           <stringProp name="thriftSocketTimeout">10000</stringProp>
         </cassandra.CassandraConfigElement>
         <hashTree/>
-        <cassandra.CassandraSampler guiclass="TestBeanGUI" testclass="cassandra.CassandraSampler" testname="Custom - Cassandra Sampler - Spike" enabled="true">
+        <assignment.AssignmentConfigElement guiclass="TestBeanGUI" testclass="assignment.AssignmentConfigElement" testname="Custom - Assignment Configuration 2" enabled="true">
+          <stringProp name="assignmentFile">unspecified</stringProp>
           <stringProp name="assignmentInfo">assignInfo2</stringProp>
+          <stringProp name="assignmentMode">random</stringProp>
+          <stringProp name="binaryInfo">binInfo</stringProp>
+          <stringProp name="inputLocation">/mnt/testdata/</stringProp>
+          <stringProp name="encoding">binary</stringProp>
+          <stringProp name="assignmentInputFile"></stringProp>
+          <stringProp name="assignmentOutputFile"></stringProp>
+          <stringProp name="numberOfAssignments">120</stringProp>
+        </assignment.AssignmentConfigElement>
+        <hashTree/>
+        <cassandra.CassandraSampler guiclass="TestBeanGUI" testclass="cassandra.CassandraSampler" testname="Custom - Cassandra Sampler - Spike 1" enabled="true">
           <stringProp name="connectionId">cassConn2</stringProp>
-          <stringProp name="requestType">read</stringProp>
+          <stringProp name="assignmentInfo">assignInfo2</stringProp>
           <stringProp name="useChunks">False</stringProp>
+          <stringProp name="requestType">read</stringProp>
+          <stringProp name="validateOperation">False</stringProp>
+        </cassandra.CassandraSampler>
+        <hashTree/>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Spike QueryHandlers2" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">180</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">30</stringProp>
+        <longProp name="ThreadGroup.start_time">1385029359000</longProp>
+        <longProp name="ThreadGroup.end_time">1385029359000</longProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">1000</stringProp>
+        <stringProp name="ThreadGroup.delay">200</stringProp>
+        <boolProp name="ThreadGroup.delayedStart">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <cassandra.CassandraConfigElement guiclass="TestBeanGUI" testclass="cassandra.CassandraConfigElement" testname="Custom - Cassandra Connection Configuration 3" enabled="true">
+          <stringProp name="cluster">TestCluster</stringProp>
+          <stringProp name="connectionId">cassConn3</stringProp>
+          <stringProp name="host">${host}</stringProp>
+          <stringProp name="loadBalancingPolicy">leastActive</stringProp>
+          <stringProp name="maxWaitTimeIfExhausted">60000</stringProp>
+          <stringProp name="port">${port}</stringProp>
+          <stringProp name="retryDownedHostDelaySec">30</stringProp>
+          <stringProp name="retryDownedHostQueueSize">128</stringProp>
+          <stringProp name="retryDownedHosts">True</stringProp>
+          <stringProp name="setAutoDiscoverHosts">True</stringProp>
+          <stringProp name="setHostTimeoutCounter">20</stringProp>
+          <stringProp name="thriftSocketTimeout">10000</stringProp>
+        </cassandra.CassandraConfigElement>
+        <hashTree/>
+        <assignment.AssignmentConfigElement guiclass="TestBeanGUI" testclass="assignment.AssignmentConfigElement" testname="Custom - Assignment Configuration 3" enabled="true">
+          <stringProp name="assignmentFile">unspecified</stringProp>
+          <stringProp name="assignmentInfo">assignInfo3</stringProp>
+          <stringProp name="assignmentMode">random</stringProp>
+          <stringProp name="binaryInfo">binInfo</stringProp>
+          <stringProp name="inputLocation">/mnt/testdata/</stringProp>
+          <stringProp name="encoding">binary</stringProp>
+          <stringProp name="assignmentInputFile"></stringProp>
+          <stringProp name="assignmentOutputFile"></stringProp>
+          <stringProp name="numberOfAssignments">180</stringProp>
+        </assignment.AssignmentConfigElement>
+        <hashTree/>
+        <cassandra.CassandraSampler guiclass="TestBeanGUI" testclass="cassandra.CassandraSampler" testname="Custom - Cassandra Sampler - Spike 2" enabled="true">
+          <stringProp name="connectionId">cassConn3</stringProp>
+          <stringProp name="assignmentInfo">assignInfo3</stringProp>
+          <stringProp name="useChunks">False</stringProp>
+          <stringProp name="requestType">read</stringProp>
+          <stringProp name="validateOperation">False</stringProp>
+        </cassandra.CassandraSampler>
+        <hashTree/>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Spike QueryHandlers3" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">240</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">30</stringProp>
+        <longProp name="ThreadGroup.start_time">1385029359000</longProp>
+        <longProp name="ThreadGroup.end_time">1385029359000</longProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">1000</stringProp>
+        <stringProp name="ThreadGroup.delay">300</stringProp>
+        <boolProp name="ThreadGroup.delayedStart">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <cassandra.CassandraConfigElement guiclass="TestBeanGUI" testclass="cassandra.CassandraConfigElement" testname="Custom - Cassandra Connection Configuration 4" enabled="true">
+          <stringProp name="cluster">TestCluster</stringProp>
+          <stringProp name="connectionId">cassConn4</stringProp>
+          <stringProp name="host">${host}</stringProp>
+          <stringProp name="loadBalancingPolicy">leastActive</stringProp>
+          <stringProp name="maxWaitTimeIfExhausted">60000</stringProp>
+          <stringProp name="port">${port}</stringProp>
+          <stringProp name="retryDownedHostDelaySec">30</stringProp>
+          <stringProp name="retryDownedHostQueueSize">128</stringProp>
+          <stringProp name="retryDownedHosts">True</stringProp>
+          <stringProp name="setAutoDiscoverHosts">True</stringProp>
+          <stringProp name="setHostTimeoutCounter">20</stringProp>
+          <stringProp name="thriftSocketTimeout">10000</stringProp>
+        </cassandra.CassandraConfigElement>
+        <hashTree/>
+        <assignment.AssignmentConfigElement guiclass="TestBeanGUI" testclass="assignment.AssignmentConfigElement" testname="Custom - Assignment Configuration 4" enabled="true">
+          <stringProp name="assignmentFile">unspecified</stringProp>
+          <stringProp name="assignmentInfo">assignInfo4</stringProp>
+          <stringProp name="assignmentMode">random</stringProp>
+          <stringProp name="binaryInfo">binInfo</stringProp>
+          <stringProp name="inputLocation">/mnt/testdata/</stringProp>
+          <stringProp name="encoding">binary</stringProp>
+          <stringProp name="assignmentInputFile"></stringProp>
+          <stringProp name="assignmentOutputFile"></stringProp>
+          <stringProp name="numberOfAssignments">240</stringProp>
+        </assignment.AssignmentConfigElement>
+        <hashTree/>
+        <cassandra.CassandraSampler guiclass="TestBeanGUI" testclass="cassandra.CassandraSampler" testname="Custom - Cassandra Sampler - Spike 3" enabled="true">
+          <stringProp name="connectionId">cassConn4</stringProp>
+          <stringProp name="assignmentInfo">assignInfo4</stringProp>
+          <stringProp name="useChunks">False</stringProp>
+          <stringProp name="requestType">read</stringProp>
+          <stringProp name="validateOperation">False</stringProp>
+        </cassandra.CassandraSampler>
+        <hashTree/>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Spike QueryHandlers4" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">300</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">30</stringProp>
+        <longProp name="ThreadGroup.start_time">1385029359000</longProp>
+        <longProp name="ThreadGroup.end_time">1385029359000</longProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">1000</stringProp>
+        <stringProp name="ThreadGroup.delay">400</stringProp>
+        <boolProp name="ThreadGroup.delayedStart">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <cassandra.CassandraConfigElement guiclass="TestBeanGUI" testclass="cassandra.CassandraConfigElement" testname="Custom - Cassandra Connection Configuration 5" enabled="true">
+          <stringProp name="cluster">TestCluster</stringProp>
+          <stringProp name="connectionId">cassConn5</stringProp>
+          <stringProp name="host">${host}</stringProp>
+          <stringProp name="loadBalancingPolicy">leastActive</stringProp>
+          <stringProp name="maxWaitTimeIfExhausted">60000</stringProp>
+          <stringProp name="port">${port}</stringProp>
+          <stringProp name="retryDownedHostDelaySec">30</stringProp>
+          <stringProp name="retryDownedHostQueueSize">128</stringProp>
+          <stringProp name="retryDownedHosts">True</stringProp>
+          <stringProp name="setAutoDiscoverHosts">True</stringProp>
+          <stringProp name="setHostTimeoutCounter">20</stringProp>
+          <stringProp name="thriftSocketTimeout">10000</stringProp>
+        </cassandra.CassandraConfigElement>
+        <hashTree/>
+        <assignment.AssignmentConfigElement guiclass="TestBeanGUI" testclass="assignment.AssignmentConfigElement" testname="Custom - Assignment Configuration 5" enabled="true">
+          <stringProp name="assignmentFile">unspecified</stringProp>
+          <stringProp name="assignmentInfo">assignInfo5</stringProp>
+          <stringProp name="assignmentMode">random</stringProp>
+          <stringProp name="binaryInfo">binInfo</stringProp>
+          <stringProp name="inputLocation">/mnt/testdata/</stringProp>
+          <stringProp name="encoding">binary</stringProp>
+          <stringProp name="assignmentInputFile"></stringProp>
+          <stringProp name="assignmentOutputFile"></stringProp>
+          <stringProp name="numberOfAssignments">300</stringProp>
+        </assignment.AssignmentConfigElement>
+        <hashTree/>
+        <cassandra.CassandraSampler guiclass="TestBeanGUI" testclass="cassandra.CassandraSampler" testname="Custom - Cassandra Sampler - Spike 4" enabled="true">
+          <stringProp name="connectionId">cassConn5</stringProp>
+          <stringProp name="assignmentInfo">assignInfo5</stringProp>
+          <stringProp name="useChunks">False</stringProp>
+          <stringProp name="requestType">read</stringProp>
           <stringProp name="validateOperation">False</stringProp>
         </cassandra.CassandraSampler>
         <hashTree/>
