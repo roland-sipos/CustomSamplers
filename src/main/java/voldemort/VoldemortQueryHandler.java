@@ -1,9 +1,10 @@
 package voldemort;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.TreeMap;
 
 import utils.CustomSamplersException;
 import utils.QueryHandler;
@@ -39,7 +40,7 @@ public class VoldemortQueryHandler implements QueryHandler {
 	}
 
 	@Override
-	public ByteArrayOutputStream getData(String tagName, long since)
+	public ByteBuffer getData(String tagName, long since)
 			throws CustomSamplersException {
 		// TODO Auto-generated method stub
 		return null;
@@ -53,7 +54,7 @@ public class VoldemortQueryHandler implements QueryHandler {
 	}
 
 	@Override
-	public Map<Integer, ByteArrayOutputStream> getChunks(String tagName, long since)
+	public TreeMap<Integer, ByteBuffer> getChunks(String tagName, long since)
 			throws CustomSamplersException {
 		// TODO Auto-generated method stub
 		return null;
@@ -71,6 +72,12 @@ public class VoldemortQueryHandler implements QueryHandler {
 			List<ByteArrayOutputStream> chunks) throws CustomSamplersException {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public void closeResources() throws CustomSamplersException {
+		// TODO Auto-generated method stub
+		
 	}
 
 
