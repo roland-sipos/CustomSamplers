@@ -3,35 +3,26 @@ package mongodb;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.jmeter.config.ConfigElement;
+import org.apache.jmeter.samplers.AbstractSampler;
+import org.apache.jmeter.samplers.Entry;
+import org.apache.jmeter.samplers.SampleResult;
 import org.apache.jmeter.testbeans.TestBean;
-import org.apache.jmeter.testelement.AbstractTestElement;
-import org.apache.jmeter.testelement.TestStateListener;
-import org.apache.jmeter.threads.JMeterContextService;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
-import utils.CustomSamplersException;
-
-import com.mongodb.BasicDBObject;
-import com.mongodb.CommandResult;
 import com.mongodb.DB;
-import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
-import com.mongodb.MongoClientOptions.Builder;
 import com.mongodb.ReadPreference;
-import com.mongodb.gridfs.GridFS;
 import com.mongodb.ServerAddress;
+import com.mongodb.MongoClientOptions.Builder;
+import com.mongodb.gridfs.GridFS;
 
-/**
- * A Custom ConfigElement for handling MongoDB connections.
- * */
-public class MongoConfigElement extends AbstractTestElement
-implements ConfigElement, TestStateListener, TestBean {
+import utils.CustomSamplerUtils;
 
-	/** Generated serialVersionUID. */
-	private static final long serialVersionUID = 6833976447851154818L;
+public class MongoConnectionSampler extends AbstractSampler implements TestBean {
+
+	private static final long serialVersionUID = -9047124734341672662L;
 	/** Static logger from the LoggingManager. */
 	private static final Logger log = LoggingManager.getLoggerForClass();
 
@@ -66,74 +57,36 @@ implements ConfigElement, TestStateListener, TestBean {
 
 
 	@Override
-	public void testEnded() {
-		if (log.isDebugEnabled()) {
-			log.debug(getTitle() + " test ended.");
-		}
-		Object mongo = JMeterContextService.getContext().getVariables().getObject(getConnectionId());
-		if (mongo == null) {
-			log.error("MongoDB DB object is not found in JMeter context with id: " + getConnectionId());
-		}
-		else {
-			if (mongo instanceof DB) {
-				DB m = (DB)mongo;
-				m.getMongo().close();
+	public SampleResult sample(Entry arg0) {
+		SampleResult res = CustomSamplerUtils.getInitialSampleResult(getName());
+		try {
+			if (getThreadContext().getVariables().getObject(getConnectionId()) != null ) {
+				res.sampleStart();
+				DB db = MongoConfigElement.getMongoDB(getConnectionId());
+				System.out.println("-> Closing db: " + db.toString());
+				System.out.println("-> Closing client: " + db.getMongo().toString());
+				db.getMongo().close();
+			} else {
+				res.sampleStart();
+				createAndStore();
 			}
-			else {
-				log.error("Object found in JMeter context with id: " + getConnectionId()
-						+ " Can not be casted to (Mongo) DB.");
-			}
+		} catch (Exception e) {
+			CustomSamplerUtils.finalizeResponse(res, false, "999",
+					"Exception occured in this sample: " + e.toString());
+		} finally {
+			CustomSamplerUtils.finalizeResponse(res, true, "200", "JDBC Object is placed successfully, "
+					+ "with ID: " + getConnectionId());
+			res.sampleEnd();
 		}
-		getThreadContext().getVariables().putObject(getConnectionId(), null);
+		return res;
 	}
 
-	@Override
-	public void testEnded(String arg0) {
-		testEnded();
-	}
-
-	public static DB getMongoDB(String connectionId) throws CustomSamplersException {
-		Object mongo = JMeterContextService.getContext().getVariables().getObject(connectionId);
-		if (mongo == null) {
-			throw new CustomSamplersException("MongoDB object is null!");
-		}
-		else {
-			if (mongo instanceof DB) {
-				return (DB)mongo;
-			}
-			else {
-				throw new CustomSamplersException("Casting the object to (Mongo) DB failed!");
-			}
-		}
-	}
-
-	public static GridFS getGridFS(String connectionId) throws CustomSamplersException {
-		Object gfs = JMeterContextService.getContext().getVariables()
-				.getObject(connectionId.concat("-GFS"));
-		if (gfs == null) {
-			throw new CustomSamplersException("GridFS object is null!");
-		}
-		else {
-			if (gfs instanceof GridFS) {
-				return (GridFS)gfs;
-			}
-			else {
-				throw new CustomSamplersException("Casting the object to GridFS failed!");
-			}
-		}
-	}
-
-	@Override
-	public void testStarted() {
-		if (log.isDebugEnabled()) {
-			log.debug(this.getName() + " testStarted()");
-		}
-
+	private void createAndStore() {
 		MongoClientOptions.Builder mongoConf = null;
 		try {
 			mongoConf = new Builder();
 		} catch (Exception e) {
-			log.error("Failed to create MongoClientOption.Builder: " + e);
+			log.error("Failed to create MongoClientOptions... " + e);
 		}
 
 		try {
@@ -150,83 +103,44 @@ implements ConfigElement, TestStateListener, TestBean {
 			log.error("Some of the config value parsing was failed: " + e);
 		}
 
-		if (log.isDebugEnabled()) {
-			log.debug("MongoClient Options: " + mongoConf.toString());
+		MongoClient mongoClient = null;
+		try {
+			if (getHost().contains(",")) {
+				Integer port = Integer.parseInt(getPort());
+				String hosts[] = getHost().split(",");
+				List<ServerAddress> addresses = new ArrayList<ServerAddress>();
+				for (int i = 0; i < hosts.length; ++i) {
+					addresses.add(new ServerAddress(hosts[i], port));
+				}
+				mongoClient = new MongoClient(addresses, mongoConf.build());
+			} else {
+				ServerAddress address = new ServerAddress(getHost(), Integer.parseInt(getPort()));
+				mongoClient = new MongoClient(address, mongoConf.build());
+				System.out.println("-> New client: " + mongoClient.toString());
+			}
+		} catch (Exception e) {
+			log.error("MongoClient initialization failed due to: " + e.toString());
 		}
 
-		if (getThreadContext().getVariables().getObject(getConnectionId()) != null) {
-			log.warn(getConnectionId() + " has already initialized!");
-		} else {
-			if (log.isDebugEnabled()) {
-				log.debug(getConnectionId() + " is being initialized ...");
-			}
-
-			MongoClient mongoClient = null;
-			try {
-				if (getHost().contains(",")) {
-					Integer port = Integer.parseInt(getPort());
-					String hosts[] = getHost().split(",");
-					List<ServerAddress> addresses = new ArrayList<ServerAddress>();
-					for (int i = 0; i < hosts.length; ++i) {
-						addresses.add(new ServerAddress(hosts[i], port));
-					}
-					mongoClient = new MongoClient(addresses, mongoConf.build());
-				} else {
-					ServerAddress address = new ServerAddress(getHost(), Integer.parseInt(getPort()));
-					mongoClient = new MongoClient(address, mongoConf.build());
+		DB mongoDB = mongoClient.getDB(getDatabase());
+		System.out.println("-> New DB: " + mongoDB.toString());
+		GridFS gridFS = new GridFS(mongoDB, "PAYLOAD");
+		System.out.println("-> New GridFS: " + gridFS.toString());
+		boolean auth = mongoDB.isAuthenticated();
+		if (!auth) {
+			if (!getUsername().equals("")) {
+				auth = mongoDB.authenticate(getUsername(), getPassword().toCharArray());
+				if (!auth) {
+					log.error("MongoClient authentication failed...");
 				}
-			} catch (Exception e) {
-				log.error("MongoClient initialization failed due to: " + e.toString());
+			} else {
+				log.error("MongoClient username is empty, but authentication is needed!");
 			}
-
-			DB mongoDB = mongoClient.getDB(getDatabase());
-			DBObject isMCmd = new BasicDBObject();
-			isMCmd.put("isMaster", 1);
-			CommandResult cmdRes = mongoDB.command(isMCmd);
-			System.out.println("MongoClient under:" + this.toString()
-					+ " -> isMaster() result: "+ cmdRes.getString("msg"));
-			System.out.println(" -> Connect point: " + mongoClient.getConnectPoint());
-			System.out.println(" -> Read preference: " + mongoClient.getReadPreference());
-			System.out.println(" -> ReplSet status: " + mongoClient.getReplicaSetStatus());
-			System.out.println(" ");
-			GridFS gridFS = new GridFS(mongoDB, "PAYLOAD");
-			boolean auth = mongoDB.isAuthenticated();
-			if (!auth) {
-				if (!getUsername().equals("")) {
-					auth = mongoDB.authenticate(getUsername(), getPassword().toCharArray());
-					if (!auth) {
-						log.error("MongoClient authentication failed...");
-					}
-				} else {
-					log.error("MongoClient username is empty, but authentication is needed!");
-				}
-			}
-			getThreadContext().getVariables().putObject(getConnectionId(), mongoDB);
-			getThreadContext().getVariables().putObject(getConnectionId().concat("-GFS"), gridFS);
 		}
+		getThreadContext().getVariables().putObject(getConnectionId(), mongoDB);
+		getThreadContext().getVariables().putObject(getConnectionId().concat("-GFS"), gridFS);
 	}
-
-	@Override
-	public void testStarted(String arg0) {
-		// TODO Auto-generated method stub
-		testStarted();
-	}
-
-	@Override
-	public void addConfigElement(ConfigElement arg0) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public boolean expectsModification() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	public String getTitle() {
-		return this.getName();
-	}
+	
 
 	public String getConnectionId() {
 		return getPropertyAsString(CONNECTIONID);

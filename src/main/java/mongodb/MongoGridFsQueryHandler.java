@@ -38,7 +38,9 @@ public class MongoGridFsQueryHandler implements QueryHandler {
 	public MongoGridFsQueryHandler(String connectionId, int cSize) 
 			throws CustomSamplersException {
 		mongo = MongoConfigElement.getMongoDB(connectionId);
+		System.out.println("  -> Using DB: " + mongo.toString());
 		payloadGridFS = MongoConfigElement.getGridFS(connectionId);
+		System.out.println("  -> Using GridFS: " + payloadGridFS.toString());
 		iovCollection = mongo.getCollection("IOV");
 		chunkSize = cSize;
 		if (mongo == null || payloadGridFS == null)
