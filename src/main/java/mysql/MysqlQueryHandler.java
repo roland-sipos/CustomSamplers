@@ -2,7 +2,7 @@ package mysql;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -11,7 +11,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.TreeMap;
 
 import customjdbc.CustomJDBCConfigElement;
 import utils.CustomSamplersException;
@@ -55,9 +55,9 @@ public class MysqlQueryHandler implements QueryHandler {
 	 * @throws  CustomSamplersException  if an error occurred while executing the query
 	 * */
 	@Override
-	public ByteArrayOutputStream getData(String tagName, long since)
+	public ByteBuffer getData(String tagName, long since)
 			throws CustomSamplersException {
-		ByteArrayOutputStream result = new ByteArrayOutputStream();
+		ByteBuffer result = null;
 		try {
 			PreparedStatement ps = connection.prepareStatement("SELECT data FROM PAYLOAD p, "
 					+ "(SELECT payload_hash FROM IOV WHERE tag_name=? AND since=?) iov "
@@ -66,15 +66,15 @@ public class MysqlQueryHandler implements QueryHandler {
 			ps.setLong(2, since);
 			ResultSet rs = ps.executeQuery();
 			if (rs != null) {
-				int counter = 0;
+				//int counter = 0;
 				while(rs.next()) {
-					result.write(rs.getBytes("data"));
-					counter++;
+					result = ByteBuffer.wrap(rs.getBytes("data"));
+					//counter++;
 				}
-				if (counter > 1) {
+				/*if (counter > 1) {
 					throw new CustomSamplersException("More than one payload found for "
 							+ "TAG=" + tagName + " SINCE=" + since +" !");
-				}
+				}*/
 				rs.close();
 			} else {
 				throw new CustomSamplersException("Payload not found for "
@@ -83,8 +83,6 @@ public class MysqlQueryHandler implements QueryHandler {
 			ps.close();
 		} catch (SQLException e) {
 			throw new CustomSamplersException("SQLException occured during read attempt: " + e.toString());
-		} catch (IOException e) {
-			throw new CustomSamplersException("IOException occured during read attempt: " + e.toString());
 		}
 		return result;
 	}
@@ -105,9 +103,9 @@ public class MysqlQueryHandler implements QueryHandler {
 	 * @throws  CustomSamplersException  if an error occurred while executing the query
 	 * */
 	@Override
-	public Map<Integer, ByteArrayOutputStream> getChunks(String tagName, long since)
+	public TreeMap<Integer, ByteBuffer> getChunks(String tagName, long since)
 			throws CustomSamplersException {
-		Map<Integer, ByteArrayOutputStream> result = new HashMap<Integer, ByteArrayOutputStream>();
+		TreeMap<Integer, ByteBuffer> result = new TreeMap<Integer, ByteBuffer>();
 		try {
 			PreparedStatement ps = connection.prepareStatement("SELECT id, data "
 					+ "FROM CHUNK c, (SELECT payload_hash FROM IOV WHERE tag_name=? AND since=?) iov "
@@ -117,10 +115,7 @@ public class MysqlQueryHandler implements QueryHandler {
 			ResultSet rs = ps.executeQuery();
 			if (rs != null) {
 				while(rs.next()) {
-					ByteArrayOutputStream os = new ByteArrayOutputStream();
-					os.write(rs.getBytes("data"));
-					os.close();
-					result.put(rs.getInt("id"), os);
+					result.put(rs.getInt("id"), ByteBuffer.wrap(rs.getBytes("data")));
 				}
 				rs.close();
 			} else {
@@ -130,8 +125,6 @@ public class MysqlQueryHandler implements QueryHandler {
 			ps.close();
 		} catch (SQLException e) {
 			throw new CustomSamplersException("SQLException occured during read attempt: " + e.toString());
-		} catch (IOException e) {
-			throw new CustomSamplersException("IOException occured during stream write attempt: " + e.toString());
 		}
 		return result;
 	}

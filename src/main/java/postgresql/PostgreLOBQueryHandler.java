@@ -3,6 +3,7 @@ package postgresql;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -11,7 +12,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.TreeMap;
 
 import org.postgresql.largeobject.LargeObject;
 import org.postgresql.largeobject.LargeObjectManager;
@@ -42,9 +43,9 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 	}
 
 	@Override
-	public ByteArrayOutputStream getData(String tagName, long since)
+	public ByteBuffer getData(String tagName, long since)
 			throws CustomSamplersException {
-		ByteArrayOutputStream result = new ByteArrayOutputStream();
+		ByteBuffer result = null;
 		try {
 			connection.setAutoCommit(false);
 			PreparedStatement ps = connection.prepareStatement("SELECT data FROM LOB_PAYLOAD p, "
@@ -55,20 +56,20 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 			ResultSet rs = ps.executeQuery();
 
 			if (rs != null) {
-				int counter = 0;
+				//int counter = 0;
 				while(rs.next()) {
 					long objectID = rs.getLong(1);
 					LargeObject object = lobManager.open(objectID, LargeObjectManager.READ);
 					byte[] pl = new byte[object.size()];
 					object.read(pl, 0, object.size());
 					object.close();
-					result.write(pl);
-					counter++;
+					result = ByteBuffer.wrap(pl);
+					//counter++;
 				}
-				if (counter > 1) {
+				/*if (counter > 1) {
 					throw new CustomSamplersException("More than one payload found for "
 							+ "TAG=" + tagName + " SINCE=" + since +" !");
-				}
+				}*/
 				rs.close();
 			} else {
 
@@ -81,9 +82,6 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 			e.printStackTrace();
 			throw new CustomSamplersException("SQLException occured during read attempt: " + e.toString()
 					+ " " + e.getErrorCode());
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw new CustomSamplersException("SQLException occured during read attempt: " + e.toString());
 		}
 		try {
 			connection.close();
@@ -109,9 +107,9 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 	}
 
 	@Override
-	public Map<Integer, ByteArrayOutputStream> getChunks(String tagName, long since)
+	public TreeMap<Integer, ByteBuffer> getChunks(String tagName, long since)
 			throws CustomSamplersException {
-		Map<Integer, ByteArrayOutputStream> result = new HashMap<Integer, ByteArrayOutputStream>();
+		TreeMap<Integer, ByteBuffer> result = new TreeMap<Integer, ByteBuffer>();
 		try {
 			PreparedStatement ps = connection.prepareStatement("SELECT id, data "
 					+ "FROM LOB_CHUNK c, (SELECT payload_hash FROM IOV WHERE tag_name=? AND since=?) iov "
@@ -127,10 +125,7 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 					object.read(chunk, 0, object.size());
 					object.close();
 
-					ByteArrayOutputStream os = new ByteArrayOutputStream();
-					os.write(chunk);
-					os.close();
-					result.put(rs.getInt("id"), os);
+					result.put(rs.getInt("id"), ByteBuffer.wrap(chunk));
 				}
 				rs.close();
 			} else {
@@ -140,8 +135,6 @@ public class PostgreLOBQueryHandler implements QueryHandler {
 			ps.close();
 		} catch (SQLException e) {
 			throw new CustomSamplersException("SQLException occured during read attempt: " + e.toString());
-		} catch (IOException e) {
-			throw new CustomSamplersException("IOException occured during stream write attempt: " + e.toString());
 		}
 		return result;
 	}

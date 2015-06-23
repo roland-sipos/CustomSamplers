@@ -1,7 +1,6 @@
 package couchdb;
 
 import java.net.MalformedURLException;
-import java.sql.Connection;
 
 import org.apache.jmeter.config.ConfigElement;
 import org.apache.jmeter.testbeans.TestBean;
@@ -47,6 +46,14 @@ implements ConfigElement, TestStateListener, TestBean {
 	public void testEnded() {
 		if (log.isDebugEnabled()) {
 			log.debug(getTitle() + " test ended.");
+		}
+		try {
+			CouchDbConnector couchDB = getCouchDB(getConnectionId());
+			couchDB.getConnection().shutdown();
+		} catch (CustomSamplersException e) {
+			log.error("CouchConfigElement.testEnded() -> "
+					+ "Could not fetch CouchDbConnector with id: " + getConnectionId());
+			e.printStackTrace();
 		}
 		getThreadContext().getVariables().putObject(getConnectionId(), null);
 	}

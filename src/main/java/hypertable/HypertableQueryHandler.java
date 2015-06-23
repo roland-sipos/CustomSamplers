@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.thrift.TException;
 import org.hypertable.thrift.ThriftClient;
@@ -74,9 +74,9 @@ public class HypertableQueryHandler implements QueryHandler {
 	}
 
 	@Override
-	public synchronized ByteArrayOutputStream getData(String tagName, long since)
+	public synchronized ByteBuffer getData(String tagName, long since)
 			throws CustomSamplersException {
-		ByteArrayOutputStream result = new ByteArrayOutputStream();
+		ByteBuffer result = null;
 		String iovRowKey = tagName.concat("_").concat(String.valueOf(since));
 
 		try {
@@ -90,7 +90,7 @@ public class HypertableQueryHandler implements QueryHandler {
 			ByteBuffer plCell = hyperTClient.get_cell(hyperTNS, "PAYLOAD", plHash, "DATA");
 
 			System.out.println("Lenght of the array: " + plCell.array().length);
-			result.write(plCell.array());
+			result = ByteBuffer.wrap(plCell.array());
 
 		} catch (ClientException e) {
 			throw new CustomSamplersException("ClientException occured during write attempt!", e);
@@ -139,10 +139,9 @@ public class HypertableQueryHandler implements QueryHandler {
 	}
 
 	@Override
-	public Map<Integer, ByteArrayOutputStream> getChunks(String tagName,
+	public TreeMap<Integer, ByteBuffer> getChunks(String tagName,
 			long since) throws CustomSamplersException {
-		Map<Integer, ByteArrayOutputStream> result = new HashMap<Integer, ByteArrayOutputStream>();
-		return result;
+		return null;
 	}
 
 	@Override
@@ -151,7 +150,7 @@ public class HypertableQueryHandler implements QueryHandler {
 		String plHash = metaInfo.get("payload_hash");
 		// Composite IOV Key: TAG_NAME + _ + SINCE
 		String iovRowKey = metaInfo.get("tag_name").concat("_").concat(metaInfo.get("since"));
-
+		System.out.println(" -> CompKey: " + iovRowKey + " rk:" + plHash);
 		/*try {
 			// Flags: NO_LOG_SYNC (no sync()) and IGNORE_UNKNOWN_CFS
 			//long iovMutator = hyperTClient.mutator_open(hyperTNS, "IOV", 0, 0); // Flags, flush_interval

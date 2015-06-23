@@ -1,7 +1,5 @@
 package couchdb;
 
-import java.sql.Connection;
-
 import org.apache.jmeter.samplers.AbstractSampler;
 import org.apache.jmeter.samplers.Entry;
 import org.apache.jmeter.samplers.SampleResult;
@@ -9,8 +7,6 @@ import org.apache.jmeter.testbeans.TestBean;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 import org.ektorp.CouchDbConnector;
-
-import customjdbc.CustomJDBCConfigElement;
 
 import utils.CustomSamplerUtils;
 
@@ -60,14 +56,24 @@ public class CouchConnectionSampler extends AbstractSampler implements TestBean 
 	public SampleResult sample(Entry arg0) {
 		SampleResult res = CustomSamplerUtils.getInitialSampleResult(getName());
 		try {
-			res.sampleStart();
-			CouchDbConnector couchDB = CouchConfigElement.createCouchConnection(getDatabase(),
-					getHost(), getPort(), getMaxConnections(), getConnectionTimeout(),
-					getSocketTimeout(), getCaching(), getMaxCacheEntries(), getMaxObjectSizeBytes(),
-					getUseExpectContinue(), getCleanupIdleConnections(), getCreateIfNotExists(),
-					getUsername(), getPassword());
-			res.samplePause();
-			getThreadContext().getVariables().putObject(getConnectionId(), couchDB);
+			if (getThreadContext().getVariables().getObject(getConnectionId()) != null ) {
+				res.sampleStart();
+				CouchDbConnector couchDB = CouchConfigElement.getCouchDB(getConnectionId());
+				couchDB.getConnection().shutdown();
+				res.sampleEnd();
+				CustomSamplerUtils.finalizeResponse(res, true, "200", "CouchDbConnector connection closed."
+						+ "with ID: " + getConnectionId());
+				return res;
+			} else {
+				res.sampleStart();
+				CouchDbConnector couchDB = CouchConfigElement.createCouchConnection(getDatabase(),
+						getHost(), getPort(), getMaxConnections(), getConnectionTimeout(),
+						getSocketTimeout(), getCaching(), getMaxCacheEntries(), getMaxObjectSizeBytes(),
+						getUseExpectContinue(), getCleanupIdleConnections(), getCreateIfNotExists(),
+						getUsername(), getPassword());
+				res.samplePause();
+				getThreadContext().getVariables().putObject(getConnectionId(), couchDB);
+			}
 		} catch (Exception e) {
 			CustomSamplerUtils.finalizeResponse(res, false, "999",
 					"Exception occured in this sample: " + e.toString());

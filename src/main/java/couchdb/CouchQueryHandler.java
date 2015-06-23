@@ -1,9 +1,11 @@
 package couchdb;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.ektorp.CouchDbConnector;
 
@@ -24,13 +26,14 @@ public class CouchQueryHandler implements QueryHandler {
 
 	@SuppressWarnings({ "unchecked" })
 	@Override
-	public ByteArrayOutputStream getData(String tagName, long since)
+	public ByteBuffer getData(String tagName, long since)
 			throws CustomSamplersException {
-		ByteArrayOutputStream result = new ByteArrayOutputStream();
+		ByteBuffer result = null;
 		try {
 			Map<String, Object> plDoc = new HashMap<String, Object>();
 			plDoc = couchDB.get(Map.class, tagName.concat("_").concat(String.valueOf(since)));
-			result.write((byte[])plDoc.get("data"));
+			//result.write((byte[])plDoc.get("data"));
+			result = ByteBuffer.wrap( (byte[])plDoc.get("data") );
 		} catch (Exception e) {
 			throw new CustomSamplersException("Exception occured during read attempt from CouchDB! "
 					+ "Details: " + e.toString());
@@ -64,18 +67,18 @@ public class CouchQueryHandler implements QueryHandler {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Map<Integer, ByteArrayOutputStream> getChunks(String tagName, long since)
+	public TreeMap<Integer, ByteBuffer> getChunks(String tagName, long since)
 			throws CustomSamplersException {
-		Map<Integer, ByteArrayOutputStream> result = new HashMap<Integer, ByteArrayOutputStream>();
+		TreeMap<Integer, ByteBuffer> result = new TreeMap<Integer, ByteBuffer>();
 		try {
 			Map<String, Object> plDoc = new HashMap<String, Object>();
 			plDoc = couchDB.get(Map.class, tagName.concat("_").concat(String.valueOf(since)));
 			int cNo = Integer.parseInt((String)plDoc.get("chunk_number"));
 			for (int i = 0; i < cNo; ++i) {
 				//String cB64 = (String) doc.getProperty(String.valueOf(i));
-				ByteArrayOutputStream cBaos = new ByteArrayOutputStream();
-				cBaos.write((byte[])plDoc.get(String.valueOf(i)));
-				result.put(i, cBaos);
+				//ByteArrayOutputStream cBaos = new ByteArrayOutputStream();
+				//cBaos.write((byte[])plDoc.get(String.valueOf(i)));
+				result.put(i, ByteBuffer.wrap((byte[])plDoc.get(String.valueOf(i))));
 			}
 		} catch (Exception e) {
 			throw new CustomSamplersException("Exception occured during read attempt from CouchDB! "

@@ -48,13 +48,13 @@ public class HypertableSampler extends AbstractSampler implements TestBean {
 		Assignment assignment = null;
 		try {
 			assignment = AssignmentConfigElement.getAssignments(getAssignmentInfo());
-			if (getUseChunks().equals("bulk")) {
+			/*if (getUseChunks().equals("bulk")) {
 				queryHandler = new HypertableBulkQueryHandler(getConnectionId());
 			} else if (getUseChunks().equals("bigtable")){
 				queryHandler = new HypertableBigtableQueryHandler(getConnectionId());
-			} else {
+			} else {*/
 				queryHandler = new HypertableQueryHandler(getConnectionId());
-			}
+			//}
 		} catch (Exception e) {
 			log.error("Failed to create HypertableSampler prerequisites for the " + 
 					Thread.currentThread().getName() + " sampler. Details:" + e.toString());

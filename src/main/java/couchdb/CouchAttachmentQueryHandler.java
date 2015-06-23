@@ -3,10 +3,13 @@ package couchdb;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
+import org.apache.commons.io.IOUtils;
 import org.ektorp.AttachmentInputStream;
 import org.ektorp.CouchDbConnector;
 
@@ -31,19 +34,22 @@ public class CouchAttachmentQueryHandler implements QueryHandler {
 	}
 
 	@Override
-	public ByteArrayOutputStream getData(String tagName, long since)
+	public ByteBuffer getData(String tagName, long since)
 			throws CustomSamplersException {
-		ByteArrayOutputStream result = new ByteArrayOutputStream();
+		ByteBuffer result = null;
 		try {
 			String id = tagName.concat("_").concat(String.valueOf(since));
 			String rev = couchDB.getRevisions(id).get(0).getRev();
 			AttachmentInputStream dataIS = couchDB.getAttachment(id, "data", rev);
-			int size = (int) dataIS.getContentLength();
+
+			result = ByteBuffer.wrap(IOUtils.toByteArray(dataIS));
+			/*int size = (int) dataIS.getContentLength();
 			byte[] data = new byte[size];
 			int nRead = 0;
 			while ((nRead = dataIS.read(data, 0, size)) != -1) {
-				result.write(data, 0, nRead);
-			}
+				result.write(data, 0, nRead)
+				ByteBuffer;
+			}*/
 
 			/** NOTE: http://ektorp.org/javadoc/ektorp/1.4.1/ CouchDbConnector.getAttachment():
 			 * Please note that the stream has to be closed after usage, otherwise http connection 
@@ -87,24 +93,25 @@ public class CouchAttachmentQueryHandler implements QueryHandler {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Map<Integer, ByteArrayOutputStream> getChunks(String tagName,
+	public TreeMap<Integer, ByteBuffer> getChunks(String tagName,
 			long since) throws CustomSamplersException {
-		Map<Integer, ByteArrayOutputStream> result = new HashMap<Integer, ByteArrayOutputStream>();
+		TreeMap<Integer, ByteBuffer> result = new TreeMap<Integer, ByteBuffer>();
 		try {
 			String id = tagName.concat("_").concat(String.valueOf(since));
 			Map<String, Object> plDoc = new HashMap<String, Object>();
 			plDoc = couchDB.get(Map.class, id);
 			int cNo = Integer.parseInt((String)plDoc.get("chunk_number"));
 			for (int i = 0; i < cNo; ++i) {
-				ByteArrayOutputStream cBaos = new ByteArrayOutputStream();
+				//ByteArrayOutputStream cBaos = new ByteArrayOutputStream();
 				AttachmentInputStream dataIS = couchDB.getAttachment(id, String.valueOf(i+1));
-				int size = (int)dataIS.getContentLength();
-				byte[] data = new byte[size];
+				//int size = (int)dataIS.getContentLength();
+				ByteBuffer buff = ByteBuffer.wrap(IOUtils.toByteArray(dataIS));
+				/*byte[] data = new byte[size];
 				int nRead = 0;
 				while ((nRead = dataIS.read(data, 0, size)) != -1) {
 					cBaos.write(data, 0, nRead);
-				}
-				result.put(i+1, cBaos);
+				}*/
+				result.put(i+1, buff);
 			}
 		} catch (Exception e) {
 			throw new CustomSamplersException("Exception occured during read attempt from CouchDB! "

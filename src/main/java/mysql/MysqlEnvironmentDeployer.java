@@ -1,11 +1,9 @@
 package mysql;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.List;
 
 import utils.EnvironmentDeployer;
@@ -144,8 +142,8 @@ public class MysqlEnvironmentDeployer extends EnvironmentDeployer {
 				+ " `PAYLOAD_HASH` VARCHAR(40) NOT NULL,"
 				+ " `INSERT_TIME` DATETIME NOT NULL,"
 				+ " PRIMARY KEY (`TAG_NAME`, `SINCE`),"
-				+ "CONSTRAINT `TAG_FK_idx`"
-				+ " FOREIGN KEY (`TAG_NAME` ) REFERENCES `TAG` (`NAME` ),"
+				//+ "CONSTRAINT `TAG_FK_idx`"
+				//+ " FOREIGN KEY (`TAG_NAME` ) REFERENCES `TAG` (`NAME` ),"
 				+ " FOREIGN KEY (`PAYLOAD_HASH`) REFERENCES `PAYLOAD` (`HASH`) )";
 
 		if (!whichEngine.isEmpty()) {
@@ -188,7 +186,7 @@ public class MysqlEnvironmentDeployer extends EnvironmentDeployer {
 			checkAndNotify(failed, createPayloadIdxQuery, prefix);
 			create.close();
 
-			for (int i = 0; i < tagList.size(); ++i) {
+			/*for (int i = 0; i < tagList.size(); ++i) {
 				PreparedStatement insertTT = connection.prepareStatement("INSERT INTO `TAG` "
 						+ " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 				insertTT.setString(1, tagList.get(i));
@@ -205,7 +203,7 @@ public class MysqlEnvironmentDeployer extends EnvironmentDeployer {
 				failed = insertTT.execute();
 				checkAndNotify(failed, "INSERT INTO TAG " + tagList.get(i), prefix);
 				insertTT.close();
-			}
+			}*/
 
 		} catch (SQLException e) {
 			System.out.println(" setupEnvironment() -> SQLException occured. Details: " + e.toString());

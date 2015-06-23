@@ -1,6 +1,6 @@
 package hypertable;
 
-import java.util.ArrayList;
+/*import java.util.ArrayList;
 import java.util.Vector;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
@@ -8,7 +8,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.hypertable.thrift.ThriftClient;
 import org.hypertable.thriftgen.Cell;
-import org.hypertable.thriftgen.Key;
+import org.hypertable.thriftgen.Key;*/
 
 public class HypertableAccessThrift {
     /*public static AtomicLong l_time = new AtomicLong();
