@@ -1,6 +1,5 @@
 CustomSamplers
 ==============
-
 The CustomSamplers project is an extension for JMeter that contains custom configuration and sampler elements for different relational and NoSQL databases, in order to measure performance characteristics of binary data handling simulated workloads that are similar to the CERN CMS Conditions access.
 
 Currently the following databases are supported by configuration and sampler elements (obsolete indicates missing/incorrect parts):
