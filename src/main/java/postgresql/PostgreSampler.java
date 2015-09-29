@@ -13,6 +13,7 @@ import assignment.Assignment;
 import assignment.AssignmentConfigElement;
 
 import utils.CustomSamplerUtils;
+import utils.CustomSamplersException;
 import utils.QueryHandler;
 
 /**
@@ -31,7 +32,7 @@ public class PostgreSampler extends AbstractSampler implements TestBean {
 	/** This field indicates which Assignment ConfigElement will be used for the sampling. */
 	public final static String ASSIGNMENT_INFO = "PostgreSampler.assignmentInfo";
 	/** This field indicates if this Sampler uses the LargeObject API or the standard one. */
-	public final static String LOB_API = "PostgreSampler.lobApi";
+	public final static String FEATURE = "PostgreSampler.feature";
 	/** This field indicates if this Sampler should close the Connection after the operation. */
 	public final static String CLOSE_CONNECTION = "PostgreSampler.closeConnection";
 	/** This field indicates, if the sampling will use chunks of the payloads. */
@@ -67,13 +68,16 @@ public class PostgreSampler extends AbstractSampler implements TestBean {
 		Assignment assignment = null;
 		try {
 			assignment = AssignmentConfigElement.getAssignments(getAssignmentInfo());
-			if (Boolean.parseBoolean(getLobApi())) {
+			
+			if (getFeature().equals("lobapi")) {
 				queryHandler = new PostgreLOBQueryHandler(getConnectionId());
-			} else {
+			} else if (getFeature().equals("normal")){
 				queryHandler = new PostgreQueryHandler(getConnectionId());
+			} else if (getFeature().equals("json")) {
+				queryHandler = new PostgreJSONQueryHandler(getConnectionId());
 			}
 		} catch (Exception e) {
-			log.error("Failed to create a MysqlSampler prerequisites for the " + 
+			log.error("Failed to create a PostgreSampler prerequisites for the " + 
 					Thread.currentThread().getName() + " sampler. Details:" + e.toString());
 			return CustomSamplerUtils.getExceptionSampleResult(e);
 		}
@@ -89,6 +93,12 @@ public class PostgreSampler extends AbstractSampler implements TestBean {
 			CustomSamplerUtils.writeWith(queryHandler, assignment, res, options);
 		}
 
+		/*try {
+			queryHandler.closeResources();
+		} catch (CustomSamplersException e) {
+			return CustomSamplerUtils.getExceptionSampleResult(e);
+		}*/
+		
 		return res;
 	}
 
@@ -135,11 +145,11 @@ public class PostgreSampler extends AbstractSampler implements TestBean {
 	public void setUseChunks(String useChunks) {
 		setProperty(USE_CHUNKS, useChunks);
 	}
-	public String getLobApi() {
-		return getPropertyAsString(LOB_API);
+	public String getFeature() {
+		return getPropertyAsString(FEATURE);
 	}
-	public void setLobApi(String lobApi) {
-		setProperty(LOB_API, lobApi);
+	public void setFeature(String feature) {
+		setProperty(FEATURE, feature);
 	}
 	public String getCloseConnection() {
 		return getPropertyAsString(CLOSE_CONNECTION);
