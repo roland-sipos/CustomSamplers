@@ -95,7 +95,11 @@
 			<artifactId>commons-cli</artifactId>
 			<version>1.2</version>
 		</dependency>
-
+		<dependency>
+			<groupId>com.googlecode.json-simple</groupId>
+			<artifactId>json-simple</artifactId>
+			<version>1.1.1</version>
+		</dependency>
 
 		<dependency> <!-- Cassandra Native CQL API -->
 			<groupId>com.datastax.cassandra</groupId>
@@ -147,11 +151,6 @@
 			<artifactId>libthrift</artifactId>
 			<version>0.6.1</version>
 		</dependency>
-		<dependency> <!-- Hypertable Java API -->
-			<groupId>org.hypertable</groupId>
-			<artifactId>hypertable</artifactId>
-			<version>0.9.7.12</version>
-		</dependency>
 
 		<dependency> <!-- Accumulo -->
 			<groupId>org.apache.accumulo</groupId>
@@ -160,10 +159,10 @@
 		</dependency>
 
 
-		<dependency> <!-- PostgreSQL Java API -->
-			<groupId>postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<version>9.1-901.jdbc4</version>
+		<dependency>
+        <groupId>org.postgresql</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>9.4-1201-jdbc4</version>
 		</dependency>
 		<dependency> <!-- MySQL Java API -->
 			<groupId>mysql</groupId>
@@ -176,11 +175,6 @@
 			<version>1.1.1</version>
 		</dependency>
 
-		<dependency> <!-- Oracle Java API -->
-			<groupId>com.oracle</groupId>
-			<artifactId>ojdbc6</artifactId>
-			<version>11.2.0.3.0</version>
-		</dependency>
 
 		<dependency>
 			<groupId>org.drizzle.jdbc</groupId>

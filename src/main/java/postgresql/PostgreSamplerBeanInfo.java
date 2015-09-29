@@ -33,7 +33,7 @@ public class PostgreSamplerBeanInfo extends BeanInfoSupport {
 
 		createPropertyGroup("mongo", new String[] {"connectionId"});
 		createPropertyGroup("sampler", new String[] {"assignmentInfo", "useChunks",
-				"lobApi", "closeConnection"});
+				"feature", "closeConnection"});
 		createPropertyGroup("io", new String[] {"requestType", "validateOperation"});
 
 		PropertyDescriptor p = property("connectionId");
@@ -48,11 +48,11 @@ public class PostgreSamplerBeanInfo extends BeanInfoSupport {
 		p.setValue(TAGS, new String[] {"True", "False"});
 		p.setValue(NOT_OTHER, new String[] {"True", "False"});
 		p.setValue(DEFAULT, "False");
-		p = property("lobApi");
+		p = property("feature");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
-		p.setValue(TAGS, new String[] {"True", "False"});
-		p.setValue(NOT_OTHER, new String[] {"True", "False"});
-		p.setValue(DEFAULT, "False");
+		p.setValue(TAGS, new String[] {"json", "normal", "lobapi"});
+		p.setValue(NOT_OTHER, new String[] {"json", "normal", "lobapi"});
+		p.setValue(DEFAULT, "normal");
 		p = property("closeConnection");
 		p.setValue(NOT_UNDEFINED, Boolean.TRUE);
 		p.setValue(TAGS, new String[] {"True", "False"});
